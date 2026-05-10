@@ -54,6 +54,5 @@ func (r *BoardRepo) DeleteBoard(boardCode string) (error) {
 	}
 	
 	result := r.DB.Delete(&board)
-	
 	return result.Error
 }

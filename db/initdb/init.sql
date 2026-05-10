@@ -31,3 +31,22 @@ create table posts (
 	html 		varchar
 );
 
+create type user_type as enum (
+	'admin',
+	'moderator',
+	'janitor'
+);
+
+create table users (
+	id 			serial primary key,
+	username 	varchar(32) unique not null,
+	password 	varchar(255) not null,
+	type 		user_type not null,
+	created_at 	timestamp default now()
+);
+
+create table users_boards (
+	user_id 	integer references users(id) on update cascade on delete cascade,
+	board_id 	integer references boards(id) on update cascade on delete cascade,
+	constraint 	user_board_pkey primary key (user_id, board_id)
+);

@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/driver/postgres"
 	boards "immy-api/boards"
+	users "immy-api/users"
 )
 
 
@@ -33,11 +34,15 @@ func main() {
 	boardRepo := &boards.BoardRepo{DB: gormDB}
 	boardHandler := &boards.BoardHandler{BoardRepo: boardRepo}
 	
+	userRepo := &users.UserRepo{DB : gormDB}
+	userHandler := &users.UserHandler{UserRepo: userRepo}
+	
 	api := router.Group("/api")
 	{
 		v1 := api.Group("/v1")
 		{
 			boards.RegisterBoardRoutes(boardHandler, v1)
+			users.RegisterUserRoutes(userHandler, v1)
 		}
 	}
 	
