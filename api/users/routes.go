@@ -12,5 +12,6 @@ func RegisterUserRoutes(h *UserHandler, rg *gin.RouterGroup) {
     	users.GET("/:id", h.GetUser)
     	users.PUT("/:id", h.UpdateUser)
     	users.DELETE("/:id", h.DeleteUser)
+    	users.POST("/login", h.LoginUser)
 	}
 }

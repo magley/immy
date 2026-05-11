@@ -59,3 +59,9 @@ func (r *UserRepo) DeleteUser(userId int) (error) {
 	result := r.DB.Delete(&user)
 	return result.Error
 }
+
+func (r *UserRepo) GetUserByName(username string) (*User, error) {
+	var user User
+	result := r.DB.Where("username = ?", username).First(&user)
+	return &user, result.Error
+}
