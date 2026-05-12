@@ -1,10 +1,10 @@
 <script setup lang="ts">
 	import { ref, onMounted } from 'vue';
 	import { UserAPI, UserDTO, CreateUserDTO, UpdateUserDTO, UserType, LoginUserDTO, JWTClaims} from "@/api/user.api.ts";
-	
+
 	const loginUserDTO = ref<LoginUserDTO>({});
 	const errorMessage = ref<string>(undefined);
-	
+
 	const onSubmitLogin = () => {
 		errorMessage.value = "";
 		UserAPI.LoginUser(loginUserDTO.value).then((res: AxiosResponse<ApiResponse<LoginResponseDTO>>) => {

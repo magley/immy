@@ -8,6 +8,7 @@ export interface BoardDTO {
     created_at: Date;
     locked: boolean;
     hidden: boolean;
+    post_count: int;
 }
 
 export interface CreateBoardDTO {
