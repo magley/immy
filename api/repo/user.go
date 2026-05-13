@@ -33,18 +33,13 @@ func (r *UserRepo) CreateUser(dto model.CreateUserDTO) (*model.User, error) {
 	return &user, result.Error
 }
 
-func (r *UserRepo) GetUser(userId int) (*model.User, error) {
+func (r *UserRepo) GetUser(userId uint) (*model.User, error) {
 	var user model.User
 	result := r.DB.First(&user, userId)
 	return &user, result.Error
 }
 
-func (r *UserRepo) UpdateUser(userId int, dto model.UpdateUserDTO) (*model.User, error) {
-	user, err := r.GetUser(userId)
-	if err != nil {
-		return nil, err
-	}
-	
+func (r *UserRepo) UpdateUser(user *model.User, dto model.UpdateUserDTO) (*model.User, error) {
 	if dto.Username != nil { user.Username = *dto.Username }
 	if dto.Type != nil { user.Type = *dto.Type }
 	
@@ -52,12 +47,7 @@ func (r *UserRepo) UpdateUser(userId int, dto model.UpdateUserDTO) (*model.User,
 	return user, result.Error
 }
 
-func (r *UserRepo) DeleteUser(userId int) (error) {
-	user, err := r.GetUser(userId)
-	if err != nil {
-		return err
-	}
-	
+func (r *UserRepo) DeleteUser(user *model.User) (error) {
 	result := r.DB.Delete(&user)
 	return result.Error
 }

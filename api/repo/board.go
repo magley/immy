@@ -27,18 +27,13 @@ func (r *BoardRepo) CreateBoard(dto model.CreateBoardDTO) (*model.Board, error) 
 	return &board, result.Error
 }
 
-func (r *BoardRepo) GetBoard(boardCode string) (*model.Board, error) {
+func (r *BoardRepo) GetBoardByCode(boardCode string) (*model.Board, error) {
 	var board model.Board
 	result := r.DB.Where("code = ?", boardCode).First(&board)
 	return &board, result.Error
 }
 
-func (r *BoardRepo) UpdateBoard(boardCode string, dto model.UpdateBoardDTO) (*model.Board, error) {
-	board, err := r.GetBoard(boardCode)
-	if err != nil {
-		return nil, err
-	}
-	
+func (r *BoardRepo) UpdateBoard(board *model.Board, dto model.UpdateBoardDTO) (*model.Board, error) {
 	if dto.Name != nil { board.Name = *dto.Name }
 	if dto.Code != nil { board.Code = *dto.Code }
 	if dto.Description != nil { board.Description = dto.Description }
@@ -49,12 +44,7 @@ func (r *BoardRepo) UpdateBoard(boardCode string, dto model.UpdateBoardDTO) (*mo
 	return board, result.Error
 }
 
-func (r *BoardRepo) DeleteBoard(boardCode string) (error) {
-	board, err := r.GetBoard(boardCode)
-	if err != nil {
-		return err
-	}
-	
+func (r *BoardRepo) DeleteBoard(board *model.Board) (error) {
 	result := r.DB.Delete(&board)
 	return result.Error
 }

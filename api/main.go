@@ -8,8 +8,9 @@ import (
 	"gorm.io/driver/postgres"
 	
 	"immy-api/repo"
-	"immy-api/route"
+	"immy-api/service"
 	"immy-api/handler"
+	"immy-api/route"
 )
 
 
@@ -40,14 +41,19 @@ func main() {
 	}))	
 	
 	boardRepo := &repo.BoardRepo{DB: gormDB}
-	userRepo := &repo.UserRepo{DB : gormDB}
 	postRepo := &repo.PostRepo{DB : gormDB}
 	threadRepo := &repo.ThreadRepo{DB : gormDB}
+	userRepo := &repo.UserRepo{DB : gormDB}
 	
-	boardHandler := &handler.BoardHandler{BoardRepo: boardRepo}
-	userHandler := &handler.UserHandler{UserRepo: userRepo}
-	postHandler := &handler.PostHandler{PostRepo: postRepo}
-	threadHandler := &handler.ThreadHandler{ThreadRepo: threadRepo, BoardRepo: boardRepo, PostRepo: postRepo}
+	boardService := &service.BoardService{BoardRepo: boardRepo}
+	postService := &service.PostService{PostRepo: postRepo}
+	threadService := &service.ThreadService{ThreadRepo: threadRepo}
+	userService := &service.UserService{UserRepo: userRepo}
+	
+	boardHandler := &handler.BoardHandler{BoardService: boardService}
+	postHandler := &handler.PostHandler{PostService: postService}
+	threadHandler := &handler.ThreadHandler{ThreadService: threadService, BoardService: boardService, PostService: postService}
+	userHandler := &handler.UserHandler{UserService: userService}
 	
 	api := router.Group("/api")
 	{

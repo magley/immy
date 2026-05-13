@@ -6,20 +6,19 @@ import (
 	"github.com/gin-gonic/gin"
 	util "immy-api/util"
 			
-	_ "immy-api/service"
-	"immy-api/repo"
+	"immy-api/service"
 	"immy-api/model"
 )
 
 type ThreadHandler struct {
-	ThreadRepo 	*repo.ThreadRepo
-	BoardRepo 	*repo.BoardRepo
-	PostRepo 	*repo.PostRepo
+	ThreadService 	*service.ThreadService
+	BoardService 	*service.BoardService
+	PostService 	*service.PostService
 }
 
 func (h *ThreadHandler) ListThreads(c *gin.Context) {
 	offset, limit := util.GetOffsetLimit(c)
-	res, err := h.ThreadRepo.ListThreads(offset, limit)
+	res, err := h.ThreadService.ListThreads(offset, limit)
 	
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
@@ -34,13 +33,7 @@ func (h *ThreadHandler) ListThreadsOfBoard(c *gin.Context) {
 	offset, limit := util.GetOffsetLimit(c)
 	boardCode := c.Param("boardCode")
 	
-	board, err := h.BoardRepo.GetBoard(boardCode)
-	if err != nil {
-		util.NotFound(c, "Board", boardCode)
-		return
-	}
-	
-	res, err := h.ThreadRepo.ListThreadsOfBoard(board.ID, offset, limit)
+	res, err := h.ThreadService.ListThreadsOfBoard(boardCode, offset, limit)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
 		return
@@ -52,6 +45,7 @@ func (h *ThreadHandler) ListThreadsOfBoard(c *gin.Context) {
 
 
 func (h *ThreadHandler) CreateThread(c *gin.Context) {
+	return
 	// Get board
 	
 	
@@ -62,29 +56,32 @@ func (h *ThreadHandler) CreateThread(c *gin.Context) {
 	// Create thread
 	
 	
-	var dto model.CreateThreadDTO
-	err := c.ShouldBindJSON(&dto)
-	if err != nil {
-		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
-		return
-	}
+	// var dto model.CreateThreadDTO
+	// err := c.ShouldBindJSON(&dto)
+	// if err != nil {
+	// 	util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
+	// 	return
+	// }
 	
-	res, err := h.ThreadRepo.CreateThread(dto, 0)
-	if err != nil {
-		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
-		return
-	} else {
-		util.Created(c, res.ID)
-		return
-	}
+	// res, err := h.ThreadService.CreateThread(dto, 0)
+	// if err != nil {
+	// 	util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
+	// 	return
+	// } else {
+	// 	util.Created(c, res.ID)
+	// 	return
+	// }
 }
 
 func (h *ThreadHandler) GetThread(c *gin.Context) {
-	threadCode := c.Param("code")
+	threadId, ok := util.ParamUintSafe(c, "id", "Thread")
+	if !ok {
+		return
+	}
 	
-	res, err := h.ThreadRepo.GetThread(threadCode)
+	res, err := h.ThreadService.GetThread(threadId)
 	if err != nil {
-		util.NotFound(c, "Thread", threadCode)
+		util.NotFound(c, "Thread", threadId)
 		return
 	} else {
 		util.OK(c, res)
@@ -93,8 +90,11 @@ func (h *ThreadHandler) GetThread(c *gin.Context) {
 }
 
 func (h *ThreadHandler) UpdateThread(c *gin.Context) {
-	threadCode := c.Param("code")
-
+	threadId, ok := util.ParamUintSafe(c, "id", "Thread")
+	if !ok {
+		return
+	}
+	
 	var dto model.UpdateThreadDTO
 	err := c.ShouldBindJSON(&dto)
 	if err != nil {
@@ -102,7 +102,7 @@ func (h *ThreadHandler) UpdateThread(c *gin.Context) {
 		return
 	}
 	
-	res, err := h.ThreadRepo.UpdateThread(threadCode, dto)
+	res, err := h.ThreadService.UpdateThread(threadId, dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "UPDATE_FAILED", err.Error())
 		return
@@ -113,14 +113,17 @@ func (h *ThreadHandler) UpdateThread(c *gin.Context) {
 }
 
 func (h *ThreadHandler) DeleteThread(c *gin.Context) {
-	threadCode := c.Param("code")
+	threadId, ok := util.ParamUintSafe(c, "id", "Thread")
+	if !ok {
+		return
+	}
 	
-	err := h.ThreadRepo.DeleteThread(threadCode)
+	err := h.ThreadService.DeleteThread(threadId)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "DELETE_FAIL", err.Error())
 		return
 	} else {
-		util.OK(c, threadCode)
+		util.OK(c, threadId)
 		return
 	}
 }

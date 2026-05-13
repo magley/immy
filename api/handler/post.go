@@ -2,11 +2,10 @@ package handler
 
 
 import (		
-	_ "immy-api/service"
-	"immy-api/repo"
+	"immy-api/service"
 	_ "immy-api/model"
 )
 
 type PostHandler struct {
-	PostRepo 	*repo.PostRepo
+	PostService 	*service.PostService
 }

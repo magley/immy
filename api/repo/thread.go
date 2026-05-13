@@ -35,18 +35,13 @@ func (r *ThreadRepo) CreateThread(dto model.CreateThreadDTO, boardID uint) (*mod
 	return &thread, result.Error
 }
 
-func (r *ThreadRepo) GetThread(threadId string) (*model.Thread, error) {
+func (r *ThreadRepo) GetThread(threadId uint) (*model.Thread, error) {
 	var thread model.Thread
 	result := r.DB.First(&thread, threadId)
 	return &thread, result.Error
 }
 
-func (r *ThreadRepo) UpdateThread(threadId string, dto model.UpdateThreadDTO) (*model.Thread, error) {
-	thread, err := r.GetThread(threadId)
-	if err != nil {
-		return nil, err
-	}
-	
+func (r *ThreadRepo) UpdateThread(thread *model.Thread, dto model.UpdateThreadDTO) (*model.Thread, error) {
 	if dto.Locked != nil { thread.Locked = *dto.Locked }
 	if dto.Sticky != nil { thread.Sticky = *dto.Sticky }
 	
@@ -54,12 +49,7 @@ func (r *ThreadRepo) UpdateThread(threadId string, dto model.UpdateThreadDTO) (*
 	return thread, result.Error
 }
 
-func (r *ThreadRepo) DeleteThread(threadId string) (error) {
-	thread, err := r.GetThread(threadId)
-	if err != nil {
-		return err
-	}
-	
+func (r *ThreadRepo) DeleteThread(thread *model.Thread) (error) {
 	result := r.DB.Delete(&thread)
 	return result.Error
 }
