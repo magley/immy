@@ -1,10 +1,11 @@
-package users
+package route
 
 import (
 	"github.com/gin-gonic/gin"
+	"immy-api/handler"
 )
 
-func RegisterUserRoutes(h *UserHandler, rg *gin.RouterGroup) {
+func RegisterUserRoutes(h *handler.UserHandler, rg *gin.RouterGroup) {
 	users := rg.Group("/users")
 	{
     	users.GET("/", h.ListUsers)

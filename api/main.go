@@ -6,8 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"gorm.io/driver/postgres"
-	boards "immy-api/boards"
-	users "immy-api/users"
+	
+	"immy-api/repo"
+	"immy-api/route"
+	"immy-api/handler"
 )
 
 
@@ -31,26 +33,34 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowMethods:     []string{"GET", "USER", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))	
 	
-	boardRepo := &boards.BoardRepo{DB: gormDB}
-	boardHandler := &boards.BoardHandler{BoardRepo: boardRepo}
+	boardRepo := &repo.BoardRepo{DB: gormDB}
+	userRepo := &repo.UserRepo{DB : gormDB}
+	postRepo := &repo.PostRepo{DB : gormDB}
+	threadRepo := &repo.ThreadRepo{DB : gormDB}
 	
-	userRepo := &users.UserRepo{DB : gormDB}
-	userHandler := &users.UserHandler{UserRepo: userRepo}
+	boardHandler := &handler.BoardHandler{BoardRepo: boardRepo}
+	userHandler := &handler.UserHandler{UserRepo: userRepo}
+	postHandler := &handler.PostHandler{PostRepo: postRepo}
+	threadHandler := &handler.ThreadHandler{ThreadRepo: threadRepo, BoardRepo: boardRepo, PostRepo: postRepo}
 	
 	api := router.Group("/api")
 	{
 		v1 := api.Group("/v1")
 		{
-			boards.RegisterBoardRoutes(boardHandler, v1)
-			users.RegisterUserRoutes(userHandler, v1)
+			route.RegisterBoardRoutes(boardHandler, v1)
+			route.RegisterUserRoutes(userHandler, v1)
+			route.RegisterPostRoutes(postHandler, v1)
+			route.RegisterThreadRoutes(threadHandler, v1)
 		}
 	}
 	
 	router.Run(":8080")
 }
+
+

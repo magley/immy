@@ -1,14 +1,19 @@
-package users
+package handler
+
 
 import (
 	"net/http"
 	"strconv"
 	"github.com/gin-gonic/gin"
 	util "immy-api/util"
+		
+	_ "immy-api/service"
+	"immy-api/repo"
+	"immy-api/model"
 )
 
 type UserHandler struct {
-	UserRepo *UserRepo
+	UserRepo *repo.UserRepo
 }
 
 func (h *UserHandler) ListUsers(c *gin.Context) {
@@ -24,7 +29,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 }
 
 func (h* UserHandler) CreateUser(c *gin.Context) {
-	var dto CreateUserDTO
+	var dto model.CreateUserDTO
 	err := c.ShouldBindJSON(&dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
@@ -64,7 +69,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 	
-	var dto UpdateUserDTO
+	var dto model.UpdateUserDTO
 	err = c.ShouldBindJSON(&dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "ERROR", err.Error())
@@ -98,7 +103,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 }
 
 func (h *UserHandler) LoginUser(c *gin.Context) {
-	var dto LoginUserDTO
+	var dto model.LoginUserDTO
 	err := c.ShouldBindJSON(&dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
@@ -124,7 +129,7 @@ func (h *UserHandler) LoginUser(c *gin.Context) {
 		return
 	}
 	
-	res := LoginResponseDTO{
+	res := model.LoginResponseDTO{
 		ID: user.ID,
 		Username: user.Username,
 		Type: user.Type,

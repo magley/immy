@@ -1,4 +1,4 @@
-package boards
+package model
 
 import (
 	"time"
@@ -12,6 +12,7 @@ type Board struct {
 	CreatedAt	time.Time	`json:"created_at"`
 	Locked		bool		`json:"locked"`
 	Hidden		bool		`json:"hidden"`
+	PostCount	uint 		`json:"post_count"`	
 }
 
 type CreateBoardDTO struct {

@@ -7,12 +7,14 @@ create table boards (
 	description varchar(255),
 	created_at 	timestamp default now(),
 	locked 		bool default false,
-	hidden 		bool default false
+	hidden 		bool default false,
+	post_count 	integer
 );
 
 create table threads (
-	id 			serial primary key,
+	id  		serial primary key,			
 	board_id 	integer references boards(id),
+	subject		varchar(128),
 	locked 		bool default false,
 	sticky 		bool default false
 );
@@ -26,7 +28,7 @@ create table posts (
 	tripcode 	varchar(128),
 	created_at 	timestamp default now(),
 	sage 		bool default false,
-	post 		varchar,
+	content		varchar,
 	filename 	varchar,
 	html 		varchar
 );

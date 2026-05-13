@@ -1,21 +1,23 @@
-package boards
+package repo
 
 import (
 	"gorm.io/gorm"
+	
+	model "immy-api/model"
 )
 
 type BoardRepo struct {
 	DB *gorm.DB
 }
 
-func (r *BoardRepo) ListBoards(offset int, limit int) ([]Board, error) {
-	var boards []Board
+func (r *BoardRepo) ListBoards(offset int, limit int) ([]model.Board, error) {
+	var boards []model.Board
 	result := r.DB.Limit(limit).Offset(offset).Find(&boards)
 	return boards, result.Error
 }
 
-func (r *BoardRepo) CreateBoard(dto CreateBoardDTO) (*Board, error) {
-	board := Board{
+func (r *BoardRepo) CreateBoard(dto model.CreateBoardDTO) (*model.Board, error) {
+	board := model.Board{
 		Name: dto.Name,
 		Code: dto.Code,
 		Description: dto.Description,
@@ -25,13 +27,13 @@ func (r *BoardRepo) CreateBoard(dto CreateBoardDTO) (*Board, error) {
 	return &board, result.Error
 }
 
-func (r *BoardRepo) GetBoard(boardCode string) (*Board, error) {
-	var board Board
+func (r *BoardRepo) GetBoard(boardCode string) (*model.Board, error) {
+	var board model.Board
 	result := r.DB.Where("code = ?", boardCode).First(&board)
 	return &board, result.Error
 }
 
-func (r *BoardRepo) UpdateBoard(boardCode string, dto UpdateBoardDTO) (*Board, error) {
+func (r *BoardRepo) UpdateBoard(boardCode string, dto model.UpdateBoardDTO) (*model.Board, error) {
 	board, err := r.GetBoard(boardCode)
 	if err != nil {
 		return nil, err

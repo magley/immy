@@ -1,13 +1,17 @@
-package boards
+package handler
 
 import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 	util "immy-api/util"
+	
+	_ "immy-api/service"
+	"immy-api/repo"
+	"immy-api/model"
 )
 
 type BoardHandler struct {
-	BoardRepo *BoardRepo
+	BoardRepo *repo.BoardRepo
 }
 
 
@@ -23,7 +27,7 @@ func (h *BoardHandler) ListBoards(c *gin.Context) {
 }
 
 func (h *BoardHandler) CreateBoard(c *gin.Context) {
-	var dto CreateBoardDTO
+	var dto model.CreateBoardDTO
 	err := c.ShouldBindJSON(&dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
@@ -52,7 +56,7 @@ func (h *BoardHandler) GetBoard(c *gin.Context) {
 func (h *BoardHandler) UpdateBoard(c *gin.Context) {
 	boardCode := c.Param("code")
 
-	var dto UpdateBoardDTO
+	var dto model.UpdateBoardDTO
 	err := c.ShouldBindJSON(&dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "ERROR", err.Error())

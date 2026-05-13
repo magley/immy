@@ -1,10 +1,11 @@
-package boards
+package route
 
 import (
 	"github.com/gin-gonic/gin"
+	"immy-api/handler"
 )
 
-func RegisterBoardRoutes(h *BoardHandler, rg *gin.RouterGroup) {
+func RegisterBoardRoutes(h *handler.BoardHandler, rg *gin.RouterGroup) {
 	boards := rg.Group("/boards")
 	{
     	boards.GET("/", h.ListBoards)
