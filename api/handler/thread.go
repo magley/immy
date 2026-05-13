@@ -43,34 +43,22 @@ func (h *ThreadHandler) ListThreadsOfBoard(c *gin.Context) {
 	}
 }
 
-
 func (h *ThreadHandler) CreateThread(c *gin.Context) {
-	return
-	// Get board
+	var dto model.CreateThreadDTO
+	err := c.ShouldBindJSON(&dto)
+	if err != nil {
+		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
+		return
+	}
 	
-	
-	// Get post number
-	
-	// Create post
-	
-	// Create thread
-	
-	
-	// var dto model.CreateThreadDTO
-	// err := c.ShouldBindJSON(&dto)
-	// if err != nil {
-	// 	util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
-	// 	return
-	// }
-	
-	// res, err := h.ThreadService.CreateThread(dto, 0)
-	// if err != nil {
-	// 	util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
-	// 	return
-	// } else {
-	// 	util.Created(c, res.ID)
-	// 	return
-	// }
+	res, err := h.ThreadService.CreateThread(dto)
+	if err != nil {
+		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
+		return
+	} else {
+		util.Created(c, res.ID)
+		return
+	}
 }
 
 func (h *ThreadHandler) GetThread(c *gin.Context) {

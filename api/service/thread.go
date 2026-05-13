@@ -8,6 +8,7 @@ import (
 type ThreadService struct {
 	ThreadRepo 	*repo.ThreadRepo
 	BoardService *BoardService
+	PostService *PostService
 }
 
 func (s *ThreadService) ListThreads(offset, limit int) ([]model.Thread, error) {
@@ -29,7 +30,18 @@ func (s *ThreadService) CreateThread(dto model.CreateThreadDTO) (*model.Thread, 
 		return nil, err
 	}
 	
-	return s.ThreadRepo.CreateThread(dto, board.ID)
+	thread, err := s.ThreadRepo.CreateThread(dto, board.ID)
+	if err != nil {
+		return nil, err
+	}
+	
+	_, err = s.PostService.CreatePostForThread(dto.Post, thread, board)
+	if err != nil {
+		err = s.DeleteThread(thread.ID)
+		return nil, err
+	}
+
+	return thread, nil
 }
 
 func (s *ThreadService) GetThread(threadId uint) (*model.Thread, error) {
@@ -48,7 +60,7 @@ func (s *ThreadService) UpdateThread(threadId uint, dto model.UpdateThreadDTO) (
 func (s *ThreadService) DeleteThread(threadId uint) (error) {
 	thread, err := s.GetThread(threadId)
 	if err != nil {
-		return nil
+		return err
 	}
 	
 	return s.ThreadRepo.DeleteThread(thread)

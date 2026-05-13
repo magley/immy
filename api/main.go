@@ -46,8 +46,8 @@ func main() {
 	userRepo := &repo.UserRepo{DB : gormDB}
 	
 	boardService := &service.BoardService{BoardRepo: boardRepo}
-	postService := &service.PostService{PostRepo: postRepo}
-	threadService := &service.ThreadService{ThreadRepo: threadRepo}
+	postService := &service.PostService{PostRepo: postRepo, BoardService: boardService}
+	threadService := &service.ThreadService{ThreadRepo: threadRepo, BoardService: boardService, PostService: postService}
 	userService := &service.UserService{UserRepo: userRepo}
 	
 	boardHandler := &handler.BoardHandler{BoardService: boardService}

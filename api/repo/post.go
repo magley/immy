@@ -1,6 +1,5 @@
 package repo
 
-
 import (
 	"gorm.io/gorm"
 	
@@ -17,75 +16,36 @@ func (r *PostRepo) ListPosts(offset int, limit int) ([]model.Post, error) {
 	return posts, result.Error
 }
 
-func (r *PostRepo) CreatePost(dto model.CreatePostDTO) (*model.Post, error) {
-	postNumber := uint(0)
-	
-	post := model.Post{
-		ThreadID: dto.ThreadID,
-		Num: postNumber,
-		Name: dto.Name,
-		// Tripcode: ...,
-		// IPv4: ...,
-		// Sage: ...,
-		Content: dto.Content,
-		Filename: dto.Filename,
-		Html: "",
-	}
-	
-	result := r.DB.Create(&post)
+func (r *PostRepo) CreatePost(post *model.Post) (*model.Post, error) {
+	result := r.DB.Create(post)
+	return post, result.Error
+}
+
+func (r *PostRepo) GetPost(postId uint) (*model.Post, error) {
+	var post model.Post
+	result := r.DB.First(&post, postId)
 	return &post, result.Error
 }
 
-
-// func (r *PostRepo) CreatePostForThread(dto model.CreatePostForThreadDTO, threadID uint) (*model.Post, error) {
-	
-	
-	
-// 	ost := model.Post{
-// 		ThreadID: threadID,
-// 		Num: postNumber
-// 		Name: dto.Name,
-// 		Tripcode: ...,
-// 		IPv4: ...,
-// 		Sage: ...,
-// 		Content: dto.Content,
-// 		Filename: dto.Filename,
-// 		Html: "",
-// 	}
-	
-// 	result := r.DB.Create(&post)
+// func (r *PostRepo) GetPostByNum(postNum uint, boardID uint) (*model.Post, error) {
+// 	var post model.Post
+// 	result := r.DB.First(&post, postId)
 // 	return &post, result.Error
 // }
 
-
-func (r *PostRepo) GetPost(postCode string) (*model.Post, error) {
-	var post model.Post
-	result := r.DB.Where("code = ?", postCode).First(&post)
-	return &post, result.Error
-}
-
-func (r *PostRepo) UpdatePost(postCode string, dto model.UpdatePostDTO) (*model.Post, error) {
-	post, err := r.GetPost(postCode)
-	if err != nil {
-		return nil, err
-	}
-	
-	// if dto.Name != nil { post.Name = *dto.Name }
-	// if dto.Code != nil { post.Code = *dto.Code }
-	// if dto.Description != nil { post.Description = dto.Description }
-	// if dto.Locked != nil { post.Locked = *dto.Locked }
-	// if dto.Hidden != nil { post.Hidden = *dto.Hidden }
+func (r *PostRepo) UpdatePost(post *model.Post, dto model.UpdatePostDTO) (*model.Post, error) {
+	if dto.Name != nil { post.Name = *dto.Name }
+	if dto.Tripcode != nil { post.Tripcode = *dto.Tripcode }
+	if dto.Sage != nil { post.Sage = *dto.Sage }
+	if dto.Content != nil { post.Content = *dto.Content }
+	if dto.Filename != nil { post.Filename = *dto.Filename }
+	if dto.Html != nil { post.Html = *dto.Html }
 	
 	result := r.DB.Save(&post)
 	return post, result.Error
 }
 
-func (r *PostRepo) DeletePost(postCode string) (error) {
-	post, err := r.GetPost(postCode)
-	if err != nil {
-		return err
-	}
-	
+func (r *PostRepo) DeletePost(post *model.Post) (error) {
 	result := r.DB.Delete(&post)
 	return result.Error
 }

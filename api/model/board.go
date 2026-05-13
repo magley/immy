@@ -27,4 +27,5 @@ type UpdateBoardDTO struct {
 	Description *string 	`json:"description"`
 	Locked		*bool		`json:"locked"`
 	Hidden		*bool		`json:"hidden"`
+	PostCount	*uint 		/* No json */
 }

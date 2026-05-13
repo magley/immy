@@ -13,10 +13,10 @@ type Thread struct {
 
 type CreateThreadDTO struct {
 	BoardCode	string		`json:"board_code" binding:"required"`
-	Subject 	string		`json:"subject" binding:"required"`
+	Subject 	string		`json:"subject"`
 	Locked		bool		`json:"locked"`
 	Sticky		bool		`json:"sticky"`
-	Thread 		CreatePostForThreadDTO `json:"post"`
+	Post 		CreatePostForThreadDTO `json:"post"`
 }
 
 type UpdateThreadDTO struct {

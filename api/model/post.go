@@ -19,25 +19,26 @@ type Post struct {
 }
 
 type CreatePostForThreadDTO struct {
-	Name 		string 		`json:"name" binding:"required"`
+	Name 		string 		`json:"name"`
 	Content 	string		`json:"content" binding:"required"`
 	Filename 	string 		`json:"filename" binding:"required"`
-	Options 	*string		`json:"options"`
+	Options 	string		`json:"options"`
 }
 
 type CreatePostDTO struct {
-	Name 		string 		`json:"name" binding:"required"`
+	Name 		string 		`json:"name"`
 	Content 	string		`json:"content" binding:"required"`
 	Filename 	string 		`json:"filename" binding:"required"`
-	Options 	*string		`json:"options"`
+	Options 	string		`json:"options"`
 	
 	ThreadID	uint 		`json:"thread_id"`
 }
 
 type UpdatePostDTO struct {
 	Name 		*string 	`json:"name"`
-	Code  		*string 	`json:"code"`
-	Description *string 	`json:"description"`
-	Locked		*bool		`json:"locked"`
-	Hidden		*bool		`json:"hidden"`
+	Tripcode 	*string 	`json:"tripcode"`
+	Sage 		*bool		`json:"sage"`
+	Content 	*string		`json:"content"`
+	Filename 	*string 	`json:"filename"`
+	Html		*string 	`json:"html"`
 }

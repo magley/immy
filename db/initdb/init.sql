@@ -24,7 +24,7 @@ create table posts (
 	thread_id 	integer references threads(id),
 	num 		integer,
 	ipv4 		varchar(16),
-	user_name 	varchar(128) default 'Anonymous',
+	name 		varchar(128) default 'Anonymous',
 	tripcode 	varchar(128),
 	created_at 	timestamp default now(),
 	sage 		bool default false,

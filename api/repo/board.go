@@ -39,7 +39,8 @@ func (r *BoardRepo) UpdateBoard(board *model.Board, dto model.UpdateBoardDTO) (*
 	if dto.Description != nil { board.Description = dto.Description }
 	if dto.Locked != nil { board.Locked = *dto.Locked }
 	if dto.Hidden != nil { board.Hidden = *dto.Hidden }
-	
+	if dto.PostCount != nil { board.PostCount = *dto.PostCount }
+
 	result := r.DB.Save(&board)
 	return board, result.Error
 }
