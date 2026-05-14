@@ -28,6 +28,8 @@
 		<small>{{board.description}}</small>
 		
 		<RouterLink :to="`/${route.params.board_code}`">[Return]</RouterLink>
+		
+		<h1> CATALOG NOT IMPLEMENTED YET </h1>
 	</template>
 </template>
 
