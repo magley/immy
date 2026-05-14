@@ -11,6 +11,96 @@ import (
 type PostService struct {
 	PostRepo 	*repo.PostRepo
 	BoardService *BoardService
+	ThreadService *ThreadService
+}
+
+func (s *PostService) ListPosts(offset, limit int) ([]model.Post, error) {
+	return s.PostRepo.ListPosts(offset, limit)
+}
+
+func (s *PostService) GetPost(postId uint) (*model.Post, error) {
+	return s.PostRepo.GetPost(postId)
+}
+
+func (s *PostService) GetPostByNum(boardCode string, postNum uint) (*model.Post, error) {
+	board, err := s.BoardService.GetBoardByCode(boardCode)
+	if err != nil {
+		return nil, err
+	}
+	return s.PostRepo.GetPostByNum(board.ID, postNum)
+}
+
+func (s *PostService) GetPostsByThread(threadId uint) ([]model.Post, error) {
+	// Because thread ID is a redundant field in the posts table,
+	// we should check explicitly if the thread exists anyway.
+	thread, err := s.ThreadService.GetThread(threadId)
+	if err != nil {
+		return nil, err
+	}
+	return s.PostRepo.GetPostsByThread(thread.ID)
+}
+
+func (s *PostService) UpdatePost(postId uint, dto model.UpdatePostDTO) (*model.Post, error) {
+	post, err := s.GetPost(postId)
+	if err != nil {
+		return nil, err
+	}
+	
+	return s.PostRepo.UpdatePost(post, dto)
+}
+
+func (s *PostService) DeletePost(postId uint) (error) {
+	post, err := s.GetPost(postId)
+	if err != nil {
+		return err
+	}
+	
+	return s.PostRepo.DeletePost(post)
+}
+
+func (s *PostService) CreatePost(dto model.CreatePostDTO) (*model.Post, error) {
+	thread, err := s.ThreadService.GetThread(dto.ThreadID)
+	if err != nil {
+		return nil, err
+	}
+	
+	board, err := s.BoardService.GetBoard(thread.BoardID)
+	if err != nil {
+		return nil, err
+	}
+	
+	// TODO: This is identical to CreatePostForThread, so make
+	// a common method for both of them. Maybe in the future,
+	// CreatePostForThread will actually behave differently
+	// (like having additional fields in the Post to signify
+	// that this is an OP post).
+	
+	board, err = s.BoardService.IncrementBoardPostCount(board)
+	if err != nil {
+		return nil, err
+	}
+	
+	dto.Name = strings.Trim(dto.Name, " \t")
+	dto.Content = strings.Trim(dto.Content, " \t")
+	dto.Options = strings.Trim(dto.Options, " \t")
+	
+	postName, postTripcode := s.createTripcode(dto.Name)
+	
+	post := &model.Post{
+		ThreadID: thread.ID,
+		BoardID: board.ID,
+		Num: board.PostCount,
+		Name: postName,
+		Tripcode: postTripcode,
+		IPv4: "unknown",
+		Sage: s.isSage(dto.Options),
+		Content: dto.Content,
+		Filename: "unknown or null...",
+		Html: "",
+	}
+	
+	post, err = s.PostRepo.CreatePost(post)
+	return post, err 	
 }
 
 func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, thread *model.Thread, board *model.Board) (*model.Post, error) {
@@ -27,6 +117,7 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, thre
 	
 	post := &model.Post{
 		ThreadID: thread.ID,
+		BoardID: board.ID,
 		Num: board.PostCount,
 		Name: postName,
 		Tripcode: postTripcode,

@@ -35,10 +35,17 @@ func (s *ThreadService) CreateThread(dto model.CreateThreadDTO) (*model.Thread, 
 		return nil, err
 	}
 	
-	_, err = s.PostService.CreatePostForThread(dto.Post, thread, board)
+	post, err := s.PostService.CreatePostForThread(dto.Post, thread, board)
 	if err != nil {
 		err = s.DeleteThread(thread.ID)
 		return nil, err
+	}
+
+	thread, err = s.ThreadRepo.UpdateThreadNum(thread, post.Num)
+	if err != nil {
+		err = s.DeleteThread(thread.ID)
+		err = s.PostService.DeletePost(post.ID)
+		// TODO: What about board number?
 	}
 
 	return thread, nil

@@ -27,11 +27,17 @@ func (r *PostRepo) GetPost(postId uint) (*model.Post, error) {
 	return &post, result.Error
 }
 
-// func (r *PostRepo) GetPostByNum(postNum uint, boardID uint) (*model.Post, error) {
-// 	var post model.Post
-// 	result := r.DB.First(&post, postId)
-// 	return &post, result.Error
-// }
+func (r *PostRepo) GetPostsByThread(threadId uint) ([]model.Post, error) {
+	var posts []model.Post
+	result := r.DB.Where("thread_id = ?", threadId).Find(&posts)
+	return posts, result.Error
+}
+
+func (r *PostRepo) GetPostByNum(boardId, postNum uint) (*model.Post, error) {
+	var post model.Post
+	result := r.DB.Where("num = ?", postNum).Where("board_id = ?", boardId).First(&post)
+	return &post, result.Error
+}
 
 func (r *PostRepo) UpdatePost(post *model.Post, dto model.UpdatePostDTO) (*model.Post, error) {
 	if dto.Name != nil { post.Name = *dto.Name }

@@ -33,6 +33,12 @@ func (r *BoardRepo) GetBoardByCode(boardCode string) (*model.Board, error) {
 	return &board, result.Error
 }
 
+func (r *BoardRepo) GetBoard(boardId uint) (*model.Board, error) {
+	var board model.Board
+	result := r.DB.First(&board, boardId)
+	return &board, result.Error
+}
+
 func (r *BoardRepo) UpdateBoard(board *model.Board, dto model.UpdateBoardDTO) (*model.Board, error) {
 	if dto.Name != nil { board.Name = *dto.Name }
 	if dto.Code != nil { board.Code = *dto.Code }

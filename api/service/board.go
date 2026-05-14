@@ -21,6 +21,10 @@ func (s *BoardService) GetBoardByCode(code string) (*model.Board, error) {
 	return s.BoardRepo.GetBoardByCode(code)
 }
 
+func (s *BoardService) GetBoard(boardId uint) (*model.Board, error) {
+	return s.BoardRepo.GetBoard(boardId)
+}
+
 func (s *BoardService) UpdateBoard(boardCode string, dto model.UpdateBoardDTO) (*model.Board, error) {
 	board, err := s.GetBoardByCode(boardCode)
 	if err != nil {

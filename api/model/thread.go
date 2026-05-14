@@ -6,6 +6,7 @@ import (
 type Thread struct {
 	ID 			uint 		`json:"id"`
 	BoardID		uint		`json:"board_id"`
+	PostNum		uint  		`json:"post_num"`
 	Subject 	string		`json:"subject"`
 	Locked		bool		`json:"locked"`
 	Sticky		bool		`json:"sticky"`

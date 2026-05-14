@@ -7,6 +7,7 @@ import (
 type Post struct {
 	ID 			uint 		`json:"id"`
 	ThreadID	uint		`json:"thread_id"`
+	BoardID		uint 		`json:"board_id"`
 	Num			uint 		`json:"num"`
 	Name 		string 		`json:"name"`
 	Tripcode 	string 		`json:"tripcode"`
@@ -28,7 +29,7 @@ type CreatePostForThreadDTO struct {
 type CreatePostDTO struct {
 	Name 		string 		`json:"name"`
 	Content 	string		`json:"content" binding:"required"`
-	Filename 	string 		`json:"filename" binding:"required"`
+	Filename 	string 		`json:"filename"`
 	Options 	string		`json:"options"`
 	
 	ThreadID	uint 		`json:"thread_id"`

@@ -14,6 +14,7 @@ create table boards (
 create table threads (
 	id  		serial primary key,			
 	board_id 	integer references boards(id),
+	post_num 	integer,  -- Redundant field to simplify search and avoid joins.
 	subject		varchar(128),
 	locked 		bool default false,
 	sticky 		bool default false
@@ -22,6 +23,7 @@ create table threads (
 create table posts (
 	id 			serial primary key,
 	thread_id 	integer references threads(id),
+	board_id    integer references boards(id),  -- Redundant field to avoid joins
 	num 		integer,
 	ipv4 		varchar(16),
 	name 		varchar(128) default 'Anonymous',

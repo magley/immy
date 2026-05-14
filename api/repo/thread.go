@@ -49,6 +49,12 @@ func (r *ThreadRepo) UpdateThread(thread *model.Thread, dto model.UpdateThreadDT
 	return thread, result.Error
 }
 
+func (r *ThreadRepo) UpdateThreadNum(thread *model.Thread, num uint) (*model.Thread, error) {
+	thread.PostNum = num
+	result := r.DB.Save(&thread)
+	return thread, result.Error
+}
+
 func (r *ThreadRepo) DeleteThread(thread *model.Thread) (error) {
 	result := r.DB.Delete(&thread)
 	return result.Error
