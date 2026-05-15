@@ -99,30 +99,32 @@
 	<br />
 
 	<table>
-		<tr>
-			<th>ID</th>
-			<th>Code</th>
-			<th>Name</th>
-			<th>Description</th>
-			<th>Locked</th>
-			<th>Hidden</th>
-			<th>Update</th>
-			<th>Delete</th>
-		</tr>
-		<tr v-for="board, i in boards">
-			<td>{{board.id}}</td>
-			<td>/{{board.code}}/</td>
-			<td>{{board.name}}</td>
-			<td>{{getElipsisString(board.description)}}</td>
-			<td>{{board.locked}}</td>
-			<td>{{board.hidden}}</td>
-			<td>
-				<button @click="onSubmitChangesToBoard(i)">Update...</button>
-			</td>
-			<td>
-				<button @click="onDeleteBoard(i)">Delete</button>
-			</td>
-		</tr>
+		<tbody>
+			<tr>
+				<th>ID</th>
+				<th>Code</th>
+				<th>Name</th>
+				<th>Description</th>
+				<th>Locked</th>
+				<th>Hidden</th>
+				<th>Update</th>
+				<th>Delete</th>
+			</tr>
+			<tr v-for="board, i in boards">
+				<td>{{board.id}}</td>
+				<td>/{{board.code}}/</td>
+				<td>{{board.name}}</td>
+				<td>{{getElipsisString(board.description)}}</td>
+				<td>{{board.locked}}</td>
+				<td>{{board.hidden}}</td>
+				<td>
+					<button @click="onSubmitChangesToBoard(i)">Update...</button>
+				</td>
+				<td>
+					<button @click="onDeleteBoard(i)">Delete</button>
+				</td>
+			</tr>
+		</tbody>
 	</table>
 </template>
 

@@ -77,6 +77,56 @@ func (h *ThreadHandler) GetThread(c *gin.Context) {
 	}
 }
 
+func (h *ThreadHandler) GetFullThread(c *gin.Context) {
+	threadId, ok := util.ParamUintSafe(c, "id", "Thread")
+	if !ok {
+		return
+	}
+	
+	res, err := h.ThreadService.GetFullThread(threadId)
+	if err != nil {
+		util.NotFound(c, "Thread", threadId)
+		return
+	} else {
+		util.OK(c, res)
+		return
+	}
+}
+
+func (h *ThreadHandler) GetThreadByNum(c *gin.Context) {
+	boardCode := c.Param("boardCode")
+	threadNum, ok := util.ParamUintSafe(c, "num", "Thread")
+	if !ok {
+		return
+	}
+	
+	res, err := h.ThreadService.GetThreadByNum(boardCode, threadNum)
+	if err != nil {
+		util.NotFound(c, "Thread", threadNum)
+		return
+	} else {
+		util.OK(c, res)
+		return
+	}
+}
+
+func (h *ThreadHandler) GetFullThreadByNum(c *gin.Context) {
+	boardCode := c.Param("boardCode")
+	threadNum, ok := util.ParamUintSafe(c, "num", "Thread")
+	if !ok {
+		return
+	}
+	
+	res, err := h.ThreadService.GetFullThreadByNum(boardCode, threadNum)
+	if err != nil {
+		util.NotFound(c, "Thread", threadNum)
+		return
+	} else {
+		util.OK(c, res)
+		return
+	}
+}
+
 func (h *ThreadHandler) UpdateThread(c *gin.Context) {
 	threadId, ok := util.ParamUintSafe(c, "id", "Thread")
 	if !ok {

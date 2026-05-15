@@ -11,7 +11,7 @@ export interface UserDTO {
     username: string;
     password: string;
     type: UserType;
-    created_at: Date;
+    created_at: string;
 }
 
 export interface CreateUserDTO {

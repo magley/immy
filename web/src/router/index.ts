@@ -13,7 +13,7 @@ const routes = [
 	{ path: '/admin-users', component: AdminUserView },
 	{ path: '/admin-boards', component: AdminBoardView },
 	{ path: '/:board_code/catalog', component: BoardCatalogView },
-	{ path: '/:board_code/thread/:thread_id', component: ThreadView },
+	{ path: '/:board_code/thread/:thread_num', component: ThreadView },
 	{ path: '/:board_code', component: BoardHomeView },
 ]
 

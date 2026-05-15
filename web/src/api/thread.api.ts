@@ -1,5 +1,5 @@
 import { axiosInstance, type ApiResponse } from "@/api/http";
-import { type CreatePostForThreadDTO } from "@/api/post.api.ts";
+import { type CreatePostForThreadDTO, type PostDTO } from "@/api/post.api.ts";
 
 export interface ThreadDTO {
     id: number;
@@ -23,6 +23,11 @@ export interface UpdateThreadDTO {
     sticky: bool;
 }
 
+export interface ThreadFullDTO {
+    thread: ThreadDTO,
+    posts: PostDTO[],
+}
+
 export class ThreadAPI {
     static async ListThreads(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<ThreadDTO[]>>> {
         return axiosInstance.get<ApiResponse<ThreadDTO[]>>(`/threads/?offset=${offset}&limit=${limit}`);
@@ -36,6 +41,18 @@ export class ThreadAPI {
         return axiosInstance.get<ApiResponse<ThreadDTO>>(`/threads/${threadId}`);
     }
 
+    static async GetFullThread(threadId: number): Promise<AxiosResponse<ApiResponse<ThreadFullDTO>>> {
+        return axiosInstance.get<ApiResponse<ThreadDTO>>(`/threads/${threadId}/full`);
+    }
+
+    static async GetThreadByNum(boardCode: string, num: number): Promise<AxiosResponse<ApiResponse<ThreadDTO>>> {
+        return axiosInstance.get<ApiResponse<ThreadDTO>>(`/threads/board/${boardCode}/${num}`);
+    }
+
+    static async GetFullThreadByNum(boardCode: string, num: number): Promise<AxiosResponse<ApiResponse<ThreadFullDTO>>> {
+        return axiosInstance.get<ApiResponse<ThreadDTO>>(`/threads/board/${boardCode}/${num}/full`);
+    }
+    
     static async CreateThread(dto: CreateThreadDTO): Promise<AxiosResponse<ApiResponse<ThreadDTO>>> {
         return axiosInstance.post<ApiResponse<ThreadDTO>>(`/threads/`, dto);
     }

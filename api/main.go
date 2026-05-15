@@ -45,10 +45,17 @@ func main() {
 	threadRepo := &repo.ThreadRepo{DB : gormDB}
 	userRepo := &repo.UserRepo{DB : gormDB}
 	
-	boardService := &service.BoardService{BoardRepo: boardRepo}
-	postService := &service.PostService{PostRepo: postRepo, BoardService: boardService}
-	threadService := &service.ThreadService{ThreadRepo: threadRepo, BoardService: boardService, PostService: postService}
-	userService := &service.UserService{UserRepo: userRepo}
+	var boardService *service.BoardService
+	var postService *service.PostService
+	var threadService *service.ThreadService
+	var userService *service.UserService
+	
+	boardService = &service.BoardService{BoardRepo: boardRepo}
+	postService = &service.PostService{PostRepo: postRepo, BoardService: boardService}
+	threadService = &service.ThreadService{ThreadRepo: threadRepo, BoardService: boardService, PostService: postService}
+	userService = &service.UserService{UserRepo: userRepo}
+	
+	postService.ThreadService = threadService
 	
 	boardHandler := &handler.BoardHandler{BoardService: boardService}
 	postHandler := &handler.PostHandler{PostService: postService}

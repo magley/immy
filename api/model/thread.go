@@ -24,3 +24,9 @@ type UpdateThreadDTO struct {
 	Locked		*bool		`json:"locked"`
 	Sticky		*bool		`json:"sticky"`
 }
+
+
+type ThreadFullDTO struct {
+	Thread 		*Thread  	`json:"thread"`
+	Posts		[]Post 		`json:"posts"`
+}

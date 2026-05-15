@@ -8,7 +8,7 @@ export interface PostDTO {
     name: string;
     tripcode: string;
     ipv4: string;
-    created_at: Date;
+    created_at: string;
     sage: bool;
     content: string;
     filename: string;

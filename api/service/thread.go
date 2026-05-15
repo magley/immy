@@ -55,6 +55,15 @@ func (s *ThreadService) GetThread(threadId uint) (*model.Thread, error) {
 	return s.ThreadRepo.GetThread(threadId)
 }
 
+func (s *ThreadService) GetThreadByNum(boardCode string, threadNum uint) (*model.Thread, error) {
+	board, err := s.BoardService.GetBoardByCode(boardCode)
+	if err != nil {
+		return nil, err
+	}
+	
+	return s.ThreadRepo.GetThreadByNum(board.ID, threadNum)
+}
+
 func (s *ThreadService) UpdateThread(threadId uint, dto model.UpdateThreadDTO) (*model.Thread, error) {
 	thread, err := s.GetThread(threadId)
 	if err != nil {
@@ -71,4 +80,34 @@ func (s *ThreadService) DeleteThread(threadId uint) (error) {
 	}
 	
 	return s.ThreadRepo.DeleteThread(thread)
+}
+
+func (s *ThreadService) GetFullThreadFrom(thread *model.Thread) (*model.ThreadFullDTO, error) {
+	posts, err := s.PostService.GetPostsByThread(thread.ID)
+	if err != nil {
+		return nil, err
+	}
+	
+	return &model.ThreadFullDTO{
+		Thread: thread,
+		Posts: posts,
+	}, nil
+}
+
+func (s *ThreadService) GetFullThread(threadId uint) (*model.ThreadFullDTO, error) {
+	thread, err := s.GetThread(threadId)
+	if err != nil {
+		return nil, err
+	}
+	
+	return s.GetFullThreadFrom(thread)
+}
+
+func (s *ThreadService) GetFullThreadByNum(boardCode string, threadNum uint) (*model.ThreadFullDTO, error) {
+	thread, err := s.GetThreadByNum(boardCode, threadNum)
+		if err != nil {
+		return nil, err
+	}
+	
+	return s.GetFullThreadFrom(thread)
 }

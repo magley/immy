@@ -41,6 +41,12 @@ func (r *ThreadRepo) GetThread(threadId uint) (*model.Thread, error) {
 	return &thread, result.Error
 }
 
+func (r *ThreadRepo) GetThreadByNum(boardId uint, num uint) (*model.Thread, error) {
+	var thread model.Thread
+	result := r.DB.Where("board_id = ?", boardId).Where("post_num = ?", num).First(&thread)
+	return &thread, result.Error
+}
+
 func (r *ThreadRepo) UpdateThread(thread *model.Thread, dto model.UpdateThreadDTO) (*model.Thread, error) {
 	if dto.Locked != nil { thread.Locked = *dto.Locked }
 	if dto.Sticky != nil { thread.Sticky = *dto.Sticky }

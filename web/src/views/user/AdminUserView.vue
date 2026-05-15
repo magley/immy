@@ -82,31 +82,33 @@
 	<br />
 
 	<table>
-		<tr>
-			<th>ID</th>
-			<th>Username</th>
-			<th>Role</th>
-			<th>Update</th>
-			<th>Delete</th>
-		</tr>
-		<tr v-for="user, i in users">
-			<td>{{user.id}}</td>
-			<td>{{user.username}}</td>
-			<td>
-				<select v-model="user.type">
-					<option disabled value="">Please select one</option>
-					<option>{{UserType.Admin}}</option>
-					<option>{{UserType.Moderator}}</option>
-					<option>{{UserType.Janitor}}</option>
-				</select>
-			</td>
-			<td>
-				<button @click="onSubmitChangesToUser(i)">Update</button>
-			</td>
-			<td>
-				<button @click="onDeleteUser(i)">Delete</button>
-			</td>
-		</tr>
+		<tbody>
+			<tr>
+				<th>ID</th>
+				<th>Username</th>
+				<th>Role</th>
+				<th>Update</th>
+				<th>Delete</th>
+			</tr>
+			<tr v-for="user, i in users">
+				<td>{{user.id}}</td>
+				<td>{{user.username}}</td>
+				<td>
+					<select v-model="user.type">
+						<option disabled value="">Please select one</option>
+						<option>{{UserType.Admin}}</option>
+						<option>{{UserType.Moderator}}</option>
+						<option>{{UserType.Janitor}}</option>
+					</select>
+				</td>
+				<td>
+					<button @click="onSubmitChangesToUser(i)">Update</button>
+				</td>
+				<td>
+					<button @click="onDeleteUser(i)">Delete</button>
+				</td>
+			</tr>
+		</tbody>
 	</table>
 </template>
 

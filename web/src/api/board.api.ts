@@ -5,7 +5,7 @@ export interface BoardDTO {
     name: string;
     code: string;
     description: string;
-    created_at: Date;
+    created_at: string;
     locked: boolean;
     hidden: boolean;
     post_count: int;
