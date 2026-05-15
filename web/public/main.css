@@ -1,0 +1,5 @@
+/* Links and cross-links */
+.postRef, .postRef:visited {
+	color: #DD0000;
+	text-decoration: underline;
+}

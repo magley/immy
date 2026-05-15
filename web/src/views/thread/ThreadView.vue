@@ -13,10 +13,26 @@
 	const thread = ref<ThreadDTO>(null);
 	const posts = ref<PostDTO[]>([]);
 	
+	const replyDTO = ref<CreatePostDTO>({});
+	const replyError = ref<string | undefined>(undefined);
+	
 	onMounted(() => {
 		const board_code: string = route.params.board_code;
 		loadBoard(board_code);
 	});
+	
+	const onSubmitReply = () => {
+		console.log(replyDTO.value.content);
+		replyError.value = undefined;
+		replyDTO.value.thread_id = thread.value.id;
+
+		PostAPI.CreatePost(replyDTO.value).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
+			loadThread(board.value.code, thread.value.post_num);
+		}).catch((err: AxiosError) => {
+			replyError.value = "Could not post reply";
+			console.error(err);
+		});
+	}
 	
 	const loadBoard = (boardCode: string) => {
 		BoardAPI.GetBoard(boardCode).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
@@ -33,7 +49,11 @@
 		ThreadAPI.GetFullThreadByNum(board_code, thread_num).then((res: AxiosResponse<ApiResponse<ThreadFullDTO>>) => {
 			const dto: ThreadFullDTO = res.data.data;
 			thread.value = dto.thread;
-			posts.value = dto.posts
+			posts.value = dto.posts;
+			
+			for (let p of posts.value) {
+				console.log(p.content);
+			}
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});
@@ -80,6 +100,19 @@
 		
 		return `${getDateStr(date)} (${getDayOfWeek(date)})${getTimeStr(date)}`;
 	}
+	
+	const onClickPostNumber = (num: number) => {
+		if (replyDTO.value.content == undefined) {
+			replyDTO.value.content = "";
+		}
+		replyDTO.value.content += `>>${num}\n`;
+	}
+	
+	const processedPostContent = (text: string) => {
+		// replace >>[num] with >><a href=#p[num]>>>[num]</a>
+		text = text.replace(/>>(\w+)/g, '<a href="#p$1" class="postRef">&gt;&gt;$1</a>');
+		return text;
+	}
 </script>
 
 <template>
@@ -92,22 +125,38 @@
 		<RouterLink :to="`/${route.params.board_code}/catalog`">[Catalog]</RouterLink>
 		<br/>
 		
+		
+		<!-- New reply -->
+		<form @submit.prevent="onSubmitReply">
+			<input type=text placeholder="Subject" v-model="replyDTO.subject"/><br/>
+			<input type=text placeholder="Name" v-model="replyDTO.name"/><br/>
+			<input type=text placeholder="Options" v-model="replyDTO.options"/><br/>
+			<textarea placeholder="Text..." v-model="replyDTO.content"/><br/>
+			Files not implemented yet...
+			<br/>
+			<button type=submit>Post reply</button>
+			
+			<template v-if="replyError">
+				<div/>
+				<span class="error">{{replyError}}</span>
+			</template>
+		</form>
+		
 		<template v-if="thread">
-			<div class="postContainer" v-for="post, i of posts">
+			<div :id="`p${post.num}`" class="postContainer" v-for="post, i of posts">
 				<span class="sideArrows"> &gt;&gt; </span>
 				<span class="post">
 					<div class="post-header">
 						<!-- >> Anonymous 05/15/26(Fri)16:12:37 No.221512455 ▶ >>221512482  -->
-						<span class="subject" v-if="thread.subject">{{ thread.subject }}</span>
+						<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
 						<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
 						<span class="date">{{ getPostTimeReadable(post.created_at) }}</span>
-						<span class="postnum">No.{{ post.num }}</span>
+						<span class="postno">No.</span>
+						<span class="postnum"><a @click.prevent="onClickPostNumber(post.num)" href="#" class="postNumLink">{{ post.num }}</a></span>
 						<span class="dropdown">&#9654;</span>
 					</div>
 					
-					<div class="post-body">
-						{{ post.content }}
-					</div>
+					<div class="post-body" v-html="processedPostContent(post.content)"></div>
 				</span>
 			</div>
 		</template>
@@ -122,6 +171,7 @@
 	.postContainer {
 		display: flex;
 		gap: 10px;
+		margin-top: 0.2em;
 
 		.sideArrows {
 			
@@ -130,7 +180,6 @@
 		.post {
 			flex-grow: 1;
 			
-			border: 1px solid black;
 			background-color: #D6DAF0;
 			padding-top: 0.25em;
 			padding-bottom: 1em;
@@ -151,6 +200,8 @@
 			
 			.post-body {
 				margin-left: 1em;
+				white-space: pre-wrap; 
+  				word-wrap: break-word;
 			}		
 		}
 	}
@@ -163,5 +214,14 @@
 	.subject {
 		color: #0F0C5D;
 		font-weight: bolder;
+	}
+	
+	.postNumLink {
+		color: black;
+		text-decoration: none;
+	}
+	
+	.postNumLink:hover {
+		color: #DD0000;
 	}
 </style>

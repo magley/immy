@@ -49,7 +49,10 @@
 	<p><strong>Current route path:</strong> {{ $route.fullPath }}</p>
 	
 	<main>	
-		<RouterView :key="$route.fullPath"/>
+		<!-- The key is so the page resets when the route changes. Don't use
+		<!-- fullPath because then the '#abc' anchor will cause a reset as
+		<!-- well. -->
+		<RouterView :key="$route.path"/>
 	</main>
 </template>
 
