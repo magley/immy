@@ -5,6 +5,19 @@
 	import { ThreadAPI, ThreadDTO, CreateThreadDTO, UpdateThreadDTO } from "@/api/thread.api.ts";
 	import { PostAPI, PostDTO, CreatePostForThreadDTO, CreatePostDTO, UpdatePostDTO } from "@/api/post.api.ts";
 	
+	type TextToken = { kind: "text"; text: string; };
+	type LinkToken = { kind: "link"; text: string; local: bool, fail: bool };
+	type Token = TextToken | LinkToken;
+	
+	const parseTokens = (text: string): Token[] => {
+		return text.split(/(\s+|##\w+|\S+)/g).map(word => {
+			if (word.startsWith(">>")) {
+				return { kind: "link", text: word };
+			}
+			return { kind: "text", text: word };
+		});
+	}
+	
 	const board = ref<BoardDTO | null>(null);
 
 	const route = useRoute();
@@ -19,20 +32,22 @@
 	const highlightedPost = ref<number | undefined>(undefined);
 	const backLinks = ref<Record<number, number[]>>({});
 	
+	const postLinks = ref<Record<string, string>>({});
+	
 	onMounted(() => {
 		const board_code: string = route.params.board_code;
 		loadBoard(board_code);
 	});
 	
 	watch(() => route.hash, (newHash) => {
-  		if (newHash) {
+		if (newHash) {
 			const chunk = newHash.substring(1);
 			
 			if (chunk.startsWith("p")) {
 				const highlightedPostNum = Number(chunk.substring(1));
 				highlightedPost.value = highlightedPostNum
 			}
-  		}
+		}
 	});
 	
 	const onSubmitReply = () => {
@@ -127,24 +142,64 @@
 	}
 	
 	const processPost = (post: PostDTO) => {
-		post._html_text = post.content;
+		post._tokens = parseTokens(post.content);
+		for (let tok of post._tokens) {
+			if (tok.kind == 'link') {
+				postLinks.value[tok.text] = '#';
+			}
+		}
 		
-		post._html_text = post._html_text.replace(/>>(\w+)/g, (_, quote_link) => {
-			const quote_num: number = Number(quote_link);
-			
-			if (quote_num == NaN) {
-				return quote_link; // Do nothing.
-			} else {
-				if (!backLinks.value[quote_num]) {
-					backLinks.value[quote_num] = [];
+		for (let tok of post._tokens) {
+			if (tok.kind == 'link') {
+				let link_post_board = board.value.code;
+				let link_post_num = 0;
+				const link_text = tok.text.substring(2);
+				
+				if (link_text[0] == '/') {
+					const j = link_text.indexOf('/', 1);
+					
+					if (j > 0) {
+						link_post_board = link_text.substring(1, j);
+						link_post_num = Number(link_text.substring(j + 1));
+					}
+				} else {
+					link_post_num = Number(link_text);
 				}
-				if (!backLinks.value[quote_num].includes(post.num)) {
-					backLinks.value[quote_num].push(post.num);
+								
+				// Check if the link points to a post in this thread.
+				let post_is_local = false;
+				for (let p of posts.value) {
+					if (p.num == link_post_num) {
+						post_is_local = true;
+						break;
+					}
 				}
 				
-				return `<a href="#p${quote_num}" class="postRef">&gt;&gt;${quote_num}</a>`;
-			}	
-		});
+				if (post_is_local) {
+					tok.local = true;
+					postLinks.value[tok.text] = `#p${link_post_num}`;	
+					
+					// Add backlink.
+					if (!backLinks.value[link_post_num]) {
+						backLinks.value[link_post_num] = [];
+					}
+					if (!backLinks.value[link_post_num].includes(post.num)) {
+						backLinks.value[link_post_num].push(post.num);
+					}
+				} else {
+					tok.local = false;
+					
+					// It's in another thread, so fetch which thread it is.
+					PostAPI.GetPostByNum(link_post_board, link_post_num).then((res) => {
+						postLinks.value[tok.text] = `/${link_post_board}/thread/${res.data.data.thread_num}#p${link_post_num}`;
+					}).catch((err: AxiosError) => {
+						tok.fail = true;
+						console.error(err);
+					});
+				}
+				
+			}
+		}
 	}
 </script>
 
@@ -192,7 +247,28 @@
 						</span>
 					</div>
 					
-					<div class="post-body" v-html="post._html_text"></div>
+					<div class="post-body">
+						<span v-for="token of post._tokens">
+							<template v-if="token.kind == 'text'">
+								{{token.text}}
+							</template>
+							<template v-else-if="token.kind == 'link'">
+								<template v-if="token.local">
+									<a :href="`${postLinks[token.text]}`" :class="{strikethrough: token.fail}">
+									{{token.text}}
+								</a>
+								</template>
+								<template v-else>
+									<RouterLink :to="`${postLinks[token.text]}`">
+										<i :class="{strikethrough: token.fail}">
+											{{token.text}}	
+										</i>
+									</RouterLink>
+								</template>
+							</template>
+						</span>
+						
+					</div>
 				</span>
 			</div>
 		</template>
@@ -244,7 +320,7 @@
 			.post-body {
 				margin-left: 1em;
 				white-space: pre-wrap; 
-  				word-wrap: break-word;
+				word-wrap: break-word;
 			}
 		}
 		
@@ -278,5 +354,9 @@
 	
 	.postNumLink:hover {
 		color: #DD0000;
+	}
+	
+	.strikethrough {
+		text-decoration: line-through;
 	}
 </style>

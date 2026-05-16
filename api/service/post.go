@@ -73,7 +73,8 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO) (*model.Post, error) {
 	// a common method for both of them. Maybe in the future,
 	// CreatePostForThread will actually behave differently
 	// (like having additional fields in the Post to signify
-	// that this is an OP post).
+	// that this is an OP post). One exception is the ThreadNum
+	// field.
 	
 	board, err = s.BoardService.IncrementBoardPostCount(board)
 	if err != nil {
@@ -88,6 +89,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO) (*model.Post, error) {
 	
 	post := &model.Post{
 		ThreadID: thread.ID,
+		ThreadNum: thread.PostNum,
 		BoardID: board.ID,
 		Num: board.PostCount,
 		Name: postName,
@@ -117,6 +119,7 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, thre
 	
 	post := &model.Post{
 		ThreadID: thread.ID,
+		ThreadNum: board.PostCount,
 		BoardID: board.ID,
 		Num: board.PostCount,
 		Name: postName,

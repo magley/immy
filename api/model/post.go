@@ -7,7 +7,8 @@ import (
 type Post struct {
 	ID 			uint 		`json:"id"`
 	ThreadID	uint		`json:"thread_id"`
-	BoardID		uint 		`json:"board_id"`
+	ThreadNum	uint		`json:"thread_num"` // Redundant
+	BoardID		uint 		`json:"board_id"`   // Redundant
 	Num			uint 		`json:"num"`
 	Name 		string 		`json:"name"`
 	Tripcode 	string 		`json:"tripcode"`

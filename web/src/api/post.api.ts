@@ -3,6 +3,7 @@ import { axiosInstance, type ApiResponse } from "@/api/http";
 export interface PostDTO {
     id: number;
     thread_id: number;
+    thread_num: number;
     board_id: number;
     num: number;
     name: string;

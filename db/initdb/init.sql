@@ -23,6 +23,7 @@ create table threads (
 create table posts (
 	id 			serial primary key,
 	thread_id 	integer references threads(id),
+	thread_num  integer,						-- Redundant field to avoid joins
 	board_id    integer references boards(id),  -- Redundant field to avoid joins
 	num 		integer,
 	ipv4 		varchar(16),
