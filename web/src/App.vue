@@ -18,6 +18,7 @@
 
 
 <template>
+	<span id="top"></span>
 	<nav>
 		<RouterLink to="/"><b>ImmyChan</b></RouterLink> 
 		|
@@ -50,10 +51,12 @@
 	
 	<main>	
 		<!-- The key is so the page resets when the route changes. Don't use
-		<!-- fullPath because then the '#abc' anchor will cause a reset as
-		<!-- well. -->
+		fullPath because then the '#abc' anchor will cause a reset as
+		ell. -->
 		<RouterView :key="$route.path"/>
 	</main>
+	
+	<span id="bottom"></span>
 </template>
 
 

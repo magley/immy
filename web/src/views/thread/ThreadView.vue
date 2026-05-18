@@ -4,6 +4,7 @@
 	import { BoardAPI, BoardDTO, CreateBoardDTO, UpdateBoardDTO } from "@/api/board.api.ts";
 	import { ThreadAPI, ThreadDTO, CreateThreadDTO, UpdateThreadDTO } from "@/api/thread.api.ts";
 	import { PostAPI, PostDTO, CreatePostForThreadDTO, CreatePostDTO, UpdatePostDTO } from "@/api/post.api.ts";
+	import ThreadViewNavList from "@/components/thread/ThreadViewNavList.vue";
 	
 	type TextToken = { kind: "text"; text: string; };
 	type LinkToken = { kind: "link"; text: string; local: bool, fail: bool };
@@ -56,7 +57,7 @@
 		replyDTO.value.thread_id = thread.value.id;
 
 		PostAPI.CreatePost(replyDTO.value).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
-			loadThread(board.value.code, thread.value.post_num);
+			reloadThread();
 		}).catch((err: AxiosError) => {
 			replyError.value = "Could not post reply";
 			console.error(err);
@@ -86,6 +87,10 @@
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});
+	}
+	
+	const reloadThread = () => {
+		loadThread(board.value.code, thread.value.post_num);
 	}
 	
 	const getPostTimeReadable = (dateStr: string) => {
@@ -135,6 +140,9 @@
 			replyDTO.value.content = "";
 		}
 		replyDTO.value.content += `>>${postNum}\n`;
+		
+		const textarea = document.getElementById('reply-area');
+		textarea.scrollTop = textarea.scrollHeight;
 	}
 	
 	const onClickPostNo = (postNum: number) => {
@@ -151,6 +159,10 @@
 		
 		for (let tok of post._tokens) {
 			if (tok.kind == 'link') {
+				if (tok.text in postLinks.value) {
+					continue;	
+				}
+				
 				let link_post_board = board.value.code;
 				let link_post_num = 0;
 				const link_text = tok.text.substring(2);
@@ -195,9 +207,8 @@
 					}).catch((err: AxiosError) => {
 						tok.fail = true;
 						console.error(err);
-					});
-				}
-				
+					});		
+				}	
 			}
 		}
 	}
@@ -209,17 +220,14 @@
 		/{{board.code}}/ - {{board.name}}
 		<br/>
 		
-		<RouterLink :to="`/${route.params.board_code}`">[Return]</RouterLink>
-		<RouterLink :to="`/${route.params.board_code}/catalog`">[Catalog]</RouterLink>
 		<br/>
-		
-		
+				
 		<!-- New reply -->
 		<form @submit.prevent="onSubmitReply">
 			<input type=text placeholder="Subject" v-model="replyDTO.subject"/><br/>
 			<input type=text placeholder="Name" v-model="replyDTO.name"/><br/>
 			<input type=text placeholder="Options" v-model="replyDTO.options"/><br/>
-			<textarea placeholder="Text..." v-model="replyDTO.content"/><br/>
+			<textarea id="reply-area" placeholder="Text..." v-model="replyDTO.content"/><br/>
 			Files not implemented yet...
 			<br/>
 			<button type=submit>Post reply</button>
@@ -230,6 +238,8 @@
 			</template>
 		</form>
 		
+		<ThreadViewNavList :board_code="board.code" jump_to_id="bottom" jump_to_label="Bottom" @threadUpdate="reloadThread()" />
+
 		<template v-if="thread">
 			<div :id="`p${post.num}`" class="postContainer" v-for="post, i of posts">
 				<span class="sideArrows"> &gt;&gt; </span>
@@ -260,9 +270,9 @@
 								</template>
 								<template v-else>
 									<RouterLink :to="`${postLinks[token.text]}`">
-										<i :class="{strikethrough: token.fail}">
-											{{token.text}}	
-										</i>
+										<span :class="{strikethrough: token.fail}">
+											{{token.text}} →
+										</span>
 									</RouterLink>
 								</template>
 							</template>
@@ -272,6 +282,10 @@
 				</span>
 			</div>
 		</template>
+		
+		
+		<ThreadViewNavList :board_code="board.code" jump_to_id="top" jump_to_label="Top" @threadUpdate="reloadThread()" />
+
 	</template>
 </template>
 
