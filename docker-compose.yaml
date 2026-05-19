@@ -3,6 +3,8 @@ services:
     build: ./api/
     ports:
       - "8080:8080" 
+    volumes:
+      - ./files:/files
     depends_on:
       db:
         condition: service_healthy

@@ -1,13 +1,13 @@
 package handler
 
-
 import (
-	"net/http"
-	"github.com/gin-gonic/gin"
 	util "immy-api/util"
-			
-	"immy-api/service"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
 	"immy-api/model"
+	"immy-api/service"
 )
 
 type ThreadHandler struct {

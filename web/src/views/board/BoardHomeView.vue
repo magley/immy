@@ -26,7 +26,6 @@
 	const loadBoard = (boardCode: string) => {
 		BoardAPI.GetBoard(boardCode).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
 			board.value = res.data.data;
-			console.log(board.value);
 			loadThreads();
 		}).catch((err: AxiosError) => {
 			router.push("/");
@@ -87,7 +86,7 @@
 			<button type=submit>Create thread</button>
 			
 			<template v-if="createThreadError">
-				<div/>
+				<br/>
 				<span class="error">{{createThreadError}}</span>
 			</template>
 		</form>

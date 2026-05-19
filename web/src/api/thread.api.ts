@@ -34,7 +34,7 @@ export class ThreadAPI {
     }
 
     static async ListThreadsByBoard(boardCode: string, offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<ThreadDTO[]>>> {
-        return axiosInstance.get<ApiResponse<ThreadDTO[]>>(`/threads/board/:${boardCode}?offset=${offset}&limit=${limit}`);
+        return axiosInstance.get<ApiResponse<ThreadDTO[]>>(`/threads/board/${boardCode}?offset=${offset}&limit=${limit}`);
     }
 
     static async GetThread(threadId: number): Promise<AxiosResponse<ApiResponse<ThreadDTO>>> {

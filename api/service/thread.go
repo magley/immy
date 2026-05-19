@@ -1,8 +1,8 @@
 package service
 
 import (
-	"immy-api/repo"
 	"immy-api/model"
+	"immy-api/repo"
 )
 
 type ThreadService struct {
@@ -20,7 +20,7 @@ func (s *ThreadService) ListThreadsOfBoard(boardCode string, offset, limit int) 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return s.ThreadRepo.ListThreadsOfBoard(board.ID, offset, limit)
 }
 

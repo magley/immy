@@ -37,6 +37,11 @@
 	
 	const postLinks = ref<Record<string, string>>({});
 	
+	const fileName = ref<string | null>(null);
+	const fileError = ref<string | null>(null);
+	const fileBytes = ref<Uint8Array | null>(null);
+	const fileMaxSize = 1 * 1024 * 1024;
+	
 	onMounted(() => {
 		const board_code: string = route.params.board_code;
 		loadBoard(board_code);
@@ -54,9 +59,10 @@
 	});
 	
 	const onSubmitReply = () => {
-		console.log(replyDTO.value.content);
 		replyError.value = undefined;
 		replyDTO.value.thread_id = thread.value.id;
+		replyDTO.value.filename = fileName.value ? fileName.value : null;
+		replyDTO.value.filebytes = fileBytes.value ? Array.from(fileBytes.value).join() : null;
 
 		PostAPI.CreatePost(replyDTO.value).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
 			reloadThread();
@@ -156,6 +162,51 @@
 		highlightedPost.value = postNum;
 	}
 	
+	const onFileSelected = async (e: Event) => {
+		fileError.value = null;
+		const input = e.target as HTMLInputElement;  
+		const filesAsArray = Array.from(input?.files || []);
+		
+		if (filesAsArray.length == 0) {
+			fileBytes.value = null;
+			fileName.value = null;
+			return;
+		}
+		const file = filesAsArray[0];
+		
+		if (file.size > fileMaxSize) {
+			const maxsize_mb = Math.round(fileMaxSize / (1024 * 1024));
+			fileError.value = `File cannot be larger than ${maxsize_mb}MB`
+			
+			console.error(`File has ${file.size} > ${fileMaxSize} bytes`);
+			clearSelectedFile();
+			return;
+		}
+		
+		const reader = new FileReader();
+		reader.readAsArrayBuffer(file);
+		reader.onload = () => {
+			const arrayBuffer = reader.result;
+			const filebytes = new Uint8Array(arrayBuffer);
+			
+			fileName.value = file.name;
+			fileBytes.value = filebytes;
+		};
+		reader.onerror = (err) => {
+			fileError.value = `Could not process file`;
+			console.error(err);
+			clearSelectedFile();
+			return;
+		};
+	}
+
+	const clearSelectedFile = () => {
+		const fileInput = document.getElementById("reply-file-upload");
+		fileInput.value = null;
+	 	fileBytes.value = null;
+		fileName.value = null;
+	}
+	
 	const processPost = (post: PostDTO) => {
 		post._tokens = parseTokens(post.content);
 		for (let tok of post._tokens) {
@@ -189,10 +240,12 @@
 								
 				// Check if the link points to a post in this thread.
 				let post_is_local = false;
-				for (let p of posts.value) {
-					if (p.num == link_post_num) {
-						post_is_local = true;
-						break;
+				if (link_post_board == board.value.code) {
+					for (let p of posts.value) {
+						if (p.num == link_post_num) {
+							post_is_local = true;
+							break;
+						}
 					}
 				}
 				
@@ -229,14 +282,15 @@
 		/{{board.code}}/ - {{board.name}}
 		<br/>
 		<br/>
-				
+		
 		<!-- New reply -->
 		<form @submit.prevent="onSubmitReply">
-			<input type=text placeholder="Subject" v-model="replyDTO.subject"/><br/>
 			<input type=text placeholder="Name" v-model="replyDTO.name"/><br/>
 			<input type=text placeholder="Options" v-model="replyDTO.options"/><br/>
 			<textarea id="reply-area" placeholder="Text..." v-model="replyDTO.content"/><br/>
-			Files not implemented yet...
+			<input type="file" accept="image/png, image/jpeg" @change="onFileSelected" id="reply-file-upload"><br/>
+			<template v-if="fileError"><span class="error">{{fileError}}</span></template>
+
 			<br/>
 			<button type=submit>Post reply</button>
 			
@@ -273,8 +327,8 @@
 							<template v-else-if="token.kind == 'link'">
 								<template v-if="token.local">
 									<a :href="`${postLinks[token.text]}`" :class="{strikethrough: token.fail}">
-									{{token.text}}
-								</a>
+										{{token.text}}
+									</a>
 								</template>
 								<template v-else>
 									<RouterLink :to="`${postLinks[token.text]}`">
@@ -373,5 +427,9 @@
 	
 	.strikethrough {
 		text-decoration: line-through;
+	}
+	
+	.error {
+		color: red;
 	}
 </style>

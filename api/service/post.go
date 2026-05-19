@@ -2,10 +2,11 @@ package service
 
 import (
 	"fmt"
-	"strings"
-	"immy-api/util"
-	"immy-api/repo"
 	"immy-api/model"
+	"immy-api/repo"
+	"immy-api/util"
+	"log"
+	"strings"
 )
 
 type PostService struct {
@@ -97,8 +98,15 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		IPv4: requestIP,
 		Sage: s.isSage(dto.Options),
 		Content: dto.Content,
-		Filename: "unknown or null...",
+		Filename: dto.Filename,
 		Html: "",
+	}
+	
+	log.Print("AAAAAAAAAAAAAAAAAAAAA    ", dto.Filename)
+	
+	err = util.SaveFile(dto.Filename, dto.Filebytes)
+	if err != nil {
+		return nil, err
 	}
 	
 	post, err = s.PostRepo.CreatePost(post)
@@ -127,8 +135,13 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		IPv4: requestIP,
 		Sage: s.isSage(dto.Options),
 		Content: dto.Content,
-		Filename: "unknown or null...",
+		Filename: dto.Filename,
 		Html: "",
+	}
+	
+	err = util.SaveFile(dto.Filename, dto.Filebytes)
+	if err != nil {
+		return nil, err
 	}
 	
 	post, err = s.PostRepo.CreatePost(post)

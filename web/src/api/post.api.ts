@@ -20,6 +20,7 @@ export interface CreatePostForThreadDTO {
     name: string;
     content: string;
     filename: string;
+    filebytes: string;
     options: string;
 }
 
@@ -27,6 +28,7 @@ export interface CreatePostDTO {
     name: string;
     content: string;
     filename: string;
+    filebytes: string;
     options: string;
     
     thread_id: number;
