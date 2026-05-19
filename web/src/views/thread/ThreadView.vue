@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { ref, onMounted, watch } from 'vue';
+	import { ref, onMounted, watch, useTemplateRef } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
 	import { ThreadAPI, type ThreadDTO } from "@/api/thread.api.ts";
@@ -7,11 +7,12 @@
 	import ThreadViewNavList from "@/components/thread/ThreadViewNavList.vue";
 	import { type ThreadStats } from "@/model/thread/thread.model.ts";
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
+	import { CdnAPI } from '@/api/cdn.api';
 	
 	type TextToken = { kind: "text"; text: string; };
 	type LinkToken = { kind: "link"; text: string; local: bool, fail: bool };
 	type Token = TextToken | LinkToken;
-	
+
 	const parseTokens = (text: string): Token[] => {
 		return text.split(/(\s+|##\w+|\S+)/g).map(word => {
 			if (word.startsWith(">>")) {
@@ -34,6 +35,8 @@
 	const backLinks = ref<Record<number, number[]>>({});
 	
 	const postLinks = ref<Record<string, string>>({});
+
+	const replyForm = useTemplateRef('reply-form');
 	
 	onMounted(() => {
 		const board_code: string = route.params.board_code;
@@ -69,7 +72,7 @@
 			posts.value = dto.posts;
 			
 			thread_stats.value.posts = posts.value.length;
-			thread_stats.value.images = posts.value.filter((p: PostDTO) => p.filename != null).length;
+			thread_stats.value.images = posts.value.filter((p: PostDTO) => p.filename).length;
 			thread_stats.value.posters = [... new Set(posts.value.map((p: PostDTO) => p.ipv4))].length;
 			thread_stats.value.page = 1;
 			
@@ -128,13 +131,9 @@
 	}
 	
 	const onClickPostNumber = (postNum: number) => {
-		if (replyDTO.value.content == undefined) {
-			replyDTO.value.content = "";
+		if (replyForm.value) {
+			replyForm.value.AppendText(`>>${postNum}\n`);
 		}
-		replyDTO.value.content += `>>${postNum}\n`;
-		
-		const textarea = document.getElementById('reply-area');
-		textarea.scrollTop = textarea.scrollHeight;
 	}
 	
 	const onClickPostNo = (postNum: number) => {
@@ -154,6 +153,10 @@
 		for (let tok of post._tokens) {
 			if (tok.kind == 'link') {
 				if (tok.text in postLinks.value && postLinks.value[tok.text] != '#') {
+					// TODO: We don't know whether the token link is local. If you quote
+					// the same post multiple times in a single post, all links except the
+					// first one will be non-local because `false` is the default value.
+					// More data should be passed inside postLinks.
 					continue;	
 				}
 				
@@ -212,7 +215,7 @@
 
 <template>
 	<template v-if="board && thread">
-		<CreatePostForm :thread_id="thread.id" :max_size_bytes="1*1024*1024"></CreatePostForm>
+		<CreatePostForm ref="reply-form" :thread_id="thread.id" :max_size_bytes="1*1024*1024" @postCreated="reloadThread()"></CreatePostForm>
 		
 		<ThreadViewNavList :board_code="board.code" jump_to_id="bottom" jump_to_label="Bottom" :thread_stats="thread_stats" @threadUpdate="reloadThread()" />
 
@@ -233,26 +236,38 @@
 						</span>
 					</div>
 					
-					<div class="post-body">
-						<span v-for="token of post._tokens">
-							<template v-if="token.kind == 'text'">
-								{{token.text}}
-							</template>
-							<template v-else-if="token.kind == 'link'">
-								<template v-if="token.local">
-									<a :href="`${postLinks[token.text]}`" :class="{strikethrough: token.fail}">
-										{{token.text}}
-									</a>
+					<div class="post-body-container">
+
+						<div v-if="post.filename" class="post-file-container">
+						<div>
+								File: <a :href="CdnAPI.GetURI(post.filename)" target="_blank">{{ post.filename }}</a>
+							</div>
+							<img :src="CdnAPI.GetURI(post.filename)" />
+						</div>
+						<div v-else class="post-no-file">
+						</div>
+
+						<div class="post-body">
+							<span v-for="token of post._tokens">
+								<template v-if="token.kind == 'text'">
+									{{token.text}}
 								</template>
-								<template v-else>
-									<RouterLink :to="`${postLinks[token.text]}`">
-										<span :class="{strikethrough: token.fail}">
-											{{token.text}} →
-										</span>
-									</RouterLink>
+								<template v-else-if="token.kind == 'link'">
+									<template v-if="token.local">
+										<a :href="`${postLinks[token.text]}`" :class="{strikethrough: token.fail}">
+											{{token.text}}
+										</a>
+									</template>
+									<template v-else>
+										<RouterLink :to="`${postLinks[token.text]}`">
+											<span :class="{strikethrough: token.fail}">
+												{{token.text}} →
+											</span>
+										</RouterLink>
+									</template>
 								</template>
-							</template>
-						</span>
+							</span>
+						</div>
 						
 					</div>
 				</span>
@@ -286,8 +301,6 @@
 			}
 			
 			.post-header {
-				margin-bottom: 1em;
-				
 				span {
 					margin-right: 0.25em;
 				}
@@ -300,10 +313,24 @@
 				}		
 			}
 			
-			.post-body {
-				margin-left: 1em;
-				white-space: pre-wrap; 
-				word-wrap: break-word;
+			.post-body-container {
+				.post-body {
+					margin-left: 1em;
+					white-space: pre-wrap;
+					word-wrap: break-word;
+				}
+
+				.post-no-file {
+					margin-top: 0.5em;
+				}
+
+				.post-file-container {
+					display: block;
+
+					img {
+						margin-left: 1em;
+					}
+				}
 			}
 		}
 		

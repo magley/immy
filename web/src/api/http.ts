@@ -1,4 +1,4 @@
-import axios, { type AxiosError } from "axios";
+import axios from "axios";
 
 export interface ApiResponse<T> {
     success: boolean;
@@ -21,6 +21,7 @@ export interface ApiMeta {
 
 export const ENV = {
     API: "http://localhost:8080/api/v1/",
+    CDN: "http://localhost/",
 };
 
 export const axiosInstance = axios.create({

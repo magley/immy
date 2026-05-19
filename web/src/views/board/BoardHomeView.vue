@@ -54,7 +54,7 @@
 		
 		<hr />
 		
-		<CreateThreadForm :board_code="board.code" :max_size_bytes="1*1024*1024" />
+		<CreateThreadForm :board_code="board.code" :max_size_bytes="1*1024*1024" @threadCreated="loadThreads()" />
 		
 		<hr />
 		

@@ -100,7 +100,7 @@
 		<template v-if="fileError"><span class="error">{{fileError}}</span></template>
 
 		<br/>
-		<button type=submit>Post reply</button>
+		<button type=submit>Post thread</button>
 
 		<template v-if="createThreadError">
 			<div/>

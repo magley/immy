@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { ref } from 'vue';
+	import { ref, useTemplateRef } from 'vue';
 	import { PostAPI, type CreatePostDTO, type PostDTO } from "@/api/post.api.ts";
 	import type { ApiResponse } from '@/api/http';
 	import type { AxiosResponse, AxiosError } from 'axios';
@@ -26,6 +26,8 @@
 	const fileName = ref<string | null>(null);
 	const fileBytes = ref<string | null>(null);
 	const fileError = ref<string | null>(null);
+
+	const textArea = useTemplateRef('text-area');
 
 	const onSubmitReply = () => {
 		replyError.value = undefined;
@@ -73,13 +75,28 @@
 		fileBytes.value = null;
 		fileName.value = null;
 	}
+
+	const AppendText = (text: string) => {
+		if (replyDTO.value.content == undefined) {
+			replyDTO.value.content = "";
+		}
+		replyDTO.value.content += text;
+
+		if (!textArea.value) {
+			console.error("Text area is null. This shouldn't happen");
+			return;
+		}
+		textArea.value.scrollTop = textArea.value.scrollHeight;
+	}
+
+	defineExpose({ AppendText });
 </script>
 
 <template>
 	<form @submit.prevent="onSubmitReply">
 		<input type=text placeholder="Name" v-model="replyDTO.name"/><br/>
 		<input type=text placeholder="Options" v-model="replyDTO.options"/><br/>
-		<textarea id="reply-area" placeholder="Text..." v-model="replyDTO.content"/><br/>
+		<textarea id="reply-area" placeholder="Text..." ref='text-area' v-model="replyDTO.content"/><br/>
 		<input type="file" accept="image/png, image/jpeg" @change="onFileSelected" id="reply-file-upload"><br/>
 		<template v-if="fileError"><span class="error">{{fileError}}</span></template>
 

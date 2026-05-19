@@ -27,7 +27,6 @@ services:
       timeout: 3s
       retries: 5
 
-    
   adminer:
     image: adminer
     restart: always
@@ -35,3 +34,13 @@ services:
       ADMINER_DESIGN: win98
     ports:
       - "8003:8080"
+
+  cdn:
+    image: nginx
+    build:
+      context: ./cdn
+      dockerfile: ./Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ./files:/usr/share/nginx/html/files/

@@ -1,4 +1,5 @@
 import { axiosInstance, type ApiResponse } from "@/api/http";
+import type { AxiosResponse } from "axios";
 
 export interface BoardDTO {
     id: number;
@@ -8,7 +9,7 @@ export interface BoardDTO {
     created_at: string;
     locked: boolean;
     hidden: boolean;
-    post_count: int;
+    post_count: number;
 }
 
 export interface CreateBoardDTO {

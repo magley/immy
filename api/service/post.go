@@ -5,7 +5,6 @@ import (
 	"immy-api/model"
 	"immy-api/repo"
 	"immy-api/util"
-	"log"
 	"strings"
 )
 
@@ -98,15 +97,16 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		IPv4: requestIP,
 		Sage: s.isSage(dto.Options),
 		Content: dto.Content,
-		Filename: dto.Filename,
+		Filename: "", // dto.Filename can be nil. Only dereference if it isn't.
 		Html: "",
 	}
 	
-	log.Print("AAAAAAAAAAAAAAAAAAAAA    ", dto.Filename)
-	
-	err = util.SaveFile(dto.Filename, dto.Filebytes)
-	if err != nil {
-		return nil, err
+	if (dto.Filename != nil && dto.Filebytes != nil) {
+		err = util.SaveFile(*dto.Filename, *dto.Filebytes)
+		if err != nil {
+			return nil, err
+		}
+		post.Filename = *dto.Filename
 	}
 	
 	post, err = s.PostRepo.CreatePost(post)
@@ -139,10 +139,12 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		Html: "",
 	}
 	
-	err = util.SaveFile(dto.Filename, dto.Filebytes)
-	if err != nil {
-		return nil, err
-	}
+	//if (dto.Filename != nil && dto.Filebytes != nil) {   ( Thread OPs require a file. )
+		err = util.SaveFile(dto.Filename, dto.Filebytes)
+		if err != nil {
+			return nil, err
+		}
+	//}
 	
 	post, err = s.PostRepo.CreatePost(post)
 	return post, err 
