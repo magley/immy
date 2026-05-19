@@ -1,9 +1,11 @@
 <script setup lang="ts">
-	import { ref, onMounted } from 'vue';
+	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
+	import type { ApiResponse } from '@/api/http';
+	import { ThreadAPI, type ThreadDTO } from "@/api/thread.api.ts";
+	import CreateThreadForm from '@/components/thread/CreateThreadForm.vue';
+	import type { AxiosError, AxiosResponse } from 'axios';
+	import { onMounted, ref } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
-	import { BoardAPI, BoardDTO, CreateBoardDTO, UpdateBoardDTO } from "@/api/board.api.ts";
-	import { ThreadAPI, ThreadDTO, CreateThreadDTO, UpdateThreadDTO } from "@/api/thread.api.ts";
-	import { PostAPI, PostDTO, CreatePostForThreadDTO, CreatePostDTO, UpdatePostDTO } from "@/api/post.api.ts";
 	
 	
 	const board = ref<BoardDTO | null>(null);
@@ -14,12 +16,8 @@
 	const threads = ref<ThreadDTO[]>([]);
 	const threadsError = ref<string | undefined>(undefined);
 	
-	const createThreadPostDTO = ref<CreatePostForThreadDTO>({});
-	const createThreadDTO = ref<CreateThreadDTO>({});
-	const createThreadError = ref<string | undefined>(undefined);
-	
 	onMounted(() => {
-		const board_code: string = route.params.board_code;
+		const board_code: string = route.params.board_code as string;
 		loadBoard(board_code);
 	});
 	
@@ -33,34 +31,15 @@
 	}
 	
 	const loadThreads = () => {
+		if (board.value == null) {
+			return;
+		}
+
 		threadsError.value = undefined;
 		ThreadAPI.ListThreadsByBoard(board.value.code).then((res : AxiosResponse<ApiResponse<ThreadDTO[]>>) => {
-			threads.value = res.data.data;
+			threads.value = res.data.data!;
 		}).catch((err: AxiosError) => {
 			threadsError.value = "Could not fetch threads";
-			console.error(err);
-		});
-	}
-	
-	const onSubmitCreateThread = () => {
-		const realPostDTO: CreatePostForThreadDTO = {
-		    name: createThreadPostDTO.value.name,
-		    content: createThreadPostDTO.value.content,
-		    filename: "/",
-		    options: createThreadPostDTO.value.options,
-		};
-		const realDTO: CreateThreadDTO = {
-			board_code: board.value.code,
-			subject: createThreadDTO.value.subject,
-			locked: false,
-			sticky: false,
-			post: realPostDTO,
-		};
-			
-		ThreadAPI.CreateThread(realDTO).then(() => {
-			loadThreads();
-		}).catch((err: AxiosError) => {
-			createThreadError.value = "Could not create thread";
 			console.error(err);
 		});
 	}
@@ -75,21 +54,7 @@
 		
 		<hr />
 		
-		<!-- New thread -->
-		<form @submit.prevent="onSubmitCreateThread">
-			<input type=text placeholder="Subject" v-model="createThreadDTO.subject"/><br/>
-			<input type=text placeholder="Name" v-model="createThreadPostDTO.name"/><br/>
-			<input type=text placeholder="Options" v-model="createThreadPostDTO.options"/><br/>
-			<textarea placeholder="Text..." v-model="createThreadPostDTO.content"/><br/>
-			Files not implemented yet...
-			<br/>
-			<button type=submit>Create thread</button>
-			
-			<template v-if="createThreadError">
-				<br/>
-				<span class="error">{{createThreadError}}</span>
-			</template>
-		</form>
+		<CreateThreadForm :board_code="board.code" :max_size_bytes="1*1024*1024" />
 		
 		<hr />
 		

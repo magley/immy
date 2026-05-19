@@ -1,11 +1,12 @@
 <script setup lang="ts">
 	import { ref, onMounted, watch } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
-	import { BoardAPI, BoardDTO, CreateBoardDTO, UpdateBoardDTO } from "@/api/board.api.ts";
-	import { ThreadAPI, ThreadDTO, CreateThreadDTO, UpdateThreadDTO } from "@/api/thread.api.ts";
-	import { PostAPI, PostDTO, CreatePostForThreadDTO, CreatePostDTO, UpdatePostDTO } from "@/api/post.api.ts";
+	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
+	import { ThreadAPI, type ThreadDTO } from "@/api/thread.api.ts";
+	import { PostAPI, type PostDTO } from "@/api/post.api.ts";
 	import ThreadViewNavList from "@/components/thread/ThreadViewNavList.vue";
-	import { ThreadStats, ThreadNavProps } from "@/model/thread/thread.model.ts";
+	import { type ThreadStats } from "@/model/thread/thread.model.ts";
+	import CreatePostForm from '@/components/post/CreatePostForm.vue';
 	
 	type TextToken = { kind: "text"; text: string; };
 	type LinkToken = { kind: "link"; text: string; local: bool, fail: bool };
@@ -19,7 +20,7 @@
 			return { kind: "text", text: word };
 		});
 	}
-	
+
 	const board = ref<BoardDTO | null>(null);
 
 	const route = useRoute();
@@ -29,18 +30,10 @@
 	const thread_stats = ref<ThreadStats>({});
 	const posts = ref<PostDTO[]>([]);
 	
-	const replyDTO = ref<CreatePostDTO>({});
-	const replyError = ref<string | undefined>(undefined);
-	
 	const highlightedPost = ref<number | undefined>(undefined);
 	const backLinks = ref<Record<number, number[]>>({});
 	
 	const postLinks = ref<Record<string, string>>({});
-	
-	const fileName = ref<string | null>(null);
-	const fileError = ref<string | null>(null);
-	const fileBytes = ref<Uint8Array | null>(null);
-	const fileMaxSize = 1 * 1024 * 1024;
 	
 	onMounted(() => {
 		const board_code: string = route.params.board_code;
@@ -57,20 +50,6 @@
 			}
 		}
 	});
-	
-	const onSubmitReply = () => {
-		replyError.value = undefined;
-		replyDTO.value.thread_id = thread.value.id;
-		replyDTO.value.filename = fileName.value ? fileName.value : null;
-		replyDTO.value.filebytes = fileBytes.value ? Array.from(fileBytes.value).join() : null;
-
-		PostAPI.CreatePost(replyDTO.value).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
-			reloadThread();
-		}).catch((err: AxiosError) => {
-			replyError.value = "Could not post reply";
-			console.error(err);
-		});
-	}
 	
 	const loadBoard = (boardCode: string) => {
 		BoardAPI.GetBoard(boardCode).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
@@ -162,51 +141,6 @@
 		highlightedPost.value = postNum;
 	}
 	
-	const onFileSelected = async (e: Event) => {
-		fileError.value = null;
-		const input = e.target as HTMLInputElement;  
-		const filesAsArray = Array.from(input?.files || []);
-		
-		if (filesAsArray.length == 0) {
-			fileBytes.value = null;
-			fileName.value = null;
-			return;
-		}
-		const file = filesAsArray[0];
-		
-		if (file.size > fileMaxSize) {
-			const maxsize_mb = Math.round(fileMaxSize / (1024 * 1024));
-			fileError.value = `File cannot be larger than ${maxsize_mb}MB`
-			
-			console.error(`File has ${file.size} > ${fileMaxSize} bytes`);
-			clearSelectedFile();
-			return;
-		}
-		
-		const reader = new FileReader();
-		reader.readAsArrayBuffer(file);
-		reader.onload = () => {
-			const arrayBuffer = reader.result;
-			const filebytes = new Uint8Array(arrayBuffer);
-			
-			fileName.value = file.name;
-			fileBytes.value = filebytes;
-		};
-		reader.onerror = (err) => {
-			fileError.value = `Could not process file`;
-			console.error(err);
-			clearSelectedFile();
-			return;
-		};
-	}
-
-	const clearSelectedFile = () => {
-		const fileInput = document.getElementById("reply-file-upload");
-		fileInput.value = null;
-	 	fileBytes.value = null;
-		fileName.value = null;
-	}
-	
 	const processPost = (post: PostDTO) => {
 		post._tokens = parseTokens(post.content);
 		for (let tok of post._tokens) {
@@ -237,7 +171,7 @@
 				} else {
 					link_post_num = Number(link_text);
 				}
-								
+
 				// Check if the link points to a post in this thread.
 				let post_is_local = false;
 				if (link_post_board == board.value.code) {
@@ -277,28 +211,8 @@
 </script>
 
 <template>
-	<template v-if="board">
-		Thread {{ route.params.thread_id }}
-		/{{board.code}}/ - {{board.name}}
-		<br/>
-		<br/>
-		
-		<!-- New reply -->
-		<form @submit.prevent="onSubmitReply">
-			<input type=text placeholder="Name" v-model="replyDTO.name"/><br/>
-			<input type=text placeholder="Options" v-model="replyDTO.options"/><br/>
-			<textarea id="reply-area" placeholder="Text..." v-model="replyDTO.content"/><br/>
-			<input type="file" accept="image/png, image/jpeg" @change="onFileSelected" id="reply-file-upload"><br/>
-			<template v-if="fileError"><span class="error">{{fileError}}</span></template>
-
-			<br/>
-			<button type=submit>Post reply</button>
-			
-			<template v-if="replyError">
-				<div/>
-				<span class="error">{{replyError}}</span>
-			</template>
-		</form>
+	<template v-if="board && thread">
+		<CreatePostForm :thread_id="thread.id" :max_size_bytes="1*1024*1024"></CreatePostForm>
 		
 		<ThreadViewNavList :board_code="board.code" jump_to_id="bottom" jump_to_label="Bottom" :thread_stats="thread_stats" @threadUpdate="reloadThread()" />
 

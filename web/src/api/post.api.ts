@@ -1,4 +1,5 @@
 import { axiosInstance, type ApiResponse } from "@/api/http";
+import type { AxiosResponse } from "axios";
 
 export interface PostDTO {
     id: number;
@@ -10,7 +11,7 @@ export interface PostDTO {
     tripcode: string;
     ipv4: string;
     created_at: string;
-    sage: bool;
+    sage: boolean;
     content: string;
     filename: string;
     html: string;
@@ -27,8 +28,8 @@ export interface CreatePostForThreadDTO {
 export interface CreatePostDTO {
     name: string;
     content: string;
-    filename: string;
-    filebytes: string;
+    filename: string | null;
+    filebytes: string | null;
     options: string;
     
     thread_id: number;
@@ -37,7 +38,7 @@ export interface CreatePostDTO {
 export interface UpdatePostDTO {
     name: string;
     tripcode: string;
-    sage: bool;
+    sage: boolean;
     content: string;
     filename: string;
     html: string;
