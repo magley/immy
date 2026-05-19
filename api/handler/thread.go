@@ -51,7 +51,7 @@ func (h *ThreadHandler) CreateThread(c *gin.Context) {
 		return
 	}
 	
-	res, err := h.ThreadService.CreateThread(dto)
+	res, err := h.ThreadService.CreateThread(dto, c.ClientIP())
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
 		return

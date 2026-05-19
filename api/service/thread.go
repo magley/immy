@@ -24,7 +24,7 @@ func (s *ThreadService) ListThreadsOfBoard(boardCode string, offset, limit int) 
 	return s.ThreadRepo.ListThreadsOfBoard(board.ID, offset, limit)
 }
 
-func (s *ThreadService) CreateThread(dto model.CreateThreadDTO) (*model.Thread, error) {
+func (s *ThreadService) CreateThread(dto model.CreateThreadDTO, requestIP string) (*model.Thread, error) {
 	board, err := s.BoardService.GetBoardByCode(dto.BoardCode)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (s *ThreadService) CreateThread(dto model.CreateThreadDTO) (*model.Thread, 
 		return nil, err
 	}
 	
-	post, err := s.PostService.CreatePostForThread(dto.Post, thread, board)
+	post, err := s.PostService.CreatePostForThread(dto.Post, requestIP, thread, board)
 	if err != nil {
 		err = s.DeleteThread(thread.ID)
 		return nil, err

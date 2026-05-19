@@ -1,12 +1,13 @@
 package handler
 
 import (
-	"net/http"
-	"github.com/gin-gonic/gin"
 	util "immy-api/util"
-	
-	"immy-api/service"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
 	"immy-api/model"
+	"immy-api/service"
 )
 
 type PostHandler struct {
@@ -35,7 +36,7 @@ func (h *PostHandler) CreatePost(c *gin.Context) {
 		return
 	}
 	
-	res, err := h.PostService.CreatePost(dto)
+	res, err := h.PostService.CreatePost(dto, c.ClientIP())
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
 		return

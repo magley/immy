@@ -5,6 +5,7 @@
 	import { ThreadAPI, ThreadDTO, CreateThreadDTO, UpdateThreadDTO } from "@/api/thread.api.ts";
 	import { PostAPI, PostDTO, CreatePostForThreadDTO, CreatePostDTO, UpdatePostDTO } from "@/api/post.api.ts";
 	import ThreadViewNavList from "@/components/thread/ThreadViewNavList.vue";
+	import { ThreadStats, ThreadNavProps } from "@/model/thread/thread.model.ts";
 	
 	type TextToken = { kind: "text"; text: string; };
 	type LinkToken = { kind: "link"; text: string; local: bool, fail: bool };
@@ -25,6 +26,7 @@
 	const router = useRouter();
 	
 	const thread = ref<ThreadDTO>(null);
+	const thread_stats = ref<ThreadStats>({});
 	const posts = ref<PostDTO[]>([]);
 	
 	const replyDTO = ref<CreatePostDTO>({});
@@ -80,6 +82,11 @@
 			const dto: ThreadFullDTO = res.data.data;
 			thread.value = dto.thread;
 			posts.value = dto.posts;
+			
+			thread_stats.value.posts = posts.value.length;
+			thread_stats.value.images = posts.value.filter((p: PostDTO) => p.filename != null).length;
+			thread_stats.value.posters = [... new Set(posts.value.map((p: PostDTO) => p.ipv4))].length;
+			thread_stats.value.page = 1;
 			
 			for (let p of posts.value) {
 				processPost(p);
@@ -153,13 +160,15 @@
 		post._tokens = parseTokens(post.content);
 		for (let tok of post._tokens) {
 			if (tok.kind == 'link') {
+				// Before the proper routes are attributed to each link, add a
+				// dummy '#' href for each of the links.
 				postLinks.value[tok.text] = '#';
 			}
 		}
 		
 		for (let tok of post._tokens) {
 			if (tok.kind == 'link') {
-				if (tok.text in postLinks.value) {
+				if (tok.text in postLinks.value && postLinks.value[tok.text] != '#') {
 					continue;	
 				}
 				
@@ -219,7 +228,6 @@
 		Thread {{ route.params.thread_id }}
 		/{{board.code}}/ - {{board.name}}
 		<br/>
-		
 		<br/>
 				
 		<!-- New reply -->
@@ -238,7 +246,7 @@
 			</template>
 		</form>
 		
-		<ThreadViewNavList :board_code="board.code" jump_to_id="bottom" jump_to_label="Bottom" @threadUpdate="reloadThread()" />
+		<ThreadViewNavList :board_code="board.code" jump_to_id="bottom" jump_to_label="Bottom" :thread_stats="thread_stats" @threadUpdate="reloadThread()" />
 
 		<template v-if="thread">
 			<div :id="`p${post.num}`" class="postContainer" v-for="post, i of posts">
@@ -284,28 +292,21 @@
 		</template>
 		
 		
-		<ThreadViewNavList :board_code="board.code" jump_to_id="top" jump_to_label="Top" @threadUpdate="reloadThread()" />
+		<ThreadViewNavList :board_code="board.code" jump_to_id="top" jump_to_label="Top" :thread_stats="thread_stats" @threadUpdate="reloadThread()" />
 
 	</template>
 </template>
 
 <style scoped>	
-	html {
-		background-color: #EEF2FF;
-	}
-	
 	.postContainer {
 		display: flex;
-		gap: 10px;
+		gap: 2px;
 		margin-top: 0.2em;
-
 		.sideArrows {
 			
 		}
 		
 		.post {
-			flex-grow: 1;
-			
 			background-color: #D6DAF0;
 			padding-top: 0.25em;
 			padding-bottom: 1em;

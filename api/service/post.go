@@ -58,7 +58,7 @@ func (s *PostService) DeletePost(postId uint) (error) {
 	return s.PostRepo.DeletePost(post)
 }
 
-func (s *PostService) CreatePost(dto model.CreatePostDTO) (*model.Post, error) {
+func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*model.Post, error) {
 	thread, err := s.ThreadService.GetThread(dto.ThreadID)
 	if err != nil {
 		return nil, err
@@ -94,7 +94,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO) (*model.Post, error) {
 		Num: board.PostCount,
 		Name: postName,
 		Tripcode: postTripcode,
-		IPv4: "unknown",
+		IPv4: requestIP,
 		Sage: s.isSage(dto.Options),
 		Content: dto.Content,
 		Filename: "unknown or null...",
@@ -105,7 +105,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO) (*model.Post, error) {
 	return post, err 	
 }
 
-func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, thread *model.Thread, board *model.Board) (*model.Post, error) {
+func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requestIP string, thread *model.Thread, board *model.Board) (*model.Post, error) {
 	board, err := s.BoardService.IncrementBoardPostCount(board)
 	if err != nil {
 		return nil, err
@@ -124,7 +124,7 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, thre
 		Num: board.PostCount,
 		Name: postName,
 		Tripcode: postTripcode,
-		IPv4: "unknown",
+		IPv4: requestIP,
 		Sage: s.isSage(dto.Options),
 		Content: dto.Content,
 		Filename: "unknown or null...",

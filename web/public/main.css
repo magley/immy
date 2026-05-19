@@ -1,5 +1,37 @@
+body {
+	background-color: #EEF2FF;
+}
+
 /* Links and cross-links */
 .postRef, .postRef:visited {
 	color: #DD0000;
 	text-decoration: underline;
+}
+
+/* Tooltip container : https://www.w3schools.com/css/css_tooltip.asp */
+.tooltip {
+	position: relative;
+	display: inline-block;
+	border-bottom: 1px dotted black;
+}
+
+/* Tooltip text */
+.tooltiptext {
+  width: 80px;
+  padding: 5px;
+  bottom: 120%;
+  right: 0; /* anchor to the right edge */
+  
+  visibility: hidden;
+  background-color: black;
+  color: #ffffff;
+  text-align: center;
+  border-radius: 6px;
+  
+  position: absolute;
+  z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+	visibility: visible;
 }
