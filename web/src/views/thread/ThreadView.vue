@@ -252,7 +252,7 @@
 								File: <a :href="CdnAPI.GetPostImageURI(post)" target="_blank">{{ post.src_filename }}</a>
 							</div>
 
-							<a :href="CdnAPI.GetPostImageURI(post)" target="_blank" @click.prevent>
+							<a :href="CdnAPI.GetPostImageURI(post)" target="_blank" @click.prevent class="post-file-link">
 								<!-- Thumbnail or real image. -->
 								<img v-if="imagesExpanded[post.id]"
 									:src="CdnAPI.GetPostImageURI(post)"
@@ -347,19 +347,21 @@
 						display: block;
 					}
 
-					img {
-						margin-left: 1em;
-						cursor: pointer;
-					}
+					.post-file-link {
+						img {
+							margin-left: 1em;
+							cursor: pointer;
+						}
 
-					img.post-image-full {
-						display: block !important;
-					}
+						img.post-image-full {
+							display: block !important;
+						}
 
-					img.post-image-thumb {
-						display: inline;
-						max-width: 25%;
-						max-height: 25%;
+						img.post-image-thumb {
+							display: inline;
+							max-width: 25%;
+							max-height: 25%;
+						}
 					}
 				}
 			}

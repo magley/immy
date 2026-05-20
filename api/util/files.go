@@ -5,8 +5,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"image"
-    "image/jpeg"
-    _ "image/png"
+	_ "image/gif"
+	"image/jpeg"
+	_ "image/png"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,17 +25,20 @@ func SaveFile(filename string, fileBytes string) (error) {
 
     err := os.MkdirAll(filepath.Dir(fullPath), 0666)
     if err != nil {
+        fmt.Print(err.Error())
         return err
     }
 
     f, err := os.Create(fullPath)
     if err != nil {
+        fmt.Print(err.Error())
         return err
     }
     defer f.Close()
 
     data, err := base64.StdEncoding.DecodeString(fileBytes)
     if err != nil {
+        fmt.Print(err.Error())
         return err
     }
 
@@ -50,6 +54,7 @@ func SaveFile(filename string, fileBytes string) (error) {
 func SaveImage(filename string, fileBytes string) (error) {
     thumbnailBytes, err := createThumbnailBytes(fileBytes, 6, draw.CatmullRom)
     if err != nil {
+        fmt.Print(err.Error())
         return err
     }
 
@@ -58,12 +63,14 @@ func SaveImage(filename string, fileBytes string) (error) {
 
     err = SaveFile(filename, fileBytes)
     if err != nil {
+        fmt.Print(err.Error())
         return err
     }
 
     err = SaveFile(filenameThumb, thumbnailBytes)
     if err != nil {
-      return err
+        fmt.Print(err.Error())
+        return err
     }
 
     return nil
@@ -77,11 +84,13 @@ func GetPostImageFilename(boardCode string, sourceFilename string) string {
 func createThumbnailBytes(srcBytes string, scaleDown int, scale draw.Scaler) (string, error) {
     data, err := base64.StdEncoding.DecodeString(srcBytes)
     if err != nil {
+        fmt.Print(err.Error())
         return "", err
     }
 
     img, _, err := image.Decode(bytes.NewReader(data))
     if err != nil {
+        fmt.Print(err.Error())
         return "", err
     }
 
@@ -90,6 +99,7 @@ func createThumbnailBytes(srcBytes string, scaleDown int, scale draw.Scaler) (st
 
     var buf bytes.Buffer
     if err := jpeg.Encode(&buf, thumbnail, &jpeg.Options{Quality: 50}); err != nil {
+        fmt.Print(err.Error())
         return "", err
     }
 

@@ -22,10 +22,22 @@ export const GetFileFromEvent = (e: Event, max_size_bytes: number): [File | null
 export const FileToBase64 = async (file: File): Promise<string> => {
 	const arrayBuffer = await file.arrayBuffer();
 	const uint8Array = new Uint8Array(arrayBuffer);
-	return btoa(String.fromCharCode(...uint8Array));
+	return byteArrayToBase64(uint8Array);
 }
 
 export const SplitFilename = (fname: string): [string, string] => {
 	const parts: string[] = fname.split(".");
 	return [parts.slice(0, -1).join("."), parts[parts.slice.length - 1]!];
+}
+
+const byteArrayToBase64 = (byteArray: Uint8Array): string => {
+	let binaryString = "";
+	const chunkSize = 0xFFFF;
+
+	for (let i = 0; i < byteArray.length; i += chunkSize) {
+		const chunk = byteArray.slice(i, i + chunkSize);
+		binaryString += String.fromCharCode.apply(null, chunk as any);
+	}
+
+	return btoa(binaryString);
 }
