@@ -20,8 +20,8 @@ export interface ApiMeta {
 }
 
 export const ENV = {
-    API: "http://localhost:8080/api/v1/",
-    CDN: "http://localhost/",
+    API: "http://localhost:8080/api/v1",
+    CDN: "http://localhost",
 };
 
 export const axiosInstance = axios.create({

@@ -86,7 +86,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 	dto.Options = strings.Trim(dto.Options, " \t")
 	
 	postName, postTripcode := s.createTripcode(dto.Name)
-	
+
 	post := &model.Post{
 		ThreadID: thread.ID,
 		ThreadNum: thread.PostNum,
@@ -97,19 +97,24 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		IPv4: requestIP,
 		Sage: s.isSage(dto.Options),
 		Content: dto.Content,
-		Filename: "", // dto.Filename can be nil. Only dereference if it isn't.
+		SrcFilename: "",
+		Filename: "",
 		Html: "",
 	}
-	
 	if (dto.Filename != nil && dto.Filebytes != nil) {
-		err = util.SaveFile(*dto.Filename, *dto.Filebytes)
+		post.SrcFilename = *dto.Filename
+		post.Filename = util.GetPostImageFilename(board.Code, post.SrcFilename)
+	}
+
+	if (dto.Filename != nil && dto.Filebytes != nil) {
+		err = util.SaveImage(post.Filename, *dto.Filebytes)
 		if err != nil {
 			return nil, err
 		}
-		post.Filename = *dto.Filename
 	}
-	
+
 	post, err = s.PostRepo.CreatePost(post)
+
 	return post, err 	
 }
 
@@ -135,18 +140,18 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		IPv4: requestIP,
 		Sage: s.isSage(dto.Options),
 		Content: dto.Content,
-		Filename: dto.Filename,
+		SrcFilename: dto.Filename,
+		Filename: util.GetPostImageFilename(board.Code, dto.Filename),
 		Html: "",
 	}
 	
-	//if (dto.Filename != nil && dto.Filebytes != nil) {   ( Thread OPs require a file. )
-		err = util.SaveFile(dto.Filename, dto.Filebytes)
-		if err != nil {
-			return nil, err
-		}
-	//}
-	
+	err = util.SaveImage(post.Filename, dto.Filebytes)
+	if err != nil {
+		return nil, err
+	}
+
 	post, err = s.PostRepo.CreatePost(post)
+
 	return post, err 
 }
 

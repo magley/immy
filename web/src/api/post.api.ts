@@ -14,6 +14,7 @@ export interface PostDTO {
     sage: boolean;
     content: string;
     filename: string;
+    src_filename: string;
     html: string;
 }
 

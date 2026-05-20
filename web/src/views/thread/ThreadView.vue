@@ -37,6 +37,8 @@
 	const postLinks = ref<Record<string, string>>({});
 
 	const replyForm = useTemplateRef('reply-form');
+
+	const imagesExpanded = ref<Record<number, boolean>>({});
 	
 	onMounted(() => {
 		const board_code: string = route.params.board_code;
@@ -139,6 +141,14 @@
 	const onClickPostNo = (postNum: number) => {
 		highlightedPost.value = postNum;
 	}
+
+	const onClickPostImage = (postId: number) => {
+		if (postId !in imagesExpanded) {
+			imagesExpanded.value[postId] = false;
+		}
+
+		imagesExpanded.value[postId] = !imagesExpanded.value[postId];
+	}
 	
 	const processPost = (post: PostDTO) => {
 		post._tokens = parseTokens(post.content);
@@ -237,24 +247,34 @@
 					</div>
 					
 					<div class="post-body-container">
-
-						<div v-if="post.filename" class="post-file-container">
-						<div>
-								File: <a :href="CdnAPI.GetURI(post.filename)" target="_blank">{{ post.filename }}</a>
+						<span v-if="post.filename" class="post-file-container">
+							<div class="post-file-container-header">
+								File: <a :href="CdnAPI.GetPostImageURI(post)" target="_blank">{{ post.src_filename }}</a>
 							</div>
-							<img :src="CdnAPI.GetURI(post.filename)" />
-						</div>
+
+							<a :href="CdnAPI.GetPostImageURI(post)" target="_blank" @click.prevent>
+								<!-- Thumbnail or real image. -->
+								<img v-if="imagesExpanded[post.id]"
+									:src="CdnAPI.GetPostImageURI(post)"
+									@click="onClickPostImage(post.id)"
+									class="post-image-full" />
+								<img v-else
+									:src="CdnAPI.GetPostImageThumbnailURI(post)"
+									@click="onClickPostImage(post.id)"
+									class="post-image-thumb" />
+							</a>
+						</span>
 						<div v-else class="post-no-file">
 						</div>
 
-						<div class="post-body">
+						<span class="post-body">
 							<span v-for="token of post._tokens">
 								<template v-if="token.kind == 'text'">
 									{{token.text}}
 								</template>
 								<template v-else-if="token.kind == 'link'">
 									<template v-if="token.local">
-										<a :href="`${postLinks[token.text]}`" :class="{strikethrough: token.fail}">
+										<a :href="`${postLinks[token.text]}`" :class="{strikethrough: token.fail}" class="link">
 											{{token.text}}
 										</a>
 									</template>
@@ -267,16 +287,13 @@
 									</template>
 								</template>
 							</span>
-						</div>
-						
+						</span>
 					</div>
 				</span>
 			</div>
 		</template>
 		
-		
 		<ThreadViewNavList :board_code="board.code" jump_to_id="top" jump_to_label="Top" :thread_stats="thread_stats" @threadUpdate="reloadThread()" />
-
 	</template>
 </template>
 
@@ -315,6 +332,7 @@
 			
 			.post-body-container {
 				.post-body {
+					display: inline-block;
 					margin-left: 1em;
 					white-space: pre-wrap;
 					word-wrap: break-word;
@@ -325,10 +343,23 @@
 				}
 
 				.post-file-container {
-					display: block;
+					.post-file-container-header {
+						display: block;
+					}
 
 					img {
 						margin-left: 1em;
+						cursor: pointer;
+					}
+
+					img.post-image-full {
+						display: block !important;
+					}
+
+					img.post-image-thumb {
+						display: inline;
+						max-width: 25%;
+						max-height: 25%;
 					}
 				}
 			}
@@ -354,6 +385,10 @@
 	}
 	
 	a:hover {
+		color: #DD0000;
+	}
+
+	.link {
 		color: #DD0000;
 	}
 	

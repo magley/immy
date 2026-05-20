@@ -24,3 +24,8 @@ export const FileToBase64 = async (file: File): Promise<string> => {
 	const uint8Array = new Uint8Array(arrayBuffer);
 	return btoa(String.fromCharCode(...uint8Array));
 }
+
+export const SplitFilename = (fname: string): [string, string] => {
+	const parts: string[] = fname.split(".");
+	return [parts.slice(0, -1).join("."), parts[parts.slice.length - 1]!];
+}
