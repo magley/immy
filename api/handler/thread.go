@@ -127,6 +127,19 @@ func (h *ThreadHandler) GetFullThreadByNum(c *gin.Context) {
 	}
 }
 
+func (h *ThreadHandler) GetThreadsForCatalog(c *gin.Context) {
+	boardCode := c.Param("boardCode")
+
+	res, err := h.ThreadService.GetThreadsForCatalog(boardCode)
+	if err != nil {
+		util.NotFound(c, "Threads of board", boardCode)
+		return
+	} else {
+		util.OK(c, res)
+		return
+	}
+}
+
 func (h *ThreadHandler) UpdateThread(c *gin.Context) {
 	threadId, ok := util.ParamUintSafe(c, "id", "Thread")
 	if !ok {

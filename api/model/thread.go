@@ -25,8 +25,19 @@ type UpdateThreadDTO struct {
 	Sticky		*bool		`json:"sticky"`
 }
 
-
 type ThreadFullDTO struct {
 	Thread 		*Thread  	`json:"thread"`
 	Posts		[]Post 		`json:"posts"`
+}
+
+type ThreadForCatalogDTO struct {
+	Thread		*Thread	`json:"thread"`
+	Post		*Post	`json:"post"`
+	Stats 		ThreadStats	`json:"stats"`
+}
+
+type ThreadStats struct {
+	PostCount 	uint `json:"post_count"`
+	ImageCount 	uint `json:"image_count"`
+	UserCount 	uint `json:"user_count"`
 }

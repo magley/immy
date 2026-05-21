@@ -1,9 +1,8 @@
 package repo
 
-
 import (
 	"gorm.io/gorm"
-	
+
 	model "immy-api/model"
 )
 
@@ -64,4 +63,10 @@ func (r *ThreadRepo) UpdateThreadNum(thread *model.Thread, num uint) (*model.Thr
 func (r *ThreadRepo) DeleteThread(thread *model.Thread) (error) {
 	result := r.DB.Delete(&thread)
 	return result.Error
+}
+
+func (r *ThreadRepo) GetThreadStats(threadId uint) (model.ThreadStats, error) {
+	var stats model.ThreadStats
+	result := r.DB.Model(&model.Post{}).Where("thread_id = ?", threadId).Select("COUNT(DISTINCT id) as post_count, SUM(CASE WHEN filename != '' THEN 1 ELSE 0 END) AS image_count, COUNT(DISTINCT ipv4) as user_count").Scan(&stats)
+	return stats, result.Error
 }

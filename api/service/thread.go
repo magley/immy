@@ -94,6 +94,34 @@ func (s *ThreadService) GetFullThreadFrom(thread *model.Thread) (*model.ThreadFu
 	}, nil
 }
 
+func (s *ThreadService) GetThreadsForCatalog(boardCode string) ([]model.ThreadForCatalogDTO, error) {
+	threads, err := s.ListThreadsOfBoard(boardCode, 0, 1000)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []model.ThreadForCatalogDTO
+
+	for _, thread := range threads {
+		post, err := s.PostService.GetPostByNum(boardCode, thread.PostNum)
+		if err != nil {
+			return nil, err
+		}
+		stats, err := s.GetThreadStats(&thread)
+		if err != nil {
+			return nil, err
+		}
+		threadWithPost := model.ThreadForCatalogDTO{
+			Thread: &thread,
+			Post: post,
+			Stats: stats,
+		}
+		res = append(res, threadWithPost)
+	}
+
+	return res, nil
+}
+
 func (s *ThreadService) GetFullThread(threadId uint) (*model.ThreadFullDTO, error) {
 	thread, err := s.GetThread(threadId)
 	if err != nil {
@@ -110,4 +138,8 @@ func (s *ThreadService) GetFullThreadByNum(boardCode string, threadNum uint) (*m
 	}
 	
 	return s.GetFullThreadFrom(thread)
+}
+
+func (s *ThreadService) GetThreadStats(thread *model.Thread) (model.ThreadStats, error) {
+	return s.ThreadRepo.GetThreadStats(thread.ID)
 }

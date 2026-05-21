@@ -12,6 +12,7 @@ func RegisterThreadRoutes(h *handler.ThreadHandler, rg *gin.RouterGroup) {
     	threads.GET("/board/:boardCode", h.ListThreadsOfBoard)
     	threads.GET("/board/:boardCode/:num", h.GetThreadByNum)
     	threads.GET("/board/:boardCode/:num/full", h.GetFullThreadByNum)
+    	threads.GET("/board/:boardCode/catalog", h.GetThreadsForCatalog)
     	threads.GET("/:id/full", h.GetFullThread)
     	threads.GET("/:id", h.GetThread)
     	threads.POST("/", h.CreateThread)
