@@ -95,7 +95,7 @@
 		<input type=text placeholder="Subject" v-model="createThreadDTO.subject"/><br/>
 		<input type=text placeholder="Name" v-model="createThreadPostDTO.name"/><br/>
 		<input type=text placeholder="Options" v-model="createThreadPostDTO.options"/><br/>
-		<textarea id="reply-area" placeholder="Text..." v-model="createThreadPostDTO.content"/><br/>
+		<textarea cols=30 rows=10 id="reply-area" placeholder="Text..." v-model="createThreadPostDTO.content"/><br/>
 		<input type="file" accept="image/png, image/jpeg, image/gif" @change="onFileSelected" id="reply-file-upload"><br/>
 		<template v-if="fileError"><span class="error">{{fileError}}</span></template>
 

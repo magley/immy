@@ -20,60 +20,60 @@ func getFullPath(filename string) (string) {
     return "/files/" + filename
 }
 
-func SaveFile(filename string, fileBytes string) (error) {
+func SaveFile(filename string, fileBytes string) (uint, error) {
     fullPath := getFullPath(filename)
 
     err := os.MkdirAll(filepath.Dir(fullPath), 0666)
     if err != nil {
         fmt.Print(err.Error())
-        return err
+        return 0, err
     }
 
     f, err := os.Create(fullPath)
     if err != nil {
         fmt.Print(err.Error())
-        return err
+        return 0, err
     }
     defer f.Close()
 
     data, err := base64.StdEncoding.DecodeString(fileBytes)
     if err != nil {
         fmt.Print(err.Error())
-        return err
+        return 0, err
     }
 
-    _, err = f.Write(data)
+    writtenBytes, err := f.Write(data)
     if err != nil {
         fmt.Print(err.Error())
-        return err
+        return 0, err
     }
 
-    return nil
+    return uint(writtenBytes), nil
 }
 
-func SaveImage(filename string, fileBytes string) (error) {
+func SaveImage(filename string, fileBytes string) (uint, uint, error) {
     thumbnailBytes, err := createThumbnailBytes(fileBytes, 6, draw.CatmullRom)
     if err != nil {
         fmt.Print(err.Error())
-        return err
+        return 0, 0, err
     }
 
     fnameBase := strings.TrimSuffix(filename, filepath.Ext(filename))
     filenameThumb := fmt.Sprintf("%s-thumb.jpg", fnameBase)
 
-    err = SaveFile(filename, fileBytes)
+    bytes, err := SaveFile(filename, fileBytes)
     if err != nil {
         fmt.Print(err.Error())
-        return err
+        return 0, 0, err
     }
 
-    err = SaveFile(filenameThumb, thumbnailBytes)
+    bytesThumb, err := SaveFile(filenameThumb, thumbnailBytes)
     if err != nil {
         fmt.Print(err.Error())
-        return err
+        return 0, 0, err
     }
 
-    return nil
+    return bytes, bytesThumb, nil
 }
 
 func GetPostImageFilename(boardCode string, sourceFilename string) string {

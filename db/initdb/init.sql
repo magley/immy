@@ -33,6 +33,7 @@ create table posts (
 	sage 		bool default false,
 	content		varchar,
 	filename 	varchar,
+	filesize	integer,
 	src_filename varchar,
 	html 		varchar
 );

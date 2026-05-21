@@ -17,6 +17,7 @@ type Post struct {
 	Sage 		bool		`json:"sage"`
 	Content 	string		`json:"content"`
 	Filename 	string 		`json:"filename"`
+	Filesize 	uint 		`json:"filesize"`
 	SrcFilename string 		`json:"src_filename"`
 	Html		string 		`json:"html"`
 }

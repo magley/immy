@@ -8,6 +8,7 @@
 	import { type ThreadStats } from "@/model/thread/thread.model.ts";
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
 	import { CdnAPI } from '@/api/cdn.api';
+	import { GetFileSizeByteString } from '@/util/file.util';
 	
 	type TextToken = { kind: "text"; text: string; };
 	type LinkToken = { kind: "link"; text: string; local: bool, fail: bool };
@@ -38,7 +39,13 @@
 
 	const replyForm = useTemplateRef('reply-form');
 
-	const imagesExpanded = ref<Record<number, boolean>>({});
+	interface ImageData {
+		postId: number,
+		expanded: boolean,
+		width: number,
+		height: number,
+	}
+	const imageData = ref<Record<number, ImageData>>({});
 	
 	onMounted(() => {
 		const board_code: string = route.params.board_code;
@@ -142,15 +149,26 @@
 		highlightedPost.value = postNum;
 	}
 
-	const onClickPostImage = (postId: number) => {
-		if (postId !in imagesExpanded) {
-			imagesExpanded.value[postId] = false;
-		}
-
-		imagesExpanded.value[postId] = !imagesExpanded.value[postId];
+	const onClickPostImage = (postId: number, post: PostDTO) => {
+		imageData.value[postId]!.expanded = !imageData.value[postId]!.expanded;
 	}
 	
 	const processPost = (post: PostDTO) => {
+		if (post.filename) {
+			// Create an ImageData object for each image.
+			const img = new Image();
+			img.src = CdnAPI.GetPostImageURI(post)!;
+			img.onload = () => {
+				imageData.value[post.id] = {
+					postId: post.id,
+					expanded: false,
+					width: img.naturalWidth,
+					height: img.naturalHeight,
+					sizeBytes: 0.
+				};
+			}
+		}
+
 		post._tokens = parseTokens(post.content);
 		for (let tok of post._tokens) {
 			if (tok.kind == 'link') {
@@ -221,18 +239,23 @@
 			}
 		}
 	}
+
+	const onPostCreated = () => {
+		replyForm.value?.Clear();
+		reloadThread();
+	}
 </script>
 
 <template>
 	<template v-if="board && thread">
-		<CreatePostForm ref="reply-form" :thread_id="thread.id" :max_size_bytes="1*1024*1024" @postCreated="reloadThread()"></CreatePostForm>
+		<CreatePostForm ref="reply-form" :thread_id="thread.id" :max_size_bytes="1*1024*1024" @postCreated="onPostCreated()"></CreatePostForm>
 		
 		<ThreadViewNavList :board_code="board.code" jump_to_id="bottom" jump_to_label="Bottom" :thread_stats="thread_stats" @threadUpdate="reloadThread()" />
 
 		<template v-if="thread">
 			<div :id="`p${post.num}`" class="postContainer" v-for="post, i of posts">
-				<span class="sideArrows"> &gt;&gt; </span>
-				<span class="post" :class="{ highlightedPost: highlightedPost == post.num }">
+				<span v-if="thread.post_num != post.num" class="sideArrows"> &gt;&gt; </span>
+				<span class="post" :class="{ highlightedPost: highlightedPost == post.num, opPost: thread.post_num == post.num }">
 					<div class="post-header">
 						<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
 						<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
@@ -250,18 +273,19 @@
 						<span v-if="post.filename" class="post-file-container">
 							<div class="post-file-container-header">
 								File: <a :href="CdnAPI.GetPostImageURI(post)" target="_blank">{{ post.src_filename }}</a>
+								({{GetFileSizeByteString(post.filesize)}}, {{imageData[post.id]?.width}}x{{imageData[post.id]?.height}})
 							</div>
 
 							<a :href="CdnAPI.GetPostImageURI(post)" target="_blank" @click.prevent class="post-file-link">
 								<!-- Thumbnail or real image. -->
-								<img v-if="imagesExpanded[post.id]"
-									:src="CdnAPI.GetPostImageURI(post)"
-									@click="onClickPostImage(post.id)"
-									class="post-image-full" />
+								<img v-if="imageData[post.id]?.expanded"
+								:src="CdnAPI.GetPostImageURI(post)"
+								@click="onClickPostImage(post.id, post)"
+								class="post-image-full" />
 								<img v-else
-									:src="CdnAPI.GetPostImageThumbnailURI(post)"
-									@click="onClickPostImage(post.id)"
-									class="post-image-thumb" />
+								:src="CdnAPI.GetPostImageThumbnailURI(post)"
+								@click="onClickPostImage(post.id, post)"
+								class="post-image-thumb" />
 							</a>
 						</span>
 						<div v-else class="post-no-file">
@@ -312,9 +336,9 @@
 			padding-bottom: 1em;
 			padding-left: 1em;
 			padding-right: 1em;
-			
-			.opPost {
-				
+
+			&.opPost {
+				background-color: #EEF2FF !important;
 			}
 			
 			.post-header {
@@ -345,22 +369,25 @@
 				.post-file-container {
 					.post-file-container-header {
 						display: block;
+						margin-bottom: 0.5em;
 					}
 
 					.post-file-link {
 						img {
-							margin-left: 1em;
 							cursor: pointer;
-						}
 
-						img.post-image-full {
-							display: block !important;
-						}
+							&.post-image-full {
+								display: block;
+								max-height: 100%;
+								max-width: 100%;
+							}
 
-						img.post-image-thumb {
-							display: inline;
-							max-width: 25%;
-							max-height: 25%;
+							&.post-image-thumb {
+								display: inline;
+								max-width: 40%;
+								max-height: 40%;
+								vertical-align: top;
+							}
 						}
 					}
 				}

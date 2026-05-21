@@ -107,10 +107,12 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 	}
 
 	if (dto.Filename != nil && dto.Filebytes != nil) {
-		err = util.SaveImage(post.Filename, *dto.Filebytes)
+		bytesImg, _, err := util.SaveImage(post.Filename, *dto.Filebytes)
 		if err != nil {
 			return nil, err
 		}
+
+		post.Filesize = bytesImg
 	}
 
 	post, err = s.PostRepo.CreatePost(post)
@@ -145,10 +147,12 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		Html: "",
 	}
 	
-	err = util.SaveImage(post.Filename, dto.Filebytes)
+	bytesImg, _, err := util.SaveImage(post.Filename, dto.Filebytes)
 	if err != nil {
 		return nil, err
 	}
+
+	post.Filesize = bytesImg
 
 	post, err = s.PostRepo.CreatePost(post)
 

@@ -76,6 +76,18 @@
 		fileName.value = null;
 	}
 
+	const Clear = () => {
+		clearSelectedFile();
+		replyDTO.value = {
+			name: '',
+			content: '',
+			filename: null,
+			filebytes: null,
+			options: '',
+			thread_id: 0
+		};
+	}
+
 	const AppendText = (text: string) => {
 		if (replyDTO.value.content == undefined) {
 			replyDTO.value.content = "";
@@ -89,14 +101,14 @@
 		textArea.value.scrollTop = textArea.value.scrollHeight;
 	}
 
-	defineExpose({ AppendText });
+	defineExpose({ AppendText, Clear });
 </script>
 
 <template>
 	<form @submit.prevent="onSubmitReply">
 		<input type=text placeholder="Name" v-model="replyDTO.name"/><br/>
 		<input type=text placeholder="Options" v-model="replyDTO.options"/><br/>
-		<textarea id="reply-area" placeholder="Text..." ref='text-area' v-model="replyDTO.content"/><br/>
+		<textarea cols=30 rows=10 id="reply-area" placeholder="Text..." ref='text-area' v-model="replyDTO.content"/><br/>
 		<input type="file" accept="image/png, image/jpeg, image/gif" @change="onFileSelected" id="reply-file-upload"><br/>
 		<template v-if="fileError"><span class="error">{{fileError}}</span></template>
 
