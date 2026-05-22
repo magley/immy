@@ -2,53 +2,43 @@
 	import { ref, onMounted, watch, useTemplateRef } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
-	import { ThreadAPI, type ThreadDTO } from "@/api/thread.api.ts";
+	import { ThreadAPI, type ThreadDTO, type ThreadFullDTO } from "@/api/thread.api.ts";
 	import { PostAPI, type PostDTO } from "@/api/post.api.ts";
 	import ThreadViewNavList from "@/components/thread/ThreadViewNavList.vue";
 	import { type ThreadStats } from "@/model/thread/thread.model.ts";
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
 	import { CdnAPI } from '@/api/cdn.api';
 	import { GetFileSizeByteString } from '@/util/file.util';
-	
-	type TextToken = { kind: "text"; text: string; };
-	type LinkToken = { kind: "link"; text: string; local: bool, fail: bool };
-	type Token = TextToken | LinkToken;
-
-	const parseTokens = (text: string): Token[] => {
-		return text.split(/(\s+|##\w+|\S+)/g).map(word => {
-			if (word.startsWith(">>")) {
-				return { kind: "link", text: word };
-			}
-			return { kind: "text", text: word };
-		});
-	}
-
-	const board = ref<BoardDTO | null>(null);
+	import type { AxiosError, AxiosResponse } from 'axios';
+	import type { ApiResponse } from '@/api/http';
+	import { GetPostTimeReadable, type PostImageData, ParsePostTokens, type PostToken } from '@/model/post/post.model';
 
 	const route = useRoute();
 	const router = useRouter();
 	
-	const thread = ref<ThreadDTO>(null);
-	const thread_stats = ref<ThreadStats>({});
+	const board = ref<BoardDTO | null>(null);
+	const thread = ref<ThreadDTO | null>(null);
+	const thread_stats = ref<ThreadStats>({
+		posts: 0,
+		images: 0,
+		posters: 0,
+		page: 0
+	});
 	const posts = ref<PostDTO[]>([]);
-	
+	/** `post.num` of the post that should be highlighted */
 	const highlightedPost = ref<number | undefined>(undefined);
+	/** `post.num` => list of post numbers that link to this post */
 	const backLinks = ref<Record<number, number[]>>({});
-	
+	/** `post.id` => information about the image attached to the post */
+	const imageData = ref<Record<number, PostImageData>>({});
+	/** `post.id` => list of tokens that make up the post's content */
+	const postTokens = ref<Record<number, PostToken[]>>({});
+	/** `post link text from a Token` => URL to the post (either a `#p1234` or a `/board/1234/#p5678`) */
 	const postLinks = ref<Record<string, string>>({});
-
 	const replyForm = useTemplateRef('reply-form');
-
-	interface ImageData {
-		postId: number,
-		expanded: boolean,
-		width: number,
-		height: number,
-	}
-	const imageData = ref<Record<number, ImageData>>({});
 	
 	onMounted(() => {
-		const board_code: string = route.params.board_code;
+		const board_code: string = route.params.board_code as string;
 		loadBoard(board_code);
 	});
 	
@@ -67,7 +57,7 @@
 		BoardAPI.GetBoard(boardCode).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
 			board.value = res.data.data;
 			
-			const thread_num: number = route.params.thread_num;
+			const thread_num: number = Number(route.params.thread_num);
 			loadThread(boardCode, thread_num);
 		}).catch((err: AxiosError) => {
 			router.push("/");
@@ -76,9 +66,9 @@
 	
 	const loadThread = (board_code: string, thread_num: number) => {
 		ThreadAPI.GetFullThreadByNum(board_code, thread_num).then((res: AxiosResponse<ApiResponse<ThreadFullDTO>>) => {
-			const dto: ThreadFullDTO = res.data.data;
+			const dto: ThreadFullDTO = res.data.data!;
 			thread.value = dto.thread;
-			posts.value = dto.posts.sort((a: ThreadDTO, b: ThreadDTO) => a.id - b.id);
+			posts.value = dto.posts.sort((a: PostDTO, b: PostDTO) => a.id - b.id);
 			
 			thread_stats.value.posts = posts.value.length;
 			thread_stats.value.images = posts.value.filter((p: PostDTO) => p.filename).length;
@@ -94,51 +84,11 @@
 	}
 	
 	const reloadThread = () => {
-		loadThread(board.value.code, thread.value.post_num);
-	}
-	
-	const getPostTimeReadable = (dateStr: string) => {
-		var date: Date = new Date(dateStr);
-		
-		const getDayOfWeek = (date: Date) => {
-			switch (date.getDay()) {
-			case 1: return "Mon";
-			case 2: return "Tue";
-			case 3: return "Wed";
-			case 4: return "Thu";
-			case 5: return "Fri";
-			case 6: return "Sat";
-			case 7: return "Sun";
-			default: return "???";
-			}
+		if (board.value && thread.value) {
+			loadThread(board.value.code, thread.value.post_num);
 		}
-		
-		const getDateStr = (date: Date) => {
-			const d = date.getDate();
-			const m = date.getMonth() + 1;
-			const y = date.getFullYear();
-			
-			const dd = String(d).padStart(2, '0');
-			const mm = String(m).padStart(2, '0');
-			const yy = String(y).padStart(2, '0').substring(2);
+	}
 
-			return `${dd}/${mm}/${yy}`;
-		}
-		
-		const getTimeStr = (date: Date) => {
-			const h = date.getHours();
-			const m = date.getMinutes();
-			const s = date.getSeconds();
-			
-			const hh = String(h).padStart(2, '0');
-			const mm = String(m).padStart(2, '0');
-			const ss = String(s).padStart(2, '0');
-			return `${hh}:${mm}:${ss}`;
-		}
-		
-		return `${getDateStr(date)} (${getDayOfWeek(date)})${getTimeStr(date)}`;
-	}
-	
 	const onClickPostNumber = (postNum: number) => {
 		if (replyForm.value) {
 			replyForm.value.AppendText(`>>${postNum}\n`);
@@ -164,21 +114,22 @@
 					expanded: false,
 					width: img.naturalWidth,
 					height: img.naturalHeight,
-					sizeBytes: 0.
 				};
 			}
 		}
 
-		post._tokens = parseTokens(post.content);
-		for (let tok of post._tokens) {
+		postTokens.value[post.id] = ParsePostTokens(post.content);
+		for (let tok of postTokens.value[post.id]!) {
 			if (tok.kind == 'link') {
 				// Before the proper routes are attributed to each link, add a
 				// dummy '#' href for each of the links.
 				postLinks.value[tok.text] = '#';
 			}
 		}
+
+		const boardCode: string = route.params.board_code as string;
 		
-		for (let tok of post._tokens) {
+		for (let tok of postTokens.value[post.id]!) {
 			if (tok.kind == 'link') {
 				if (tok.text in postLinks.value && postLinks.value[tok.text] != '#') {
 					// TODO: We don't know whether the token link is local. If you quote
@@ -188,7 +139,7 @@
 					continue;	
 				}
 				
-				let link_post_board = board.value.code;
+				let link_post_board = boardCode
 				let link_post_num = 0;
 				const link_text = tok.text.substring(2);
 				
@@ -205,7 +156,7 @@
 
 				// Check if the link points to a post in this thread.
 				let post_is_local = false;
-				if (link_post_board == board.value.code) {
+				if (link_post_board == boardCode) {
 					for (let p of posts.value) {
 						if (p.num == link_post_num) {
 							post_is_local = true;
@@ -217,20 +168,21 @@
 				if (post_is_local) {
 					tok.local = true;
 					postLinks.value[tok.text] = `#p${link_post_num}`;	
-					
+
 					// Add backlink.
 					if (!backLinks.value[link_post_num]) {
 						backLinks.value[link_post_num] = [];
 					}
-					if (!backLinks.value[link_post_num].includes(post.num)) {
-						backLinks.value[link_post_num].push(post.num);
+					if (!backLinks.value[link_post_num]!.includes(post.num)) {
+						backLinks.value[link_post_num]!.push(post.num);
 					}
 				} else {
 					tok.local = false;
 					
 					// It's in another thread, so fetch which thread it is.
-					PostAPI.GetPostByNum(link_post_board, link_post_num).then((res) => {
-						postLinks.value[tok.text] = `/${link_post_board}/thread/${res.data.data.thread_num}#p${link_post_num}`;
+					PostAPI.GetPostByNum(link_post_board, link_post_num).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
+						const post: PostDTO = res.data.data!;
+						postLinks.value[tok.text] = `/${link_post_board}/thread/${post.thread_num}#p${link_post_num}`;
 					}).catch((err: AxiosError) => {
 						tok.fail = true;
 						console.error(err);
@@ -260,7 +212,7 @@
 						<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
 						<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
 						<span class="tripcode" v-if="post.tripcode">{{ post.tripcode }}</span>
-						<span class="date">{{ getPostTimeReadable(post.created_at) }}</span>
+						<span class="date">{{ GetPostTimeReadable(post.created_at) }}</span>
 						<span class="postno"><a @click.prevent="onClickPostNo(post.num)" href="#" class="postNumLink">No.</a></span>
 						<span class="postnum"><a @click.prevent="onClickPostNumber(post.num)" href="#" class="postNumLink">{{ post.num }}</a></span>
 						<span class="dropdown">&#9654;</span>
@@ -292,7 +244,7 @@
 						</div>
 
 						<span class="post-body">
-							<span v-for="token of post._tokens">
+							<span v-for="token of postTokens[post.id]">
 								<template v-if="token.kind == 'text'">
 									{{token.text}}
 								</template>
