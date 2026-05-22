@@ -78,7 +78,7 @@
 		ThreadAPI.GetFullThreadByNum(board_code, thread_num).then((res: AxiosResponse<ApiResponse<ThreadFullDTO>>) => {
 			const dto: ThreadFullDTO = res.data.data;
 			thread.value = dto.thread;
-			posts.value = dto.posts;
+			posts.value = dto.posts.sort((a: ThreadDTO, b: ThreadDTO) => a.id - b.id);
 			
 			thread_stats.value.posts = posts.value.length;
 			thread_stats.value.images = posts.value.filter((p: PostDTO) => p.filename).length;

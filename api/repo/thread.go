@@ -67,6 +67,14 @@ func (r *ThreadRepo) DeleteThread(thread *model.Thread) (error) {
 
 func (r *ThreadRepo) GetThreadStats(threadId uint) (model.ThreadStats, error) {
 	var stats model.ThreadStats
-	result := r.DB.Model(&model.Post{}).Where("thread_id = ?", threadId).Select("COUNT(DISTINCT id) as post_count, SUM(CASE WHEN filename != '' THEN 1 ELSE 0 END) AS image_count, COUNT(DISTINCT ipv4) as user_count").Scan(&stats)
+	result := r.DB.
+		Model(&model.Post{}).
+		Where("thread_id = ?", threadId).
+		Select(
+			"COUNT(DISTINCT id) AS post_count, "+
+			"SUM(CASE WHEN filename != '' THEN 1 ELSE 0 END) AS image_count, "+
+			"COUNT(DISTINCT ipv4) AS user_count, "+
+			"MAX(CASE WHEN sage = false THEN created_at ELSE NULL END) AS last_bump").
+		Scan(&stats)
 	return stats, result.Error
 }

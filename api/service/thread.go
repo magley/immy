@@ -111,10 +111,16 @@ func (s *ThreadService) GetThreadsForCatalog(boardCode string) ([]model.ThreadFo
 		if err != nil {
 			return nil, err
 		}
+		lastPos, err := s.PostService.GetNPostsByThread(thread.ID, -1)
+		if err != nil {
+			return nil, err
+		}
+
 		threadWithPost := model.ThreadForCatalogDTO{
-			Thread: &thread,
-			Post: post,
+			Thread: thread,
+			Post: *post,
 			Stats: stats,
+			LastPost: lastPos[0],
 		}
 		res = append(res, threadWithPost)
 	}

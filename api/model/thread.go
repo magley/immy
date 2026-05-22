@@ -1,7 +1,6 @@
 package model
 
-import (
-)
+import "time"
 
 type Thread struct {
 	ID 			uint 		`json:"id"`
@@ -31,13 +30,15 @@ type ThreadFullDTO struct {
 }
 
 type ThreadForCatalogDTO struct {
-	Thread		*Thread	`json:"thread"`
-	Post		*Post	`json:"post"`
+	Thread		Thread	`json:"thread"`
+	Post		Post	`json:"post"`
+	LastPost 	Post 	`json:"last_post"`
 	Stats 		ThreadStats	`json:"stats"`
 }
 
 type ThreadStats struct {
-	PostCount 	uint `json:"post_count"`
-	ImageCount 	uint `json:"image_count"`
-	UserCount 	uint `json:"user_count"`
+	PostCount 	uint 		`json:"post_count"`
+	ImageCount 	uint 		`json:"image_count"`
+	UserCount 	uint 		`json:"user_count"`
+	LastBump 	time.Time 	`json:"last_bump"`
 }

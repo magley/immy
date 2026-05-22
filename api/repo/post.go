@@ -2,7 +2,6 @@ package repo
 
 import (
 	"gorm.io/gorm"
-	
 	model "immy-api/model"
 )
 
@@ -29,9 +28,25 @@ func (r *PostRepo) GetPost(postId uint) (*model.Post, error) {
 
 func (r *PostRepo) GetPostsByThread(threadId uint) ([]model.Post, error) {
 	var posts []model.Post
+
 	result := r.DB.Where("thread_id = ?", threadId).Find(&posts)
 	return posts, result.Error
 }
+
+func (r *PostRepo) GetNPostsByThread(threadId uint, n int) ([]model.Post, error) {
+	var posts []model.Post
+
+	orderDirection := "id asc"
+	absN := n
+	if n < 0 {
+		orderDirection = "id desc"
+		absN *= -1
+	}
+
+	result := r.DB.Where("thread_id = ?", threadId).Order(orderDirection).Limit(absN).Find(&posts)
+	return posts, result.Error
+}
+
 
 func (r *PostRepo) GetPostByNum(boardId, postNum uint) (*model.Post, error) {
 	var post model.Post
@@ -40,18 +55,30 @@ func (r *PostRepo) GetPostByNum(boardId, postNum uint) (*model.Post, error) {
 }
 
 func (r *PostRepo) UpdatePost(post *model.Post, dto model.UpdatePostDTO) (*model.Post, error) {
-	if dto.Name != nil { post.Name = *dto.Name }
-	if dto.Tripcode != nil { post.Tripcode = *dto.Tripcode }
-	if dto.Sage != nil { post.Sage = *dto.Sage }
-	if dto.Content != nil { post.Content = *dto.Content }
-	if dto.Filename != nil { post.Filename = *dto.Filename }
-	if dto.Html != nil { post.Html = *dto.Html }
-	
+	if dto.Name != nil {
+		post.Name = *dto.Name
+	}
+	if dto.Tripcode != nil {
+		post.Tripcode = *dto.Tripcode
+	}
+	if dto.Sage != nil {
+		post.Sage = *dto.Sage
+	}
+	if dto.Content != nil {
+		post.Content = *dto.Content
+	}
+	if dto.Filename != nil {
+		post.Filename = *dto.Filename
+	}
+	if dto.Html != nil {
+		post.Html = *dto.Html
+	}
+
 	result := r.DB.Save(&post)
 	return post, result.Error
 }
 
-func (r *PostRepo) DeletePost(post *model.Post) (error) {
+func (r *PostRepo) DeletePost(post *model.Post) error {
 	result := r.DB.Delete(&post)
 	return result.Error
 }

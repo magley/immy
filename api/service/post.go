@@ -40,6 +40,18 @@ func (s *PostService) GetPostsByThread(threadId uint) ([]model.Post, error) {
 	return s.PostRepo.GetPostsByThread(thread.ID)
 }
 
+// GetNPostsByThread returns the first `n` posts in the thread. If `n` is negative,
+// then the last `n` posts are taken. If `n` is bigger than the number of posts in
+// the thread (`m`), only `m` posts are returned.
+// The posts are ordered by their ID/number/creation date.
+func (s *PostService) GetNPostsByThread(threadId uint, n int) ([]model.Post, error) {
+	thread, err := s.ThreadService.GetThread(threadId)
+	if err != nil {
+		return nil, err
+	}
+	return s.PostRepo.GetNPostsByThread(thread.ID, n)
+}
+
 func (s *PostService) UpdatePost(postId uint, dto model.UpdatePostDTO) (*model.Post, error) {
 	post, err := s.GetPost(postId)
 	if err != nil {

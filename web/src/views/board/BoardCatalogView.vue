@@ -7,7 +7,8 @@
 	import type { ApiResponse } from '@/api/http';
 	import { CdnAPI } from '@/api/cdn.api';
 	import CreateThreadForm from '@/components/thread/CreateThreadForm.vue';
-import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
+	import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
+	import { ThreadSortModeInCatalog } from '@/model/thread/thread.model';
 	
 	const board = ref<BoardDTO | null>(null);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
@@ -15,10 +16,10 @@ import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
 	const route = useRoute();
 	const router = useRouter();
 
-	const imageSizePercentage = ref<number>(100);
+	const sortBy = ref<ThreadSortModeInCatalog>(ThreadSortModeInCatalog.BumpOrder);
+	const imageSize = ref<number>(100);
 	const showComment = ref<boolean>(true);
 
-	
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
 		loadBoard(board_code);
@@ -36,64 +37,44 @@ import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
 	const loadThreads = () => {
 		ThreadAPI.GetThreadsForCatalog(board.value!.code).then((res: AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>) => {
 			threads.value = res.data.data!;
-
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
-			threads.value.push(threads.value[0]);
+			onSortChanged(sortBy.value);
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});
 	}
 
-	const onSortChanged = (sortBy: string) => {
-		switch (sortBy) {
-		case "bumpOrder":
-			// TODO: Implement bumping/saging.
-			// threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => a.thread.id - b.thread.id);
+	const onSortChanged = (sortCol: ThreadSortModeInCatalog) => {
+		sortBy.value = sortCol;
+
+		switch (sortBy.value) {
+		case ThreadSortModeInCatalog.BumpOrder:
+			const cmpLastBump = (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => {
+				const dateA = new Date(a.stats.last_bump);
+				const dateB = new Date(b.stats.last_bump);
+				return -(dateA.getTime() - dateB.getTime());
+			}
+			threads.value = threads.value.sort(cmpLastBump);
 			break;
-		case "lastReply":
-			// TODO: Implement getting last reply date.
-			// threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => a.thread.id - b.thread.id);
+		case ThreadSortModeInCatalog.LastReply:
+			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.last_post.id - b.last_post.id));
 			break;
-		case "creationDate":
-			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => a.thread.id - b.thread.id);
+		case ThreadSortModeInCatalog.CreationDate:
+			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.thread.id - b.thread.id));
 			break;
-		case "replyCount":
-			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => a.stats.post_count.id - b.stats.post_count.id);
+		case ThreadSortModeInCatalog.ReplyCount:
+			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.post_count - b.stats.post_count));
 			break;
-		case "imageCount":
-			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => a.stats.image_count.id - b.stats.image_count.id);
+		case ThreadSortModeInCatalog.ImageCount:
+			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.image_count - b.stats.image_count));
 			break;
-		case "userCount":
-			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => a.stats.user_count.id - b.stats.user_count.id);
+		case ThreadSortModeInCatalog.UserCount:
+			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.user_count - b.stats.user_count));
 			break;
 		}
 	}
 
 	const onImageSizeChanged = (imageSizePctg: number) => {
-		imageSizePercentage.value = imageSizePctg;
+		imageSize.value = imageSizePctg;
 	}
 
 	const onShowCommentChanged = (show: boolean) => {
@@ -113,21 +94,24 @@ import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
 		<hr />
 
 		<BoardViewNavList
-			:board_code="board.code"
-			jump_to_id="bottom"
-			jump_to_label="Bottom"
-			@sort-changed="onSortChanged"
-			@image-size-changed="onImageSizeChanged"
-			@show-comment-changed="onShowCommentChanged"
+		:board_code="board.code"
+		jump_to_id="bottom"
+		jump_to_label="Bottom"
+		:sort-by="sortBy"
+		:image-size="imageSize"
+		:show-comment="showComment"
+		@sort-changed="onSortChanged"
+		@image-size-changed="onImageSizeChanged"
+		@show-comment-changed="onShowCommentChanged"
 		/>
 
 		<hr />
-		<div class="catalog-grid" :style="{ gridTemplateColumns: `repeat(auto-fit, minmax(${160 * imageSizePercentage / 100}px, 1fr))`}">
+		<div class="catalog-grid" :style="{ gridTemplateColumns: `repeat(auto-fit, minmax(${160 * imageSize / 100}px, 1fr))`}">
 			<span v-for="thread in threads" class="catalog-post">
 				<RouterLink :to="`/${board.code}/thread/${thread.thread.post_num}`">
 					<img
-						:src="CdnAPI.GetPostImageURI(thread.post)"
-						:style="{ maxWidth: (160 * imageSizePercentage / 100) + 'px', maxHeight: (140 * imageSizePercentage / 100) + 'px', }"
+					:src="CdnAPI.GetPostImageURI(thread.post)"
+					:style="{ maxWidth: (160 * imageSize / 100) + 'px', maxHeight: (140 * imageSize / 100) + 'px', }"
 					>
 				</RouterLink>
 				<br />
@@ -150,12 +134,15 @@ import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
 
 		<hr />
 		<BoardViewNavList
-			:board_code="board.code"
-			jump_to_id="top"
-			jump_to_label="Top"
-			@sort-changed="onSortChanged"
-			@image-size-changed="onImageSizeChanged"
-			@show-comment-changed="onShowCommentChanged"
+		:board_code="board.code"
+		jump_to_id="top"
+		jump_to_label="Top"
+		:sort-by="sortBy"
+		:image-size="imageSize"
+		:show-comment="showComment"
+		@sort-changed="onSortChanged"
+		@image-size-changed="onImageSizeChanged"
+		@show-comment-changed="onShowCommentChanged"
 		/>
 
 	</template>

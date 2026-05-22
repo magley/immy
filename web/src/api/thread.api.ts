@@ -32,6 +32,7 @@ export interface ThreadFullDTO {
 export interface ThreadForCatalogDTO {
     thread: ThreadDTO;
     post: PostDTO;
+    last_post: PostDTO;
     stats: ThreadStats;
 }
 
@@ -39,6 +40,7 @@ export interface ThreadStats {
     post_count: number;
     image_count: number;
     user_count: number;
+    last_bump: string;
 }
 
 export class ThreadAPI {
