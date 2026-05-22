@@ -49,8 +49,10 @@ export type PostTextToken = {
 export type PostLinkToken = {
 	kind: "link";
 	text: string;
-	local: boolean,
-	fail: boolean
+
+	href: string;
+	local: boolean;
+	fail: boolean;
 };
 
 export type PostToken = PostTextToken | PostLinkToken;
@@ -65,6 +67,7 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 		}
 		return {
 			kind: "text",
+			href: "unknown",
 			text: word,
 			local: true,
 			fail: true,

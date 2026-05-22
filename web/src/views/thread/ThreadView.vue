@@ -11,11 +11,11 @@
 	import { GetFileSizeByteString } from '@/util/file.util';
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
-	import { GetPostTimeReadable, type PostImageData, ParsePostTokens, type PostToken } from '@/model/post/post.model';
+	import { GetPostTimeReadable, type PostImageData, ParsePostTokens, type PostToken, type PostLinkToken } from '@/model/post/post.model';
 
 	const route = useRoute();
 	const router = useRouter();
-	
+
 	const board = ref<BoardDTO | null>(null);
 	const thread = ref<ThreadDTO | null>(null);
 	const thread_stats = ref<ThreadStats>({
@@ -33,48 +33,51 @@
 	const imageData = ref<Record<number, PostImageData>>({});
 	/** `post.id` => list of tokens that make up the post's content */
 	const postTokens = ref<Record<number, PostToken[]>>({});
-	/** `post link text from a Token` => URL to the post (either a `#p1234` or a `/board/1234/#p5678`) */
-	const postLinks = ref<Record<string, string>>({});
+	/** `post link text from a Token` => `PostLinkToken` from which you can
+	  * get all the needed info. All other tokens with the same post link
+	  * text will clone the `PostLinkToken` from here. The exact same token
+	  * can be found in the `postTokens` array for that particular post. */
+	const postLinks = ref<Record<string, PostLinkToken>>({});
 	const replyForm = useTemplateRef('reply-form');
-	
+
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
 		loadBoard(board_code);
 	});
-	
+
 	watch(() => route.hash, (newHash) => {
 		if (newHash) {
 			const chunk = newHash.substring(1);
-			
+
 			if (chunk.startsWith("p")) {
 				const highlightedPostNum = Number(chunk.substring(1));
 				highlightedPost.value = highlightedPostNum
 			}
 		}
 	});
-	
+
 	const loadBoard = (boardCode: string) => {
 		BoardAPI.GetBoard(boardCode).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
 			board.value = res.data.data;
-			
+
 			const thread_num: number = Number(route.params.thread_num);
 			loadThread(boardCode, thread_num);
 		}).catch((err: AxiosError) => {
 			router.push("/");
 		});
 	}
-	
+
 	const loadThread = (board_code: string, thread_num: number) => {
 		ThreadAPI.GetFullThreadByNum(board_code, thread_num).then((res: AxiosResponse<ApiResponse<ThreadFullDTO>>) => {
 			const dto: ThreadFullDTO = res.data.data!;
 			thread.value = dto.thread;
 			posts.value = dto.posts.sort((a: PostDTO, b: PostDTO) => a.id - b.id);
-			
+
 			thread_stats.value.posts = posts.value.length;
 			thread_stats.value.images = posts.value.filter((p: PostDTO) => p.filename).length;
 			thread_stats.value.posters = [... new Set(posts.value.map((p: PostDTO) => p.ipv4))].length;
 			thread_stats.value.page = 1;
-			
+
 			for (let p of posts.value) {
 				processPost(p);
 			}
@@ -82,7 +85,7 @@
 			console.error(err);
 		});
 	}
-	
+
 	const reloadThread = () => {
 		if (board.value && thread.value) {
 			loadThread(board.value.code, thread.value.post_num);
@@ -94,7 +97,7 @@
 			replyForm.value.AppendText(`>>${postNum}\n`);
 		}
 	}
-	
+
 	const onClickPostNo = (postNum: number) => {
 		highlightedPost.value = postNum;
 	}
@@ -102,7 +105,7 @@
 	const onClickPostImage = (postId: number, post: PostDTO) => {
 		imageData.value[postId]!.expanded = !imageData.value[postId]!.expanded;
 	}
-	
+
 	const processPost = (post: PostDTO) => {
 		if (post.filename) {
 			// Create an ImageData object for each image.
@@ -123,29 +126,32 @@
 			if (tok.kind == 'link') {
 				// Before the proper routes are attributed to each link, add a
 				// dummy '#' href for each of the links.
-				postLinks.value[tok.text] = '#';
+				tok.href = '#';
 			}
 		}
 
 		const boardCode: string = route.params.board_code as string;
-		
+
 		for (let tok of postTokens.value[post.id]!) {
 			if (tok.kind == 'link') {
-				if (tok.text in postLinks.value && postLinks.value[tok.text] != '#') {
-					// TODO: We don't know whether the token link is local. If you quote
-					// the same post multiple times in a single post, all links except the
-					// first one will be non-local because `false` is the default value.
-					// More data should be passed inside postLinks.
-					continue;	
+				if (tok.text in postLinks.value && postLinks.value[tok.text]!.href != '#') {
+					// Copy relevant fields from the reference token that's cached in the `postLinks` dict.
+					const refToken: PostLinkToken = postLinks.value[tok.text]!;
+					tok.href = refToken.href;
+					tok.local = refToken.local;
+					tok.fail = refToken.fail;
+					continue;
 				}
-				
-				let link_post_board = boardCode
+
+				// Split into `link_post_board` and `link_post_num`.
+
+				let link_post_board = boardCode;
 				let link_post_num = 0;
 				const link_text = tok.text.substring(2);
-				
+
 				if (link_text[0] == '/') {
 					const j = link_text.indexOf('/', 1);
-					
+
 					if (j > 0) {
 						link_post_board = link_text.substring(1, j);
 						link_post_num = Number(link_text.substring(j + 1));
@@ -155,6 +161,7 @@
 				}
 
 				// Check if the link points to a post in this thread.
+
 				let post_is_local = false;
 				if (link_post_board == boardCode) {
 					for (let p of posts.value) {
@@ -167,7 +174,7 @@
 				
 				if (post_is_local) {
 					tok.local = true;
-					postLinks.value[tok.text] = `#p${link_post_num}`;	
+					tok.href = `#p${link_post_num}`;
 
 					// Add backlink.
 					if (!backLinks.value[link_post_num]) {
@@ -182,12 +189,15 @@
 					// It's in another thread, so fetch which thread it is.
 					PostAPI.GetPostByNum(link_post_board, link_post_num).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
 						const post: PostDTO = res.data.data!;
-						postLinks.value[tok.text] = `/${link_post_board}/thread/${post.thread_num}#p${link_post_num}`;
+						tok.href = `/${link_post_board}/thread/${post.thread_num}#p${link_post_num}`;
 					}).catch((err: AxiosError) => {
 						tok.fail = true;
 						console.error(err);
 					});		
 				}	
+
+				// Cache the link token.
+				postLinks.value[tok.text] = tok as PostLinkToken;
 			}
 		}
 	}
@@ -250,13 +260,13 @@
 								</template>
 								<template v-else-if="token.kind == 'link'">
 									<template v-if="token.local">
-										<a :href="`${postLinks[token.text]}`" :class="{strikethrough: token.fail}" class="link">
+										<a :href="`${postLinks[token.text]!.href}`" :class="{strikethrough: token.fail}" class="postRef">
 											{{token.text}}
 										</a>
 									</template>
 									<template v-else>
-										<RouterLink :to="`${postLinks[token.text]}`">
-											<span :class="{strikethrough: token.fail}">
+										<RouterLink :to="`${postLinks[token.text]!.href}`">
+											<span :class="{strikethrough: token.fail}" class="postRef">
 												{{token.text}} →
 											</span>
 										</RouterLink>
@@ -369,10 +379,6 @@
 		color: #DD0000;
 	}
 
-	.link {
-		color: #DD0000;
-	}
-	
 	.postNumLink {
 		color: black;
 		text-decoration: none;
