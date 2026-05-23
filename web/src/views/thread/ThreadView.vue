@@ -40,9 +40,13 @@
 	const postLinks = ref<Record<string, PostLinkToken>>({});
 	const replyForm = useTemplateRef('reply-form');
 
+	const autoTimer = ref<number>(10);
+	const autoTimerIsEnabled = ref<boolean>(false);
+
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
 		loadBoard(board_code);
+		autoTimerCountdown();
 	});
 
 	watch(() => route.hash, (newHash) => {
@@ -107,7 +111,7 @@
 	}
 
 	const processPost = (post: PostDTO) => {
-		if (post.filename) {
+		if (post.filename && !imageData.value[post.id]) {
 			// Create an ImageData object for each image.
 			const img = new Image();
 			img.src = CdnAPI.GetPostImageURI(post)!;
@@ -206,13 +210,40 @@
 		replyForm.value?.Clear();
 		reloadThread();
 	}
+
+	const autoTimerCountdown = () => {
+		setTimeout(() => {
+			if (autoTimer.value <= 0) {
+				autoTimer.value = 10;
+				reloadThread();
+			} else {
+				if (autoTimerIsEnabled.value) {
+					autoTimer.value -= 1;
+				}
+			}
+
+			autoTimerCountdown();
+		}, 1000);
+	}
+
+	const onAutoTimerToggled = (enabled: boolean) => {
+		autoTimerIsEnabled.value = enabled;
+	}
 </script>
 
 <template>
 	<template v-if="board && thread">
 		<CreatePostForm ref="reply-form" :thread_id="thread.id" :max_size_bytes="1*1024*1024" @postCreated="onPostCreated()"></CreatePostForm>
 		
-		<ThreadViewNavList :board_code="board.code" jump_to_id="bottom" jump_to_label="Bottom" :thread_stats="thread_stats" @threadUpdate="reloadThread()" />
+		<ThreadViewNavList
+			:board_code="board.code"
+			jump_to_id="bottom"
+			jump_to_label="Bottom"
+			:thread_stats="thread_stats"
+			:autoTimer="autoTimer"
+			:isAutoTimerUsed="autoTimerIsEnabled"
+			@updateClicked="reloadThread"
+			@autoTimerToggled="onAutoTimerToggled" />
 
 		<template v-if="thread">
 			<div :id="`p${post.num}`" class="postContainer" v-for="post, i of posts">
@@ -279,7 +310,15 @@
 			</div>
 		</template>
 		
-		<ThreadViewNavList :board_code="board.code" jump_to_id="top" jump_to_label="Top" :thread_stats="thread_stats" @threadUpdate="reloadThread()" />
+		<ThreadViewNavList
+			:board_code="board.code"
+			jump_to_id="top"
+			jump_to_label="Top"
+			:thread_stats="thread_stats"
+			:autoTimer="autoTimer"
+			:isAutoTimerUsed="autoTimerIsEnabled"
+			@updateClicked="reloadThread"
+			@autoTimerToggled="onAutoTimerToggled" />
 	</template>
 </template>
 
