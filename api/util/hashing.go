@@ -1,11 +1,14 @@
 package util
 
 import (
-    bcrypt "golang.org/x/crypto/bcrypt"
+    "golang.org/x/crypto/bcrypt"
+    "golang.org/x/crypto/argon2"
     
     "crypto/sha256"
-    "encoding/hex"
 )
+
+// TODO: Don't hardcode.
+var SECURE_TRIP_SALT = []byte("FH(3hf09ho3hcIHWFKUn2-=fw-0g4")
 
 func HashPassword(password string) (string, error) {
     bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
@@ -18,13 +21,26 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 func CreateTripcode(input string, strong bool) string {
+    const TRIP_CHARSET = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890-=+"
+
     if strong {
-        bytes, _ := bcrypt.GenerateFromPassword([]byte(input), 14)
-        shortHash := bytes[:10]
-        return hex.EncodeToString(shortHash)
+        bytes := argon2.IDKey([]byte(input), SECURE_TRIP_SALT, 3, 64 * 1024, 4, uint32(16))
+        shortHash := bytes[:16]
+        return "!!" + randomStringFromKey(shortHash, TRIP_CHARSET, 11)
     } else {
         fullHash := sha256.Sum256([]byte(input + "h-/-v9e/8==h-=f298h"))
-        shortHash := fullHash[:10]
-        return hex.EncodeToString(shortHash)
+        shortHash := fullHash[:16]
+        return "!" + randomStringFromKey(shortHash, TRIP_CHARSET, 11)
     }
+}
+
+func randomStringFromKey(key []byte, charset string, length int) string {
+    result := make([]byte, length)
+
+    for i := 0; i < length; i++ {
+        idx := key[i % len(key)] % byte(len(charset))
+        result[i] = charset[idx]
+    }
+
+    return string(result)
 }
