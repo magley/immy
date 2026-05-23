@@ -12,6 +12,7 @@
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
 	import { GetPostTimeReadable, type PostImageData, ParsePostTokens, type PostToken, type PostLinkToken } from '@/model/post/post.model';
+	import { vElementVisibility } from '@vueuse/components';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -38,6 +39,11 @@
 	  * text will clone the `PostLinkToken` from here. The exact same token
 	  * can be found in the `postTokens` array for that particular post. */
 	const postLinks = ref<Record<string, PostLinkToken>>({});
+	/** When using auto-update, the last seen post (before auto update)
+	  * will set its post id value here. A line will be drawn, and it
+	  * will be closed once you reach the bottom of the page. */
+	const lastSeenPostBeforeUpdate = ref<number | null>(null);
+
 	const replyForm = useTemplateRef('reply-form');
 
 	const autoTimer = ref<number>(10);
@@ -60,6 +66,46 @@
 		}
 	});
 
+	const setTabTitle = () => {
+		const websiteTitle = "ImmyChan";
+		let title: string = "";
+
+		if (lastSeenPostBeforeUpdate.value && posts.value) {
+			// How many new posts since last seen post
+			let newPostCount = 0;
+			for (var i = 0; i < posts.value.length; i++) {
+				if (posts.value[i]?.id == lastSeenPostBeforeUpdate.value) {
+					newPostCount = posts.value.length - (i + 1);
+					break;
+				}
+			}
+
+			if (newPostCount > 0) {
+				title += `(${newPostCount}) `;
+			}
+		}
+
+		if (board.value) {
+			title += `/${board.value?.code}/ - `;
+		}
+		if (thread.value && posts.value) {
+			if (thread.value?.subject) {
+				title += thread.value.subject;
+				title += " - ";
+			} else if (posts.value[0]?.content) {
+				title += posts.value[0].content;
+				title += " - "
+			}
+		}
+		if (board.value) {
+			title += `${board.value.name} - `;
+		}
+
+		title += websiteTitle;
+
+		document.title = title;
+	}
+
 	const loadBoard = (boardCode: string) => {
 		BoardAPI.GetBoard(boardCode).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
 			board.value = res.data.data;
@@ -73,6 +119,8 @@
 
 	const loadThread = (board_code: string, thread_num: number) => {
 		ThreadAPI.GetFullThreadByNum(board_code, thread_num).then((res: AxiosResponse<ApiResponse<ThreadFullDTO>>) => {
+			const loadingPostsForTheFirstTime: boolean = posts.value.length == 0;
+
 			const dto: ThreadFullDTO = res.data.data!;
 			thread.value = dto.thread;
 			posts.value = dto.posts.sort((a: PostDTO, b: PostDTO) => a.id - b.id);
@@ -85,6 +133,16 @@
 			for (let p of posts.value) {
 				processPost(p);
 			}
+
+			if (loadingPostsForTheFirstTime) {
+				if (posts.value.length > 0) {
+					lastSeenPostBeforeUpdate.value = posts.value.at(-1)!.id;
+				}
+			} else {
+
+			}
+
+			setTabTitle();
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});
@@ -229,6 +287,15 @@
 	const onAutoTimerToggled = (enabled: boolean) => {
 		autoTimerIsEnabled.value = enabled;
 	}
+
+	const onLastPostSeenVisibilityNotify = (isVisible: boolean) => {
+		if (isVisible) {
+			if (posts.value.length > 0) {
+				lastSeenPostBeforeUpdate.value = posts.value.at(-1)!.id;
+				setTabTitle();
+			}
+		}
+	}
 </script>
 
 <template>
@@ -236,19 +303,23 @@
 		<CreatePostForm ref="reply-form" :thread_id="thread.id" :max_size_bytes="1*1024*1024" @postCreated="onPostCreated()"></CreatePostForm>
 		
 		<ThreadViewNavList
-			:board_code="board.code"
-			jump_to_id="bottom"
-			jump_to_label="Bottom"
-			:thread_stats="thread_stats"
-			:autoTimer="autoTimer"
-			:isAutoTimerUsed="autoTimerIsEnabled"
-			@updateClicked="reloadThread"
-			@autoTimerToggled="onAutoTimerToggled" />
+		:board_code="board.code"
+		jump_to_id="bottom"
+		jump_to_label="Bottom"
+		:thread_stats="thread_stats"
+		:autoTimer="autoTimer"
+		:isAutoTimerUsed="autoTimerIsEnabled"
+		@updateClicked="reloadThread"
+		@autoTimerToggled="onAutoTimerToggled" />
 
 		<template v-if="thread">
-			<div :id="`p${post.num}`" class="postContainer" v-for="post, i of posts">
+			<div :id="`p${post.num}`" v-for="post, i of posts" class="postContainer">
 				<span v-if="thread.post_num != post.num" class="sideArrows"> &gt;&gt; </span>
-				<span class="post" :class="{ highlightedPost: highlightedPost == post.num, opPost: thread.post_num == post.num }">
+				<span class="post" :class="{
+					highlightedPost: highlightedPost == post.num,
+					opPost: thread.post_num == post.num ,
+					lastSeenPost: lastSeenPostBeforeUpdate == post.id && i != posts.length - 1,
+				}">
 					<div class="post-header">
 						<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
 						<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
@@ -261,7 +332,7 @@
 							<a :href="`#p${num}`" class="backlink" v-for="num of backLinks[post.num]">&gt;&gt;{{num}}</a>
 						</span>
 					</div>
-					
+
 					<div class="post-body-container">
 						<span v-if="post.filename" class="post-file-container">
 							<div class="post-file-container-header">
@@ -310,15 +381,16 @@
 			</div>
 		</template>
 		
+		<span v-element-visibility="onLastPostSeenVisibilityNotify"></span>
 		<ThreadViewNavList
-			:board_code="board.code"
-			jump_to_id="top"
-			jump_to_label="Top"
-			:thread_stats="thread_stats"
-			:autoTimer="autoTimer"
-			:isAutoTimerUsed="autoTimerIsEnabled"
-			@updateClicked="reloadThread"
-			@autoTimerToggled="onAutoTimerToggled" />
+		:board_code="board.code"
+		jump_to_id="top"
+		jump_to_label="Top"
+		:thread_stats="thread_stats"
+		:autoTimer="autoTimer"
+		:isAutoTimerUsed="autoTimerIsEnabled"
+		@updateClicked="reloadThread"
+		@autoTimerToggled="onAutoTimerToggled" />
 	</template>
 </template>
 
@@ -329,6 +401,10 @@
 		margin-top: 0.2em;
 		.sideArrows {
 			
+		}
+
+		.lastSeenPost {
+			border-bottom: 2px solid red;
 		}
 		
 		.post {
@@ -352,7 +428,7 @@
 						font-size: small;
 						margin-right: 0.25em;
 					}
-				}		
+				}
 			}
 			
 			.post-body-container {
@@ -361,6 +437,7 @@
 					margin-left: 1em;
 					white-space: pre-wrap;
 					word-wrap: break-word;
+
 				}
 
 				.post-no-file {
@@ -398,6 +475,11 @@
 		.highlightedPost {
 			background-color: #d6bad0;
 		}
+	}
+
+	.lastSeenLine {
+		color: red;
+		border-width: 2px;
 	}
 	
 	.username, .tripcode {
