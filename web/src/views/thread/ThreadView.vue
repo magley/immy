@@ -8,11 +8,11 @@
 	import { type ThreadStats } from "@/model/thread/thread.model.ts";
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
 	import { CdnAPI } from '@/api/cdn.api';
-	import { GetFileSizeByteString } from '@/util/file.util';
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
-	import { GetPostTimeReadable, type PostImageData, ParsePostTokens, type PostToken, type PostLinkToken } from '@/model/post/post.model';
+	import { type PostImageData, ParsePostTokens, type PostToken, type PostLinkToken } from '@/model/post/post.model';
 	import { vElementVisibility } from '@vueuse/components';
+	import PostComponent from '@/components/post/PostComponent.vue';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -164,7 +164,7 @@
 		highlightedPost.value = postNum;
 	}
 
-	const onClickPostImage = (postId: number, post: PostDTO) => {
+	const onClickPostImage = (postId: number) => {
 		imageData.value[postId]!.expanded = !imageData.value[postId]!.expanded;
 	}
 
@@ -313,207 +313,41 @@
 		@autoTimerToggled="onAutoTimerToggled" />
 
 		<template v-if="thread">
-			<div :id="`p${post.num}`" v-for="post, i of posts" class="postContainer">
-				<span v-if="thread.post_num != post.num" class="sideArrows"> &gt;&gt; </span>
-				<span class="post" :class="{
-					highlightedPost: highlightedPost == post.num,
-					opPost: thread.post_num == post.num ,
-					lastSeenPost: lastSeenPostBeforeUpdate == post.id && i != posts.length - 1,
-				}">
-					<div class="post-header">
-						<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
-						<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
-						<span class="tripcode" v-if="post.tripcode">{{ post.tripcode }}</span>
-						<span class="date">{{ GetPostTimeReadable(post.created_at) }}</span>
-						<span class="postno"><a @click.prevent="onClickPostNo(post.num)" href="#" class="postNumLink">No.</a></span>
-						<span class="postnum"><a @click.prevent="onClickPostNumber(post.num)" href="#" class="postNumLink">{{ post.num }}</a></span>
-						<span class="dropdown">&#9654;</span>
-						<span class="backlink-container" v-if="backLinks[post.num]">
-							<a :href="`#p${num}`" class="backlink" v-for="num of backLinks[post.num]">&gt;&gt;{{num}}</a>
-						</span>
-					</div>
+			<!-- <div :id="`p${post.num}`" v-for="post, i of posts" class="postContainer"> -->
+				<PostComponent
+				v-for="post, i of posts"
+				:board="board"
+				:thread="thread"
+				:post="post"
+				:is_highlighted="highlightedPost == post.num"
+				:is_op_post="thread.post_num == post.num"
+				:is_last_seen="lastSeenPostBeforeUpdate == post.id && i != posts.length - 1"
+				:backlinks="backLinks[post.num] ?? []"
+				:image_data="imageData[post.id]"
+				:post_tokens="postTokens[post.id] ?? []"
+				:post_links="postLinks"
+				@onClickPostNo="onClickPostNo"
+				@onClickPostNumber="onClickPostNumber"
+				@onClickPostImage="onClickPostImage"
+				/>
 
-					<div class="post-body-container">
-						<span v-if="post.filename" class="post-file-container">
-							<div class="post-file-container-header">
-								File: <a :href="CdnAPI.GetPostImageURI(post)" target="_blank">{{ post.src_filename }}</a>
-								({{GetFileSizeByteString(post.filesize)}}, {{imageData[post.id]?.width}}x{{imageData[post.id]?.height}})
-							</div>
+			</template>
 
-							<a :href="CdnAPI.GetPostImageURI(post)" target="_blank" @click.prevent class="post-file-link">
-								<!-- Thumbnail or real image. -->
-								<img v-if="imageData[post.id]?.expanded"
-								:src="CdnAPI.GetPostImageURI(post)"
-								@click="onClickPostImage(post.id, post)"
-								class="post-image-full" />
-								<img v-else
-								:src="CdnAPI.GetPostImageThumbnailURI(post)"
-								@click="onClickPostImage(post.id, post)"
-								class="post-image-thumb" />
-							</a>
-						</span>
-						<div v-else class="post-no-file">
-						</div>
-
-						<span class="post-body">
-							<span v-for="token of postTokens[post.id]">
-								<template v-if="token.kind == 'text'">
-									{{token.text}}
-								</template>
-								<template v-else-if="token.kind == 'link'">
-									<template v-if="token.local">
-										<a :href="`${postLinks[token.text]!.href}`" :class="{strikethrough: token.fail}" class="postRef">
-											{{token.text}}
-										</a>
-									</template>
-									<template v-else>
-										<RouterLink :to="`${postLinks[token.text]!.href}`">
-											<span :class="{strikethrough: token.fail}" class="postRef">
-												{{token.text}} →
-											</span>
-										</RouterLink>
-									</template>
-								</template>
-							</span>
-						</span>
-					</div>
-				</span>
-			</div>
+			<span v-element-visibility="onLastPostSeenVisibilityNotify"></span>
+			<ThreadViewNavList
+			:board_code="board.code"
+			jump_to_id="top"
+			jump_to_label="Top"
+			:thread_stats="thread_stats"
+			:autoTimer="autoTimer"
+			:isAutoTimerUsed="autoTimerIsEnabled"
+			@updateClicked="reloadThread"
+			@autoTimerToggled="onAutoTimerToggled" />
 		</template>
-		
-		<span v-element-visibility="onLastPostSeenVisibilityNotify"></span>
-		<ThreadViewNavList
-		:board_code="board.code"
-		jump_to_id="top"
-		jump_to_label="Top"
-		:thread_stats="thread_stats"
-		:autoTimer="autoTimer"
-		:isAutoTimerUsed="autoTimerIsEnabled"
-		@updateClicked="reloadThread"
-		@autoTimerToggled="onAutoTimerToggled" />
 	</template>
-</template>
 
-<style scoped>	
-	.postContainer {
-		display: flex;
-		gap: 2px;
-		margin-top: 0.2em;
-		.sideArrows {
-			
+	<style scoped>
+		.error {
+			color: red;
 		}
-
-		.lastSeenPost {
-			border-bottom: 2px solid red;
-		}
-		
-		.post {
-			background-color: #D6DAF0;
-			padding-top: 0.25em;
-			padding-bottom: 1em;
-			padding-left: 1em;
-			padding-right: 1em;
-
-			&.opPost {
-				background-color: #EEF2FF !important;
-			}
-			
-			.post-header {
-				span {
-					margin-right: 0.25em;
-				}
-				
-				.backlink-container {
-					.backlink {
-						font-size: small;
-						margin-right: 0.25em;
-					}
-				}
-			}
-			
-			.post-body-container {
-				.post-body {
-					display: inline-block;
-					margin-left: 1em;
-					white-space: pre-wrap;
-					word-wrap: break-word;
-
-				}
-
-				.post-no-file {
-					margin-top: 0.5em;
-				}
-
-				.post-file-container {
-					.post-file-container-header {
-						display: block;
-						margin-bottom: 0.5em;
-					}
-
-					.post-file-link {
-						img {
-							cursor: pointer;
-
-							&.post-image-full {
-								display: block;
-								max-height: 100%;
-								max-width: 100%;
-							}
-
-							&.post-image-thumb {
-								display: inline;
-								max-width: 40%;
-								max-height: 40%;
-								vertical-align: top;
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		.highlightedPost {
-			background-color: #d6bad0;
-		}
-	}
-
-	.lastSeenLine {
-		color: red;
-		border-width: 2px;
-	}
-	
-	.username, .tripcode {
-		color: #157743;
-		font-weight: bolder;
-	}
-	
-	.subject {
-		color: #0F0C5D;
-		font-weight: bolder;
-	}
-	
-	a {
-		color: #34345c;
-	}
-	
-	a:hover {
-		color: #DD0000;
-	}
-
-	.postNumLink {
-		color: black;
-		text-decoration: none;
-	}
-	
-	.postNumLink:hover {
-		color: #DD0000;
-	}
-	
-	.strikethrough {
-		text-decoration: line-through;
-	}
-	
-	.error {
-		color: red;
-	}
-</style>
+	</style>

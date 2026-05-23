@@ -2,6 +2,15 @@ body {
 	background-color: #EEF2FF;
 }
 
+a {
+  color: #34345c;
+}
+
+a:hover {
+  color: #DD0000;
+}
+
+
 /* Links and cross-links */
 .postRef, .postRef:visited {
 	color: #DD0000;
