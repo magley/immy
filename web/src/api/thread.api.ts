@@ -36,6 +36,12 @@ export interface ThreadForCatalogDTO {
     stats: ThreadStats;
 }
 
+export interface ThreadForHomeDTO {
+    thread: ThreadDTO;
+    posts: PostDTO[]; // Initially it includes the OP post and N last posts.
+    stats: ThreadStats;
+}
+
 export interface ThreadStats {
     post_count: number;
     image_count: number;
@@ -71,7 +77,11 @@ export class ThreadAPI {
     static async GetThreadsForCatalog(boardCode: string): Promise<AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>> {
         return axiosInstance.get(`/threads/board/${boardCode}/catalog`);
     }
-    
+
+    static async GetThreadsForHome(boardCode: string, page: number, pageSize: number): Promise<AxiosResponse<ApiResponse<ThreadForHomeDTO[]>>> {
+        return axiosInstance.get(`/threads/board/${boardCode}/home?page=${page}&perPage=${pageSize}`);
+    }
+
     static async CreateThread(dto: CreateThreadDTO): Promise<AxiosResponse<ApiResponse<ThreadDTO>>> {
         return axiosInstance.post(`/threads/`, dto);
     }

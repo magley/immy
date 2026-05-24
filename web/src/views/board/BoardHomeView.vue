@@ -1,20 +1,40 @@
 <script setup lang="ts">
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
+	import { CdnAPI } from "@/api/cdn.api";
 	import type { ApiResponse } from '@/api/http';
-	import { ThreadAPI, type ThreadDTO } from "@/api/thread.api.ts";
+	import { PostAPI, type PostDTO } from "@/api/post.api";
+	import { ThreadAPI, type ThreadForHomeDTO } from "@/api/thread.api.ts";
+	import PostComponent from "@/components/post/PostComponent.vue";
 	import CreateThreadForm from '@/components/thread/CreateThreadForm.vue';
+	import { type PostImageData, type PostToken, type PostLinkToken, ParsePostTokens } from "@/model/post/post.model";
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import { onMounted, ref } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
-	
 	
 	const board = ref<BoardDTO | null>(null);
 
 	const route = useRoute();
 	const router = useRouter();
 	
-	const threads = ref<ThreadDTO[]>([]);
+	const threads = ref<ThreadForHomeDTO[]>([]);
 	const threadsError = ref<string | undefined>(undefined);
+
+	const page = ref<number>(0);
+	const pageSize = ref<number>(10);
+	const totalPages = ref<number>(0);
+
+	/** `post.id` => information about the image attached to the post */
+	const imageData = ref<Record<number, PostImageData>>({});
+	/** `post.id` => list of tokens that make up the post's content */
+	const postTokens = ref<Record<number, PostToken[]>>({});
+	/** `post link text from a Token` => `PostLinkToken` from which you can
+	  * get all the needed info. All other tokens with the same post link
+	  * text will clone the `PostLinkToken` from here. The exact same token
+	  * can be found in the `postTokens` array for that particular post. */
+	const postLinks = ref<Record<string, PostLinkToken>>({});
+	/** When using auto-update, the last seen post (before auto update)
+	  * will set its post id value here. A line will be drawn, and it
+	  * will be closed once you reach the bottom of the page. */
 	
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
@@ -36,12 +56,139 @@
 		}
 
 		threadsError.value = undefined;
-		ThreadAPI.ListThreadsByBoard(board.value.code).then((res : AxiosResponse<ApiResponse<ThreadDTO[]>>) => {
+		ThreadAPI.GetThreadsForHome(board.value.code, page.value, pageSize.value).then((res : AxiosResponse<ApiResponse<ThreadForHomeDTO[]>>) => {
+			if (res.data.meta) {
+				totalPages.value = res.data.meta.total_pages;
+			}
+
 			threads.value = res.data.data!;
+
+			// Process posts into tokens.
+			for (let i = 0; i < threads.value.length; i++) {
+				const thread: ThreadForHomeDTO = threads.value[i]!;
+				for (let j = 0; j < thread.posts.length; j++) {
+					processPost(thread.posts[j]!, thread);
+				}
+			}
 		}).catch((err: AxiosError) => {
 			threadsError.value = "Could not fetch threads";
 			console.error(err);
 		});
+	}
+
+	const onClickPostNo = (post_num: number, thread: ThreadForHomeDTO) => {
+		router.push(`${board.value!.code}/thread/${thread.thread.post_num}#p${post_num}`);
+	}
+
+	const onClickPostNumber = (post_num: number, thread: ThreadForHomeDTO) => {
+		router.push(`${board.value!.code}/thread/${thread.thread.post_num}#p${post_num}`);
+	}
+
+	const onClickPostImage = (postId: number, thread: ThreadForHomeDTO) => {
+		imageData.value[postId]!.expanded = !imageData.value[postId]!.expanded;
+	}
+
+
+	const processPost = (post: PostDTO, thread: ThreadForHomeDTO) => {
+		if (post.filename && !imageData.value[post.id]) {
+			// Create an ImageData object for each image.
+			const img = new Image();
+			img.src = CdnAPI.GetPostImageURI(post)!;
+			img.onload = () => {
+				imageData.value[post.id] = {
+					postId: post.id,
+					expanded: false,
+					width: img.naturalWidth,
+					height: img.naturalHeight,
+				};
+			}
+		}
+
+		if (post.filename && !imageData.value[post.id]) {
+			// Create an ImageData object for each image.
+			const img = new Image();
+			img.src = CdnAPI.GetPostImageURI(post)!;
+			img.onload = () => {
+				imageData.value[post.id] = {
+					postId: post.id,
+					expanded: false,
+					width: img.naturalWidth,
+					height: img.naturalHeight,
+				};
+			}
+		}
+
+		postTokens.value[post.id] = ParsePostTokens(post.content);
+		for (let tok of postTokens.value[post.id]!) {
+			if (tok.kind == 'link') {
+				// Before the proper routes are attributed to each link, add a
+				// dummy '#' href for each of the links.
+				tok.href = '#';
+			}
+		}
+
+		const boardCode: string = route.params.board_code as string;
+
+		for (let tok of postTokens.value[post.id]!) {
+			if (tok.kind == 'link') {
+				if (tok.text in postLinks.value && postLinks.value[tok.text]!.href != '#') {
+					// Copy relevant fields from the reference token that's cached in the `postLinks` dict.
+					const refToken: PostLinkToken = postLinks.value[tok.text]!;
+					tok.href = refToken.href;
+					tok.local = refToken.local;
+					tok.fail = refToken.fail;
+					continue;
+				}
+
+				// Split into `link_post_board` and `link_post_num`.
+
+				let link_post_board = boardCode;
+				let link_post_num = 0;
+				const link_text = tok.text.substring(2);
+
+				if (link_text[0] == '/') {
+					const j = link_text.indexOf('/', 1);
+
+					if (j > 0) {
+						link_post_board = link_text.substring(1, j);
+						link_post_num = Number(link_text.substring(j + 1));
+					}
+				} else {
+					link_post_num = Number(link_text);
+				}
+
+				// Check if the link points to a post in this thread.
+
+				let post_is_local = false;
+				if (link_post_board == boardCode) {
+					for (let p of thread.posts) {
+						if (p.num == link_post_num) {
+							post_is_local = true;
+							break;
+						}
+					}
+				}
+
+				if (post_is_local) {
+					tok.local = true;
+					tok.href = `#p${link_post_num}`;
+				} else {
+					tok.local = false;
+
+					// It's in another thread, so fetch which thread it is.
+					PostAPI.GetPostByNum(link_post_board, link_post_num).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
+						const post: PostDTO = res.data.data!;
+						tok.href = `/${link_post_board}/thread/${post.thread_num}#p${link_post_num}`;
+					}).catch((err: AxiosError) => {
+						tok.fail = true;
+						console.error(err);
+					});
+				}
+
+				// Cache the link token.
+				postLinks.value[tok.text] = tok as PostLinkToken;
+			}
+		}
 	}
 </script>
 
@@ -59,19 +206,30 @@
 		<hr />
 		
 		<!-- Thread list -->
-		<template v-if="threadsError">
+		<template v-if="threadsError">P
 			<div class="error">{{ threadsError }}</div>
 		</template>
 		<template v-else>
-			<ul>
-				<li v-for="thread in threads">
-					{{ thread.id }} | {{ thread.subject }} | {{ thread.locked }} | {{ thread.sticky }}
-					<RouterLink :to="`/${board.code}/thread/${thread.post_num}`">Open</RouterLink>
-				</li>
-			</ul>
+			<div v-for="thread in threads">
+				<PostComponent
+				v-for="post, i of thread.posts"
+				:board="board"
+				:thread="thread.thread"
+				:post="post"
+				:is_highlighted="false"
+				:is_op_post="i == 0"
+				:is_last_seen="false"
+				:backlinks="[]"
+				:image_data="imageData[post.id]"
+				:post_tokens="postTokens[post.id] ?? []"
+				:post_links="postLinks"
+				@onClickPostNo="(n: number) => onClickPostNo(n, thread)"
+				@onClickPostNumber="(n: number) => onClickPostNumber(n, thread)"
+				@onClickPostImage="(n: number) => onClickPostImage(n, thread)"
+				/>
+				<hr />
+			</div>
 		</template>
-		
-		
 	</template>
 </template>
 
