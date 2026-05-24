@@ -3,6 +3,7 @@ package service
 import (
 	"immy-api/model"
 	"immy-api/repo"
+	"slices"
 )
 
 type ThreadService struct {
@@ -23,6 +24,16 @@ func (s *ThreadService) ListThreadsOfBoard(boardCode string, offset, limit int) 
 
 	return s.ThreadRepo.ListThreadsOfBoard(board.ID, offset, limit)
 }
+
+func (s *ThreadService) ListThreadsOfBoardOrderByBump(boardCode string, offset, limit int) ([]model.Thread, error) {
+	board, err := s.BoardService.GetBoardByCode(boardCode)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.ThreadRepo.ListThreadsOfBoardOrderByBump(board.ID, offset, limit)
+}
+
 
 func (s *ThreadService) GetThreadCountPerBoard(boardCode string) (int64, error) {
 	board, err := s.BoardService.GetBoardByCode(boardCode)
@@ -139,7 +150,7 @@ func (s *ThreadService) GetThreadsForCatalog(boardCode string) ([]model.ThreadFo
 }
 
 func (s *ThreadService) GetThreadsForHome(boardCode string, lastNpostsCount int, perPage int, page int) ([]model.ThreadForHomeDTO, int64, error) {
-	threads, err := s.ListThreadsOfBoard(boardCode, page * perPage, perPage)
+	threads, err := s.ListThreadsOfBoardOrderByBump(boardCode, page * perPage, perPage)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -163,10 +174,16 @@ func (s *ThreadService) GetThreadsForHome(boardCode string, lastNpostsCount int,
 		if err != nil {
 			return nil, 0, err
 		}
+		slices.Reverse(lastPosts)
+
+		// Only add OP if it's not included in the last N posts.
+		if len(lastPosts) > 0 && lastPosts[0].ID != post.ID {
+			lastPosts = append([]model.Post{*post}, lastPosts...)
+		}
 
 		threadWithPosts := model.ThreadForHomeDTO{
 			Thread:   thread,
-			Posts:    append([]model.Post{*post}, lastPosts...),
+			Posts:    lastPosts,
 			Stats:    stats,
 		}
 		res = append(res, threadWithPosts)

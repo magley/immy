@@ -152,6 +152,9 @@
 <style scoped>
 	#title {
 		text-align: center;
+		h1 {
+			color: #af0a0f;
+		}
 	}
 
 	#create-thread {

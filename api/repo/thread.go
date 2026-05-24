@@ -22,6 +22,20 @@ func (r *ThreadRepo) ListThreadsOfBoard(boardId uint, offset int, limit int) ([]
 	return threads, result.Error
 }
 
+func (r *ThreadRepo) ListThreadsOfBoardOrderByBump(boardId uint, offset int, limit int) ([]model.Thread, error) {
+	var threads []model.Thread
+	result := r.DB.
+		Model(&model.Thread{}).
+		Where("threads.board_id = ?", boardId).
+		Joins("LEFT JOIN posts ON posts.thread_id = threads.id AND posts.sage = false").
+		Group("threads.id").
+		Order("MAX(posts.created_at) DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&threads)
+	return threads, result.Error
+}
+
 func (r *ThreadRepo) GetThreadCountPerBoard(boardId uint) (int64, error) {
 	var total int64
 	result := r.DB.Model(&model.Thread{}).Where("board_id = ?", boardId).Count(&total)

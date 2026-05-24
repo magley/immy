@@ -20,8 +20,9 @@
 	const threadsError = ref<string | undefined>(undefined);
 
 	const page = ref<number>(0);
-	const pageSize = ref<number>(10);
+	const pageSize = ref<number>(2);
 	const totalPages = ref<number>(0);
+	const pages = ref<number[]>([]);
 
 	/** `post.id` => information about the image attached to the post */
 	const imageData = ref<Record<number, PostImageData>>({});
@@ -38,6 +39,8 @@
 	
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
+		const page_num_string = route.query['page'] ?? "1";
+		page.value = Number(page_num_string) - 1;
 		loadBoard(board_code);
 	});
 	
@@ -59,6 +62,10 @@
 		ThreadAPI.GetThreadsForHome(board.value.code, page.value, pageSize.value).then((res : AxiosResponse<ApiResponse<ThreadForHomeDTO[]>>) => {
 			if (res.data.meta) {
 				totalPages.value = res.data.meta.total_pages;
+				pages.value = [];
+				for (let i = 1; i <= totalPages.value; i++) {
+					pages.value.push(i);
+				}
 			}
 
 			threads.value = res.data.data!;
@@ -87,7 +94,6 @@
 	const onClickPostImage = (postId: number, thread: ThreadForHomeDTO) => {
 		imageData.value[postId]!.expanded = !imageData.value[postId]!.expanded;
 	}
-
 
 	const processPost = (post: PostDTO, thread: ThreadForHomeDTO) => {
 		if (post.filename && !imageData.value[post.id]) {
@@ -194,47 +200,97 @@
 
 <template>
 	<template v-if="board">
-		<h1>/{{board.code}}/ - {{board.name}}</h1>
-		<small>{{board.description}}</small>
-		
-		<RouterLink :to="`/${route.params.board_code}/catalog`">[Catalog]</RouterLink>
-		
+		<div id="title">
+			<h1>/{{board.code}}/ - {{board.name}}</h1>
+			<small>{{board.description}}</small>
+		</div>
 		<hr />
-		
-		<CreateThreadForm :board_code="board.code" :max_size_bytes="1*1024*1024" @threadCreated="loadThreads()" />
-		
+
+		<CreateThreadForm id="create-thread" :board_code="board.code" :max_size_bytes="1*1024*1024" @threadCreated="loadThreads()" />
 		<hr />
-		
+
+		<!-- Navigation and search -->
+		[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
+		<!-- [<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>] -->
+		[<a class="link" :href="`#bottom`">Bottom</a>]
+
+		<hr />
+
 		<!-- Thread list -->
 		<template v-if="threadsError">P
 			<div class="error">{{ threadsError }}</div>
 		</template>
 		<template v-else>
 			<div v-for="thread in threads">
-				<PostComponent
-				v-for="post, i of thread.posts"
-				:board="board"
-				:thread="thread.thread"
-				:post="post"
-				:is_highlighted="false"
-				:is_op_post="i == 0"
-				:is_last_seen="false"
-				:backlinks="[]"
-				:image_data="imageData[post.id]"
-				:post_tokens="postTokens[post.id] ?? []"
-				:post_links="postLinks"
-				@onClickPostNo="(n: number) => onClickPostNo(n, thread)"
-				@onClickPostNumber="(n: number) => onClickPostNumber(n, thread)"
-				@onClickPostImage="(n: number) => onClickPostImage(n, thread)"
-				/>
+				<template v-for="post, i of thread.posts">
+					<PostComponent
+						:board="board"
+						:thread="thread.thread"
+						:post="post"
+						:is_highlighted="false"
+						:is_op_post="i == 0"
+						:is_last_seen="false"
+						:backlinks="[]"
+						:image_data="imageData[post.id]"
+						:post_tokens="postTokens[post.id] ?? []"
+						:post_links="postLinks"
+						@onClickPostNo="(n: number) => onClickPostNo(n, thread)"
+						@onClickPostNumber="(n: number) => onClickPostNumber(n, thread)"
+						@onClickPostImage="(n: number) => onClickPostImage(n, thread)"
+					/>
+					<div v-if="i == 0 && thread.posts.length < thread.stats.post_count">
+						{{ thread.stats.image_count - thread.posts.filter((p) => p.filename).length }} images and {{ thread.stats.post_count - thread.posts.length }} replies ommited.
+						<RouterLink :to="`${board.code}/thread/${thread.thread.post_num}`">Click here</RouterLink> to view them.
+					</div>
+				</template>
+
 				<hr />
 			</div>
 		</template>
+
+		<!-- Pagination -->
+		<div>
+			<span v-if="page > 0">
+				[<a :href="`/${board.code}?page=${page - 1 + 1}`">Prev</a>]
+			</span>
+			<span v-for="p of pages">
+				[<a :href="`/${board.code}?page=${p}`" :class="{currentPage : p-1 == page}">{{p}}</a>]
+			</span>
+			<span v-if="page < totalPages - 1">
+				[<a :href="`/${board.code}?page=${page + 1 + 1}`">Next</a>]
+			</span>
+		</div>
+
+		<hr />
+
+		<!-- Navigation and search #2 -->
+		[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
+		<!-- [<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>] -->
+		[<a class="link" :href="`#top`">Top</a>]
 	</template>
 </template>
 
 <style scoped>
+	#title {
+		text-align: center;
+		h1 {
+			color: #af0a0f;
+		}
+	}
+
+	#create-thread {
+		display: block;
+		text-align: center;
+		width: 100%;
+		margin: auto;
+	}
+
+
 	.error {
 		color: red;
+	}
+
+	.currentPage {
+		font-weight: bold;
 	}
 </style>
