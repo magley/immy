@@ -1,8 +1,9 @@
 package util
 
 import (
-	"github.com/gin-gonic/gin"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 
@@ -29,4 +30,39 @@ func ParamUintSafe(c *gin.Context, paramName string, what string) (uint, bool) {
 	}
 	
 	return uint(value), true
+}
+
+func ParamInt(c *gin.Context, paramName string) (int, error) {
+	valueStr := c.Param(paramName)
+	value, err := strconv.ParseInt(valueStr, 10, 64)
+	return int(value), err
+}
+
+func ParamIntSafe(c *gin.Context, paramName string, what string) (int, bool) {
+	valueStr := c.Param(paramName)
+	value, err := strconv.ParseInt(valueStr, 10, 64)
+	if err != nil {
+		NotFound(c, what, valueStr)
+		return 0, false
+	}
+
+	return int(value), true
+}
+
+
+func QueryInt(c *gin.Context, paramName string) (int, error) {
+	valueStr := c.Query(paramName)
+	value, err := strconv.ParseInt(valueStr, 10, 64)
+	return int(value), err
+}
+
+func QueryIntSafe(c *gin.Context, paramName string, what string) (int, bool) {
+	valueStr := c.Query(paramName)
+	value, err := strconv.ParseInt(valueStr, 10, 64)
+	if err != nil {
+		NotFound(c, what, valueStr)
+		return 0, false
+	}
+
+	return int(value), true
 }

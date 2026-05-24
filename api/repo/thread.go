@@ -22,6 +22,12 @@ func (r *ThreadRepo) ListThreadsOfBoard(boardId uint, offset int, limit int) ([]
 	return threads, result.Error
 }
 
+func (r *ThreadRepo) GetThreadCountPerBoard(boardId uint) (int64, error) {
+	var total int64
+	result := r.DB.Model(&model.Thread{}).Where("board_id = ?", boardId).Count(&total)
+	return total, result.Error
+}
+
 func (r *ThreadRepo) CreateThread(dto model.CreateThreadDTO, boardID uint) (*model.Thread, error) {
 	thread := model.Thread{
 		BoardID: boardID,

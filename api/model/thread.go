@@ -36,6 +36,12 @@ type ThreadForCatalogDTO struct {
 	Stats 		ThreadStats	`json:"stats"`
 }
 
+type ThreadForHomeDTO struct {
+	Thread		Thread		`json:"thread"`
+	Posts 		[]Post	 	`json:"posts"` // Initially it includes OP post and N last posts.
+	Stats 		ThreadStats	`json:"stats"`
+}
+
 type ThreadStats struct {
 	PostCount 	uint 		`json:"post_count"`
 	ImageCount 	uint 		`json:"image_count"`
