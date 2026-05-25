@@ -51,7 +51,7 @@ func main() {
 	var userService *service.UserService
 	
 	boardService = &service.BoardService{BoardRepo: boardRepo}
-	postService = &service.PostService{PostRepo: postRepo, BoardService: boardService}
+	postService = &service.PostService{PostRepo: postRepo, BoardService: boardService, ThreadRepo: threadRepo}
 	threadService = &service.ThreadService{ThreadRepo: threadRepo, BoardService: boardService, PostService: postService}
 	userService = &service.UserService{UserRepo: userRepo}
 	

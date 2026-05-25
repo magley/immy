@@ -1,13 +1,15 @@
 <script setup lang="ts">
-	import { BoardDTO, BoardAPI } from '@/api/board.api.ts';
+	import { type BoardDTO, BoardAPI } from '@/api/board.api.ts';
+	import type { AxiosResponse, AxiosError } from 'axios';
 	import { ref, onMounted } from 'vue';
+	import type { ApiResponse } from './api/http';
 	
 	const boards = ref<BoardDTO[]>([]);
 	const boardsError = ref<string | null>(null);
 	
 	onMounted(() => {
 		BoardAPI.ListBoards().then((res: AxiosResponse<ApiResponse<BoardDTO[]>>) => {
-			boards.value = res.data.data;
+			boards.value = res.data.data!;
 		}).catch((err: AxiosError) => {
 			boardsError.value = "Failed to fetch boards";
 			console.error(err);	
@@ -46,9 +48,7 @@
 			]
 		</template>
 	</nav>
-	
-	<p><strong>Current route path:</strong> {{ $route.fullPath }}</p>
-	
+
 	<main>	
 		<!-- The key is so the page resets when the route changes. Don't use
 		fullPath because then the '#abc' anchor will cause a reset as

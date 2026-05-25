@@ -34,6 +34,7 @@ create table posts (
 	content		varchar,
 	filename 	varchar,
 	filesize	integer,
+	md5 		varchar,						-- Stored as base64
 	src_filename varchar,
 	html 		varchar
 );

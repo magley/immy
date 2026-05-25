@@ -68,7 +68,7 @@
 				}
 			}
 
-			threads.value = res.data.data!;
+			threads.value = res.data.data! ?? [];
 
 			// Process posts into tokens.
 			for (let i = 0; i < threads.value.length; i++) {
@@ -217,7 +217,7 @@
 		<hr />
 
 		<!-- Thread list -->
-		<template v-if="threadsError">P
+		<template v-if="threadsError">
 			<div class="error">{{ threadsError }}</div>
 		</template>
 		<template v-else>

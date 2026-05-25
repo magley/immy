@@ -2,6 +2,7 @@ package util
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/base64"
 	"fmt"
 	"image"
@@ -79,6 +80,11 @@ func SaveImage(filename string, fileBytes string) (uint, uint, error) {
 func GetPostImageFilename(boardCode string, sourceFilename string) string {
     ext := filepath.Ext(sourceFilename)
     return fmt.Sprintf("%s/%d%s", boardCode, time.Now().UnixMilli(), ext)
+}
+
+func GetFileHashB64(fileBytes string) (string) {
+    hashed := md5.Sum([]byte(fileBytes))
+    return base64.StdEncoding.EncodeToString([]byte(hashed[:]))
 }
 
 func createThumbnailBytes(srcBytes string, scaleDown int, scale draw.Scaler) (string, error) {

@@ -47,6 +47,17 @@ func (r *PostRepo) GetNPostsByThread(threadId uint, n int) ([]model.Post, error)
 	return posts, result.Error
 }
 
+func (r *PostRepo) GetPostWithDuplicateFileInThread(boardId, threadId uint, md5 string) (*model.Post, error) {
+	var post model.Post
+	result := r.DB.Where("board_id = ?", boardId).Where("thread_id = ?", threadId).Where("md5 = ?", md5).First(&post)
+	return &post, result.Error
+}
+
+func (r *PostRepo) GetOPPostWithDuplicateFileInBoard(boardId uint, md5 string) (*model.Post, error) {
+	var post model.Post
+	result := r.DB.Where("board_id = ?", boardId).Where("thread_num = num").Where("md5 = ?", md5).First(&post)
+	return &post, result.Error
+}
 
 func (r *PostRepo) GetPostByNum(boardId, postNum uint) (*model.Post, error) {
 	var post model.Post

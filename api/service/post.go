@@ -1,15 +1,19 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"immy-api/model"
 	"immy-api/repo"
 	"immy-api/util"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 type PostService struct {
 	PostRepo 	*repo.PostRepo
+	ThreadRepo 	*repo.ThreadRepo
 	BoardService *BoardService
 	ThreadService *ThreadService
 }
@@ -80,6 +84,24 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 	if err != nil {
 		return nil, err
 	}
+
+	md5 := ""
+	if (dto.Filebytes != nil) {
+		md5 = util.GetFileHashB64(*dto.Filebytes)
+
+		dupPost, err := s.PostRepo.GetPostWithDuplicateFileInThread(board.ID, thread.ID, md5)
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				// We want this.
+			} else {
+				return nil, err
+			}
+		} else {
+			if dupPost != nil {
+				return nil, errors.New(fmt.Sprintf("Duplicate file at #%d", dupPost.Num))
+			}
+		}
+	}
 	
 	// TODO: This is identical to CreatePostForThread, so make
 	// a common method for both of them. Maybe in the future,
@@ -111,6 +133,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		Content: dto.Content,
 		SrcFilename: "",
 		Filename: "",
+		MD5: "",
 		Html: "",
 	}
 	if (dto.Filename != nil && dto.Filebytes != nil) {
@@ -123,7 +146,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		if err != nil {
 			return nil, err
 		}
-
+		post.MD5 = md5
 		post.Filesize = bytesImg
 	}
 
@@ -136,6 +159,24 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 	board, err := s.BoardService.IncrementBoardPostCount(board)
 	if err != nil {
 		return nil, err
+	}
+
+	md5 := ""
+	{
+		md5 = util.GetFileHashB64(dto.Filebytes)
+
+		dupPost, err := s.PostRepo.GetOPPostWithDuplicateFileInBoard(board.ID, md5)
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				// We want this.
+			} else {
+				return nil, err
+			}
+		} else {
+			if dupPost != nil {
+				return nil, errors.New(fmt.Sprintf("Duplicate file at #%d", dupPost.Num))
+			}
+		}
 	}
 	
 	dto.Name = strings.Trim(dto.Name, " \t")
@@ -156,6 +197,7 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		Content: dto.Content,
 		SrcFilename: dto.Filename,
 		Filename: util.GetPostImageFilename(board.Code, dto.Filename),
+		MD5: md5,
 		Html: "",
 	}
 	
