@@ -34,6 +34,8 @@ create table posts (
 	content		varchar,
 	filename 	varchar,
 	filesize	integer,
+	img_width	integer,
+	img_height	integer,
 	md5 		varchar,						-- Stored as base64
 	src_filename varchar,
 	html 		varchar

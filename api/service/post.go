@@ -29,6 +29,7 @@ func (s *PostService) GetPost(postId uint) (*model.Post, error) {
 func (s *PostService) GetPostByNum(boardCode string, postNum uint) (*model.Post, error) {
 	board, err := s.BoardService.GetBoardByCode(boardCode)
 	if err != nil {
+
 		return nil, err
 	}
 	return s.PostRepo.GetPostByNum(board.ID, postNum)
@@ -133,6 +134,8 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		Content: dto.Content,
 		SrcFilename: "",
 		Filename: "",
+		ImgWidth: 0,
+		ImgHeight: 0,
 		MD5: "",
 		Html: "",
 	}
@@ -142,12 +145,14 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 	}
 
 	if (dto.Filename != nil && dto.Filebytes != nil) {
-		bytesImg, _, err := util.SaveImage(post.Filename, *dto.Filebytes)
+		bytesImg, _, imgW, imgH, err := util.SaveImage(post.Filename, *dto.Filebytes)
 		if err != nil {
 			return nil, err
 		}
 		post.MD5 = md5
 		post.Filesize = bytesImg
+		post.ImgWidth = uint(imgW)
+		post.ImgHeight = uint(imgH)
 	}
 
 	post, err = s.PostRepo.CreatePost(post)
@@ -201,12 +206,14 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		Html: "",
 	}
 	
-	bytesImg, _, err := util.SaveImage(post.Filename, dto.Filebytes)
+	bytesImg, _, imgW, imgH, err := util.SaveImage(post.Filename, dto.Filebytes)
 	if err != nil {
 		return nil, err
 	}
 
 	post.Filesize = bytesImg
+	post.ImgWidth = uint(imgW)
+	post.ImgHeight = uint(imgH)
 
 	post, err = s.PostRepo.CreatePost(post)
 

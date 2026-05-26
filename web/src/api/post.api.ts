@@ -15,6 +15,10 @@ export interface PostDTO {
     content: string;
     filename: string;
     filesize: number;
+    img_width: number;
+    img_height: number;
+    /** Base64 of MD5 hash. */
+    md5: string;
     src_filename: string;
     html: string;
 }

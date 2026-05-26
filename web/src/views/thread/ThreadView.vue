@@ -10,9 +10,10 @@
 	import { CdnAPI } from '@/api/cdn.api';
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
-	import { type PostImageData, ParsePostTokens, type PostToken, type PostLinkToken } from '@/model/post/post.model';
+	import { type PostImageData, ParsePostTokens, type PostToken, type PostLinkToken, type ProcessedPost, ProcessPost } from '@/model/post/post.model';
 	import { vElementVisibility } from '@vueuse/components';
 	import PostComponent from '@/components/post/PostComponent.vue';
+import { AddRangeNoDuplicates } from '@/util/various.util';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -169,99 +170,118 @@
 	}
 
 	const processPost = (post: PostDTO) => {
-		if (post.filename && !imageData.value[post.id]) {
-			// Create an ImageData object for each image.
-			const img = new Image();
-			img.src = CdnAPI.GetPostImageURI(post)!;
-			img.onload = () => {
-				imageData.value[post.id] = {
-					postId: post.id,
-					expanded: false,
-					width: img.naturalWidth,
-					height: img.naturalHeight,
-				};
-			}
+		const res : ProcessedPost = ProcessPost(post, thread.value!, board.value!, imageData.value, postLinks.value, posts.value.map((p) => p.num));
+
+		if (res.image) {
+			imageData.value[post.id] = res.image;
+			console.log(res.image);
 		}
 
-		postTokens.value[post.id] = ParsePostTokens(post.content);
-		for (let tok of postTokens.value[post.id]!) {
-			if (tok.kind == 'link') {
-				// Before the proper routes are attributed to each link, add a
-				// dummy '#' href for each of the links.
-				tok.href = '#';
-			}
+		for (const link_post_num of res.backlinks) {
+			const links = [post.num];
+			backLinks.value[link_post_num] = AddRangeNoDuplicates(backLinks.value[link_post_num] ?? [], links);
 		}
 
-		const boardCode: string = route.params.board_code as string;
+		postTokens.value[post.id] = res.tokens;
 
-		for (let tok of postTokens.value[post.id]!) {
-			if (tok.kind == 'link') {
-				if (tok.text in postLinks.value && postLinks.value[tok.text]!.href != '#') {
-					// Copy relevant fields from the reference token that's cached in the `postLinks` dict.
-					const refToken: PostLinkToken = postLinks.value[tok.text]!;
-					tok.href = refToken.href;
-					tok.local = refToken.local;
-					tok.fail = refToken.fail;
-					continue;
-				}
+		for (const linkKey in res.links) {
+			postLinks.value[linkKey] = res.links[linkKey]!;
+		}
 
-				// Split into `link_post_board` and `link_post_num`.
+		//res.backlinks
+		// if (post.filename && !imageData.value[post.id]) {
+		// 	// Create an ImageData object for each image.
+		// 	const img = new Image();
+		// 	img.src = CdnAPI.GetPostImageURI(post)!;
+		// 	img.onload = () => {
+		// 		imageData.value[post.id] = {
+		// 			postId: post.id,
+		// 			expanded: false,
+		// 			width: img.naturalWidth,
+		// 			height: img.naturalHeight,
+		// 		};
+		// 	}
+		// }
 
-				let link_post_board = boardCode;
-				let link_post_num = 0;
-				const link_text = tok.text.substring(2);
+		// postTokens.value[post.id] = ParsePostTokens(post.content);
+		// for (let tok of postTokens.value[post.id]!) {
+		// 	if (tok.kind == 'link') {
+		// 		// Before the proper routes are attributed to each link, add a
+		// 		// dummy '#' href for each of the links.
+		// 		tok.href = '#';
+		// 	}
+		// }
 
-				if (link_text[0] == '/') {
-					const j = link_text.indexOf('/', 1);
+		// const boardCode: string = route.params.board_code as string;
 
-					if (j > 0) {
-						link_post_board = link_text.substring(1, j);
-						link_post_num = Number(link_text.substring(j + 1));
-					}
-				} else {
-					link_post_num = Number(link_text);
-				}
+		// for (let tok of postTokens.value[post.id]!) {
+		// 	if (tok.kind == 'link') {
+		// 		if (tok.text in postLinks.value && postLinks.value[tok.text]!.href != '#') {
+		// 			// Copy relevant fields from the reference token that's cached in the `postLinks` dict.
+		// 			const refToken: PostLinkToken = postLinks.value[tok.text]!;
+		// 			tok.href = refToken.href;
+		// 			tok.local = refToken.local;
+		// 			tok.fail = refToken.fail;
+		// 			continue;
+		// 		}
 
-				// Check if the link points to a post in this thread.
+		// 		// Split into `link_post_board` and `link_post_num`.
 
-				let post_is_local = false;
-				if (link_post_board == boardCode) {
-					for (let p of posts.value) {
-						if (p.num == link_post_num) {
-							post_is_local = true;
-							break;
-						}
-					}
-				}
+		// 		let link_post_board = boardCode;
+		// 		let link_post_num = 0;
+		// 		const link_text = tok.text.substring(2);
+
+		// 		if (link_text[0] == '/') {
+		// 			const j = link_text.indexOf('/', 1);
+
+		// 			if (j > 0) {
+		// 				link_post_board = link_text.substring(1, j);
+		// 				link_post_num = Number(link_text.substring(j + 1));
+		// 			}
+		// 		} else {
+		// 			link_post_num = Number(link_text);
+		// 		}
+
+		// 		// Check if the link points to a post in this thread.
+
+		// 		let post_is_local = false;
+		// 		if (link_post_board == boardCode) {
+		// 			for (let p of posts.value) {
+		// 				if (p.num == link_post_num) {
+		// 					post_is_local = true;
+		// 					break;
+		// 				}
+		// 			}
+		// 		}
 				
-				if (post_is_local) {
-					tok.local = true;
-					tok.href = `#p${link_post_num}`;
+		// 		if (post_is_local) {
+		// 			tok.local = true;
+		// 			tok.href = `#p${link_post_num}`;
 
-					// Add backlink.
-					if (!backLinks.value[link_post_num]) {
-						backLinks.value[link_post_num] = [];
-					}
-					if (!backLinks.value[link_post_num]!.includes(post.num)) {
-						backLinks.value[link_post_num]!.push(post.num);
-					}
-				} else {
-					tok.local = false;
+		// 			// Add backlink.
+		// 			if (!backLinks.value[link_post_num]) {
+		// 				backLinks.value[link_post_num] = [];
+		// 			}
+		// 			if (!backLinks.value[link_post_num]!.includes(post.num)) {
+		// 				backLinks.value[link_post_num]!.push(post.num);
+		// 			}
+		// 		} else {
+		// 			tok.local = false;
 					
-					// It's in another thread, so fetch which thread it is.
-					PostAPI.GetPostByNum(link_post_board, link_post_num).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
-						const post: PostDTO = res.data.data!;
-						tok.href = `/${link_post_board}/thread/${post.thread_num}#p${link_post_num}`;
-					}).catch((err: AxiosError) => {
-						tok.fail = true;
-						console.error(err);
-					});		
-				}	
+		// 			// It's in another thread, so fetch which thread it is.
+		// 			PostAPI.GetPostByNum(link_post_board, link_post_num).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
+		// 				const post: PostDTO = res.data.data!;
+		// 				tok.href = `/${link_post_board}/thread/${post.thread_num}#p${link_post_num}`;
+		// 			}).catch((err: AxiosError) => {
+		// 				tok.fail = true;
+		// 				console.error(err);
+		// 			});
+		// 		}
 
-				// Cache the link token.
-				postLinks.value[tok.text] = tok as PostLinkToken;
-			}
-		}
+		// 		// Cache the link token.
+		// 		postLinks.value[tok.text] = tok as PostLinkToken;
+		// 	}
+		// }
 	}
 
 	const onPostCreated = () => {
@@ -330,7 +350,6 @@
 				@onClickPostNumber="onClickPostNumber"
 				@onClickPostImage="onClickPostImage"
 				/>
-
 			</template>
 
 			<span v-element-visibility="onLastPostSeenVisibilityNotify"></span>

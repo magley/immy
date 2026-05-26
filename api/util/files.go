@@ -52,11 +52,17 @@ func SaveFile(filename string, fileBytes string) (uint, error) {
     return uint(writtenBytes), nil
 }
 
-func SaveImage(filename string, fileBytes string) (uint, uint, error) {
-    thumbnailBytes, err := createThumbnailBytes(fileBytes, 6, draw.CatmullRom)
+// Returns (byteSizeImage, byteSizeThumb, ImgW, ImgH, Error)
+func SaveImage(filename string, fileBytes string) (uint, uint, int, int, error) {
+    img, err := imageFromByteString(fileBytes)
+    if err != nil {
+        return 0, 0, 0, 0, err
+    }
+
+    thumbnailBytes, err := createThumbnailBytes(img, 6, draw.CatmullRom)
     if err != nil {
         fmt.Print(err.Error())
-        return 0, 0, err
+        return 0, 0, 0, 0, err
     }
 
     fnameBase := strings.TrimSuffix(filename, filepath.Ext(filename))
@@ -65,16 +71,16 @@ func SaveImage(filename string, fileBytes string) (uint, uint, error) {
     bytes, err := SaveFile(filename, fileBytes)
     if err != nil {
         fmt.Print(err.Error())
-        return 0, 0, err
+        return 0, 0, 0, 0, err
     }
 
     bytesThumb, err := SaveFile(filenameThumb, thumbnailBytes)
     if err != nil {
         fmt.Print(err.Error())
-        return 0, 0, err
+        return 0, 0, 0, 0, err
     }
 
-    return bytes, bytesThumb, nil
+    return bytes, bytesThumb, img.Bounds().Size().X, img.Bounds().Size().Y, nil
 }
 
 func GetPostImageFilename(boardCode string, sourceFilename string) string {
@@ -87,21 +93,9 @@ func GetFileHashB64(fileBytes string) (string) {
     return base64.StdEncoding.EncodeToString([]byte(hashed[:]))
 }
 
-func createThumbnailBytes(srcBytes string, scaleDown int, scale draw.Scaler) (string, error) {
-    data, err := base64.StdEncoding.DecodeString(srcBytes)
-    if err != nil {
-        fmt.Print(err.Error())
-        return "", err
-    }
-
-    img, _, err := image.Decode(bytes.NewReader(data))
-    if err != nil {
-        fmt.Print(err.Error())
-        return "", err
-    }
-
-    thumbRect := image.Rect(0, 0, img.Bounds().Size().X / scaleDown, img.Bounds().Size().Y / scaleDown)
-    thumbnail := createThumbnail(img, thumbRect, scale)
+func createThumbnailBytes(srcImage image.Image, scaleDown int, scale draw.Scaler) (string, error) {
+    thumbRect := image.Rect(0, 0, srcImage.Bounds().Size().X / scaleDown, srcImage.Bounds().Size().Y / scaleDown)
+    thumbnail := createThumbnail(srcImage, thumbRect, scale)
 
     var buf bytes.Buffer
     if err := jpeg.Encode(&buf, thumbnail, &jpeg.Options{Quality: 50}); err != nil {
@@ -119,4 +113,18 @@ func createThumbnail(src image.Image, rect image.Rectangle, scale draw.Scaler) i
     dst := image.NewRGBA(rect)
     scale.Scale(dst, rect, src, src.Bounds(), draw.Over, nil)
     return dst
+}
+
+func imageFromByteString(imgByteString string) (image.Image, error) {
+    data, err := base64.StdEncoding.DecodeString(imgByteString)
+    if err != nil {
+        return nil, err
+    }
+
+    img, _, err := image.Decode(bytes.NewReader(data))
+    if err != nil {
+        return nil, err
+    }
+
+    return img, nil
 }

@@ -63,7 +63,7 @@
 			<span v-if="post.filename" class="post-file-container">
 				<div class="post-file-container-header">
 					File: <a :href="CdnAPI.GetPostImageURI(post)" target="_blank">{{ post.src_filename }}</a>
-					({{GetFileSizeByteString(post.filesize)}}, {{image_data?.width}}x{{image_data?.height}})
+					({{GetFileSizeByteString(post.filesize)}}, {{post.img_width}}x{{post.img_height}})
 				</div>
 
 				<a :href="CdnAPI.GetPostImageURI(post)" target="_blank" @click.prevent class="post-file-link">
@@ -93,10 +93,8 @@
 							</a>
 						</template>
 						<template v-else>
-							<RouterLink :to="`${post_links[token.text]!.href}`">
-								<span :class="{strikethrough: token.fail}" class="postRef">
-									{{token.text}} →
-								</span>
+							<RouterLink :to="`${post_links[token.text]!.href}`" :class="{strikethrough: token.fail}" class="postRef">
+								{{token.text}} →
 							</RouterLink>
 						</template>
 					</template>

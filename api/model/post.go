@@ -18,6 +18,8 @@ type Post struct {
 	Content 	string		`json:"content"`
 	Filename 	string 		`json:"filename"`
 	Filesize 	uint 		`json:"filesize"`
+	ImgWidth	uint		`json:"img_width"`
+	ImgHeight	uint		`json:"img_height"`
 	MD5			string		`json:"md5"`        // Base64 of file
 	SrcFilename string 		`json:"src_filename"`
 	Html		string 		`json:"html"`
