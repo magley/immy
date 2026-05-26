@@ -3,17 +3,16 @@
 	import { useRoute, useRouter } from "vue-router";
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
 	import { ThreadAPI, type ThreadDTO, type ThreadFullDTO } from "@/api/thread.api.ts";
-	import { PostAPI, type PostDTO } from "@/api/post.api.ts";
+	import { type PostDTO } from "@/api/post.api.ts";
 	import ThreadViewNavList from "@/components/thread/ThreadViewNavList.vue";
 	import { type ThreadStats } from "@/model/thread/thread.model.ts";
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
-	import { CdnAPI } from '@/api/cdn.api';
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
-	import { type PostImageData, ParsePostTokens, type PostToken, type PostLinkToken, type ProcessedPost, ProcessPost } from '@/model/post/post.model';
+	import { type PostImageData, type PostToken, type PostLinkToken, type ProcessedPost, ProcessPost } from '@/model/post/post.model';
 	import { vElementVisibility } from '@vueuse/components';
 	import PostComponent from '@/components/post/PostComponent.vue';
-import { AddRangeNoDuplicates } from '@/util/various.util';
+	import { AddRangeNoDuplicates } from '@/util/various.util';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -139,6 +138,14 @@ import { AddRangeNoDuplicates } from '@/util/various.util';
 				if (posts.value.length > 0) {
 					lastSeenPostBeforeUpdate.value = posts.value.at(-1)!.id;
 				}
+
+				if (route.hash) {
+					highlightedPost.value = Number(route.hash.substring(2));
+
+					setTimeout(() => {
+						document.getElementById(route.hash.substring(1))?.scrollIntoView();
+					}, 500);
+				}
 			} else {
 
 			}
@@ -162,6 +169,7 @@ import { AddRangeNoDuplicates } from '@/util/various.util';
 	}
 
 	const onClickPostNo = (postNum: number) => {
+		router.replace({'hash': `#p${postNum}`});
 		highlightedPost.value = postNum;
 	}
 
@@ -174,7 +182,6 @@ import { AddRangeNoDuplicates } from '@/util/various.util';
 
 		if (res.image) {
 			imageData.value[post.id] = res.image;
-			console.log(res.image);
 		}
 
 		for (const link_post_num of res.backlinks) {
@@ -187,101 +194,6 @@ import { AddRangeNoDuplicates } from '@/util/various.util';
 		for (const linkKey in res.links) {
 			postLinks.value[linkKey] = res.links[linkKey]!;
 		}
-
-		//res.backlinks
-		// if (post.filename && !imageData.value[post.id]) {
-		// 	// Create an ImageData object for each image.
-		// 	const img = new Image();
-		// 	img.src = CdnAPI.GetPostImageURI(post)!;
-		// 	img.onload = () => {
-		// 		imageData.value[post.id] = {
-		// 			postId: post.id,
-		// 			expanded: false,
-		// 			width: img.naturalWidth,
-		// 			height: img.naturalHeight,
-		// 		};
-		// 	}
-		// }
-
-		// postTokens.value[post.id] = ParsePostTokens(post.content);
-		// for (let tok of postTokens.value[post.id]!) {
-		// 	if (tok.kind == 'link') {
-		// 		// Before the proper routes are attributed to each link, add a
-		// 		// dummy '#' href for each of the links.
-		// 		tok.href = '#';
-		// 	}
-		// }
-
-		// const boardCode: string = route.params.board_code as string;
-
-		// for (let tok of postTokens.value[post.id]!) {
-		// 	if (tok.kind == 'link') {
-		// 		if (tok.text in postLinks.value && postLinks.value[tok.text]!.href != '#') {
-		// 			// Copy relevant fields from the reference token that's cached in the `postLinks` dict.
-		// 			const refToken: PostLinkToken = postLinks.value[tok.text]!;
-		// 			tok.href = refToken.href;
-		// 			tok.local = refToken.local;
-		// 			tok.fail = refToken.fail;
-		// 			continue;
-		// 		}
-
-		// 		// Split into `link_post_board` and `link_post_num`.
-
-		// 		let link_post_board = boardCode;
-		// 		let link_post_num = 0;
-		// 		const link_text = tok.text.substring(2);
-
-		// 		if (link_text[0] == '/') {
-		// 			const j = link_text.indexOf('/', 1);
-
-		// 			if (j > 0) {
-		// 				link_post_board = link_text.substring(1, j);
-		// 				link_post_num = Number(link_text.substring(j + 1));
-		// 			}
-		// 		} else {
-		// 			link_post_num = Number(link_text);
-		// 		}
-
-		// 		// Check if the link points to a post in this thread.
-
-		// 		let post_is_local = false;
-		// 		if (link_post_board == boardCode) {
-		// 			for (let p of posts.value) {
-		// 				if (p.num == link_post_num) {
-		// 					post_is_local = true;
-		// 					break;
-		// 				}
-		// 			}
-		// 		}
-				
-		// 		if (post_is_local) {
-		// 			tok.local = true;
-		// 			tok.href = `#p${link_post_num}`;
-
-		// 			// Add backlink.
-		// 			if (!backLinks.value[link_post_num]) {
-		// 				backLinks.value[link_post_num] = [];
-		// 			}
-		// 			if (!backLinks.value[link_post_num]!.includes(post.num)) {
-		// 				backLinks.value[link_post_num]!.push(post.num);
-		// 			}
-		// 		} else {
-		// 			tok.local = false;
-					
-		// 			// It's in another thread, so fetch which thread it is.
-		// 			PostAPI.GetPostByNum(link_post_board, link_post_num).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
-		// 				const post: PostDTO = res.data.data!;
-		// 				tok.href = `/${link_post_board}/thread/${post.thread_num}#p${link_post_num}`;
-		// 			}).catch((err: AxiosError) => {
-		// 				tok.fail = true;
-		// 				console.error(err);
-		// 			});
-		// 		}
-
-		// 		// Cache the link token.
-		// 		postLinks.value[tok.text] = tok as PostLinkToken;
-		// 	}
-		// }
 	}
 
 	const onPostCreated = () => {
@@ -333,40 +245,38 @@ import { AddRangeNoDuplicates } from '@/util/various.util';
 		@autoTimerToggled="onAutoTimerToggled" />
 
 		<template v-if="thread">
-			<!-- <div :id="`p${post.num}`" v-for="post, i of posts" class="postContainer"> -->
-				<PostComponent
-				v-for="post, i of posts"
-				:board="board"
-				:thread="thread"
-				:post="post"
-				:is_highlighted="highlightedPost == post.num"
-				:is_op_post="thread.post_num == post.num"
-				:is_last_seen="lastSeenPostBeforeUpdate == post.id && i != posts.length - 1"
-				:backlinks="backLinks[post.num] ?? []"
-				:image_data="imageData[post.id]"
-				:post_tokens="postTokens[post.id] ?? []"
-				:post_links="postLinks"
-				@onClickPostNo="onClickPostNo"
-				@onClickPostNumber="onClickPostNumber"
-				@onClickPostImage="onClickPostImage"
-				/>
-			</template>
-
-			<span v-element-visibility="onLastPostSeenVisibilityNotify"></span>
-			<ThreadViewNavList
-			:board_code="board.code"
-			jump_to_id="top"
-			jump_to_label="Top"
-			:thread_stats="thread_stats"
-			:autoTimer="autoTimer"
-			:isAutoTimerUsed="autoTimerIsEnabled"
-			@updateClicked="reloadThread"
-			@autoTimerToggled="onAutoTimerToggled" />
+			<PostComponent
+			v-for="post, i of posts"
+			:board="board"
+			:thread="thread"
+			:post="post"
+			:is_highlighted="highlightedPost == post.num"
+			:is_op_post="thread.post_num == post.num"
+			:is_last_seen="lastSeenPostBeforeUpdate == post.id && i != posts.length - 1"
+			:backlinks="backLinks[post.num] ?? []"
+			:image_data="imageData[post.id]"
+			:post_tokens="postTokens[post.id] ?? []"
+			:post_links="postLinks"
+			@onClickPostNo="onClickPostNo"
+			@onClickPostNumber="onClickPostNumber"
+			@onClickPostImage="onClickPostImage" />
 		</template>
-	</template>
 
-	<style scoped>
-		.error {
-			color: red;
-		}
-	</style>
+		<span v-element-visibility="onLastPostSeenVisibilityNotify"></span>
+		<ThreadViewNavList
+		:board_code="board.code"
+		jump_to_id="top"
+		jump_to_label="Top"
+		:thread_stats="thread_stats"
+		:autoTimer="autoTimer"
+		:isAutoTimerUsed="autoTimerIsEnabled"
+		@updateClicked="reloadThread"
+		@autoTimerToggled="onAutoTimerToggled" />
+	</template>
+</template>
+
+<style scoped>
+	.error {
+		color: red;
+	}
+</style>

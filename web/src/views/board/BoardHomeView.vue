@@ -1,12 +1,11 @@
 <script setup lang="ts">
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
-	import { CdnAPI } from "@/api/cdn.api";
 	import type { ApiResponse } from '@/api/http';
-	import { PostAPI, type PostDTO } from "@/api/post.api";
+	import { type PostDTO } from "@/api/post.api";
 	import { ThreadAPI, type ThreadForHomeDTO } from "@/api/thread.api.ts";
 	import PostComponent from "@/components/post/PostComponent.vue";
 	import CreateThreadForm from '@/components/thread/CreateThreadForm.vue';
-	import { type PostImageData, type PostToken, type PostLinkToken, ParsePostTokens } from "@/model/post/post.model";
+	import { type PostImageData, type PostToken, type PostLinkToken, ProcessPost, type ProcessedPost } from "@/model/post/post.model";
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import { onMounted, ref } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
@@ -96,104 +95,16 @@
 	}
 
 	const processPost = (post: PostDTO, thread: ThreadForHomeDTO) => {
-		if (post.filename && !imageData.value[post.id]) {
-			// Create an ImageData object for each image.
-			const img = new Image();
-			img.src = CdnAPI.GetPostImageURI(post)!;
-			img.onload = () => {
-				imageData.value[post.id] = {
-					postId: post.id,
-					expanded: false,
-					width: img.naturalWidth,
-					height: img.naturalHeight,
-				};
-			}
+		const res : ProcessedPost = ProcessPost(post, thread.thread, board.value!, imageData.value, postLinks.value, thread.posts.map((p) => p.num));
+
+		if (res.image) {
+			imageData.value[post.id] = res.image;
 		}
 
-		if (post.filename && !imageData.value[post.id]) {
-			// Create an ImageData object for each image.
-			const img = new Image();
-			img.src = CdnAPI.GetPostImageURI(post)!;
-			img.onload = () => {
-				imageData.value[post.id] = {
-					postId: post.id,
-					expanded: false,
-					width: img.naturalWidth,
-					height: img.naturalHeight,
-				};
-			}
-		}
+		postTokens.value[post.id] = res.tokens;
 
-		postTokens.value[post.id] = ParsePostTokens(post.content);
-		for (let tok of postTokens.value[post.id]!) {
-			if (tok.kind == 'link') {
-				// Before the proper routes are attributed to each link, add a
-				// dummy '#' href for each of the links.
-				tok.href = '#';
-			}
-		}
-
-		const boardCode: string = route.params.board_code as string;
-
-		for (let tok of postTokens.value[post.id]!) {
-			if (tok.kind == 'link') {
-				if (tok.text in postLinks.value && postLinks.value[tok.text]!.href != '#') {
-					// Copy relevant fields from the reference token that's cached in the `postLinks` dict.
-					const refToken: PostLinkToken = postLinks.value[tok.text]!;
-					tok.href = refToken.href;
-					tok.local = refToken.local;
-					tok.fail = refToken.fail;
-					continue;
-				}
-
-				// Split into `link_post_board` and `link_post_num`.
-
-				let link_post_board = boardCode;
-				let link_post_num = 0;
-				const link_text = tok.text.substring(2);
-
-				if (link_text[0] == '/') {
-					const j = link_text.indexOf('/', 1);
-
-					if (j > 0) {
-						link_post_board = link_text.substring(1, j);
-						link_post_num = Number(link_text.substring(j + 1));
-					}
-				} else {
-					link_post_num = Number(link_text);
-				}
-
-				// Check if the link points to a post in this thread.
-
-				let post_is_local = false;
-				if (link_post_board == boardCode) {
-					for (let p of thread.posts) {
-						if (p.num == link_post_num) {
-							post_is_local = true;
-							break;
-						}
-					}
-				}
-
-				if (post_is_local) {
-					tok.local = true;
-					tok.href = `#p${link_post_num}`;
-				} else {
-					tok.local = false;
-
-					// It's in another thread, so fetch which thread it is.
-					PostAPI.GetPostByNum(link_post_board, link_post_num).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
-						const post: PostDTO = res.data.data!;
-						tok.href = `/${link_post_board}/thread/${post.thread_num}#p${link_post_num}`;
-					}).catch((err: AxiosError) => {
-						tok.fail = true;
-						console.error(err);
-					});
-				}
-
-				// Cache the link token.
-				postLinks.value[tok.text] = tok as PostLinkToken;
-			}
+		for (const linkKey in res.links) {
+			postLinks.value[linkKey] = res.links[linkKey]!;
 		}
 	}
 </script>
@@ -224,19 +135,19 @@
 			<div v-for="thread in threads">
 				<template v-for="post, i of thread.posts">
 					<PostComponent
-						:board="board"
-						:thread="thread.thread"
-						:post="post"
-						:is_highlighted="false"
-						:is_op_post="i == 0"
-						:is_last_seen="false"
-						:backlinks="[]"
-						:image_data="imageData[post.id]"
-						:post_tokens="postTokens[post.id] ?? []"
-						:post_links="postLinks"
-						@onClickPostNo="(n: number) => onClickPostNo(n, thread)"
-						@onClickPostNumber="(n: number) => onClickPostNumber(n, thread)"
-						@onClickPostImage="(n: number) => onClickPostImage(n, thread)"
+					:board="board"
+					:thread="thread.thread"
+					:post="post"
+					:is_highlighted="false"
+					:is_op_post="i == 0"
+					:is_last_seen="false"
+					:backlinks="[]"
+					:image_data="imageData[post.id]"
+					:post_tokens="postTokens[post.id] ?? []"
+					:post_links="postLinks"
+					@onClickPostNo="(n: number) => onClickPostNo(n, thread)"
+					@onClickPostNumber="(n: number) => onClickPostNumber(n, thread)"
+					@onClickPostImage="(n: number) => onClickPostImage(n, thread)"
 					/>
 					<div v-if="i == 0 && thread.posts.length < thread.stats.post_count">
 						{{ thread.stats.image_count - thread.posts.filter((p) => p.filename).length }} images and {{ thread.stats.post_count - thread.posts.length }} replies ommited.

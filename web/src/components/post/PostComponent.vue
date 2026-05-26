@@ -31,7 +31,6 @@
 	const onClickPostNumber = (post_num: number) => {
 		emit('onClickPostNumber', post_num);
 	}
-
 	const onClickPostImage = (post_id: number) => {
 		emit('onClickPostImage', post_id);
 	}
@@ -93,9 +92,9 @@
 							</a>
 						</template>
 						<template v-else>
-							<RouterLink :to="`${post_links[token.text]!.href}`" :class="{strikethrough: token.fail}" class="postRef">
+							<a :href="`${post_links[token.text]!.href}`" :class="{strikethrough: token.fail}" class="postRef">
 								{{token.text}} →
-							</RouterLink>
+							</a>
 						</template>
 					</template>
 				</span>
