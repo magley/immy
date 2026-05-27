@@ -21,6 +21,7 @@ func (r *BoardRepo) CreateBoard(dto model.CreateBoardDTO) (*model.Board, error) 
 		Name: dto.Name,
 		Code: dto.Code,
 		Description: dto.Description,
+		Config: dto.Config,
 	}
 	
 	result := r.DB.Create(&board)
@@ -43,8 +44,6 @@ func (r *BoardRepo) UpdateBoard(board *model.Board, dto model.UpdateBoardDTO) (*
 	if dto.Name != nil { board.Name = *dto.Name }
 	if dto.Code != nil { board.Code = *dto.Code }
 	if dto.Description != nil { board.Description = dto.Description }
-	if dto.Locked != nil { board.Locked = *dto.Locked }
-	if dto.Hidden != nil { board.Hidden = *dto.Hidden }
 	if dto.PostCount != nil { board.PostCount = *dto.PostCount }
 
 	result := r.DB.Save(&board)

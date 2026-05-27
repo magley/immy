@@ -1,21 +1,33 @@
 import { axiosInstance, type ApiResponse } from "@/api/http";
 import type { AxiosResponse } from "axios";
 
+export interface BoardConfig {
+    locked: boolean;
+    hidden: boolean;
+    max_file_size: number;
+    reply_files_allowed: boolean;
+    mime_types_allowed: string[];
+    bump_limit: number;
+    image_limit: number;
+    flags_enabled: boolean;
+    ids_enabled: boolean;
+}
+
 export interface BoardDTO {
     id: number;
     name: string;
     code: string;
     description: string;
     created_at: string;
-    locked: boolean;
-    hidden: boolean;
     post_count: number;
+    config: BoardConfig;
 }
 
 export interface CreateBoardDTO {
     name: string;
     code: string;
     description: string | null;
+    config: BoardConfig;
 }
 
 export interface UpdateBoardDTO {

@@ -6,9 +6,17 @@ create table boards (
 	code 		varchar(16) unique not null,
 	description varchar(255),
 	created_at 	timestamp default now(),
-	locked 		bool default false,
-	hidden 		bool default false,
-	post_count 	integer
+	post_count 	integer,
+	-- ==================================== --
+	locked 				bool 		default false,
+	hidden 				bool 		default false,
+	max_file_size 		integer 	default 2097152, -- 2MB
+	reply_files_allowed bool 		default true,
+	mime_types_allowed	varchar array,
+	bump_limit			integer		default 250,
+	image_limit			integer		default 150,
+	flags_enabled		bool		default false,
+	ids_enabled			bool		default false
 );
 
 create table threads (
