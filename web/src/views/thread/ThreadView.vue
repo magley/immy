@@ -178,22 +178,26 @@
 	}
 
 	const processPost = (post: PostDTO) => {
-		const res : ProcessedPost = ProcessPost(post, thread.value!, board.value!, imageData.value, postLinks.value, posts.value.map((p) => p.num));
+		ProcessPost(
+			post, thread.value!, board.value!, imageData.value, postLinks.value, posts.value.map((p) => p.num)
+		).then((res: ProcessedPost) => {
+			if (res.image) {
+				imageData.value[post.id] = res.image;
+			}
 
-		if (res.image) {
-			imageData.value[post.id] = res.image;
-		}
+			for (const link_post_num of res.backlinks) {
+				const links = [post.num];
+				backLinks.value[link_post_num] = AddRangeNoDuplicates(backLinks.value[link_post_num] ?? [], links);
+			}
 
-		for (const link_post_num of res.backlinks) {
-			const links = [post.num];
-			backLinks.value[link_post_num] = AddRangeNoDuplicates(backLinks.value[link_post_num] ?? [], links);
-		}
+			postTokens.value[post.id] = res.tokens;
 
-		postTokens.value[post.id] = res.tokens;
-
-		for (const linkKey in res.links) {
-			postLinks.value[linkKey] = res.links[linkKey]!;
-		}
+			for (const linkKey in res.links) {
+				postLinks.value[linkKey] = res.links[linkKey]!;
+			}
+		}).catch((err: any) => {
+			console.error(err);
+		});
 	}
 
 	const onPostCreated = () => {

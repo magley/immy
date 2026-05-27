@@ -94,13 +94,13 @@ export interface ProcessedPost {
 	backlinks: number[];
 }
 
-export const ProcessPost = (post: PostDTO,
+export const ProcessPost = async (post: PostDTO,
 	thread: ThreadDTO,
 	board: BoardDTO,
 	imageCache: Record<number, PostImageData>,
 	linksCache: Record<string, PostLinkToken>,
 	thread_post_nums: number[],
-	): ProcessedPost => {
+	): Promise<ProcessedPost> => {
 	let result: ProcessedPost = {
 		tokens: [],
 		links: {},
@@ -185,7 +185,7 @@ export const ProcessPost = (post: PostDTO,
 					result.backlinks.push(link_post_num);
 				}
 			} else {
-				PostAPI.GetPostByNum(link_post_board, link_post_num).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
+				await PostAPI.GetPostByNum(link_post_board, link_post_num).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
 					const post: PostDTO = res.data.data!;
 					tok.href = `/${link_post_board}/thread/${post.thread_num}#p${link_post_num}`;
 				}).catch((err: AxiosError) => {

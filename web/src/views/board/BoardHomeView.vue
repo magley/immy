@@ -95,17 +95,21 @@
 	}
 
 	const processPost = (post: PostDTO, thread: ThreadForHomeDTO) => {
-		const res : ProcessedPost = ProcessPost(post, thread.thread, board.value!, imageData.value, postLinks.value, thread.posts.map((p) => p.num));
+		ProcessPost(
+			post, thread.thread, board.value!, imageData.value, postLinks.value, thread.posts.map((p) => p.num)
+		).then((res: ProcessedPost) => {
+			if (res.image) {
+				imageData.value[post.id] = res.image;
+			}
 
-		if (res.image) {
-			imageData.value[post.id] = res.image;
-		}
+			postTokens.value[post.id] = res.tokens;
 
-		postTokens.value[post.id] = res.tokens;
-
-		for (const linkKey in res.links) {
-			postLinks.value[linkKey] = res.links[linkKey]!;
-		}
+			for (const linkKey in res.links) {
+				postLinks.value[linkKey] = res.links[linkKey]!;
+			}
+		}).catch((err: any) => {
+			console.error(err);
+		});
 	}
 </script>
 
