@@ -9,7 +9,8 @@
 	import CreateThreadForm from '@/components/thread/CreateThreadForm.vue';
 	import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
 	import { ThreadSortModeInCatalog } from '@/model/thread/thread.model';
-	
+	import BoardListNav from '@/components/board/BoardListNav.vue';
+
 	const board = ref<BoardDTO | null>(null);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
 
@@ -83,6 +84,8 @@
 </script>
 
 <template>
+	<BoardListNav :isCatalog=true />
+
 	<template v-if="board">
 		<div id="title">
 			<h1>/{{board.code}}/ - {{board.name}}</h1>
@@ -144,9 +147,9 @@
 		@image-size-changed="onImageSizeChanged"
 		@show-comment-changed="onShowCommentChanged"
 		/>
-
 	</template>
 
+	<BoardListNav :isCatalog=true />
 </template>
 
 <style scoped>

@@ -9,6 +9,7 @@
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import { onMounted, ref } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
+	import BoardListNav from '@/components/board/BoardListNav.vue';
 	
 	const board = ref<BoardDTO | null>(null);
 
@@ -114,6 +115,8 @@
 </script>
 
 <template>
+	<BoardListNav :isCatalog=false />
+
 	<template v-if="board">
 		<div id="title">
 			<h1>/{{board.code}}/ - {{board.name}}</h1>
@@ -183,6 +186,8 @@
 		<!-- [<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>] -->
 		[<a class="link" :href="`#top`">Top</a>]
 	</template>
+
+	<BoardListNav :isCatalog=false />
 </template>
 
 <style scoped>

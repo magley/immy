@@ -13,6 +13,7 @@
 	import { vElementVisibility } from '@vueuse/components';
 	import PostComponent from '@/components/post/PostComponent.vue';
 	import { AddRangeNoDuplicates } from '@/util/various.util';
+	import BoardListNav from '@/components/board/BoardListNav.vue';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -235,6 +236,8 @@
 </script>
 
 <template>
+	<BoardListNav :isCatalog=false />
+
 	<template v-if="board && thread">
 		<CreatePostForm ref="reply-form" :thread_id="thread.id" :max_size_bytes="1*1024*1024" @postCreated="onPostCreated()"></CreatePostForm>
 		
@@ -277,6 +280,8 @@
 		@updateClicked="reloadThread"
 		@autoTimerToggled="onAutoTimerToggled" />
 	</template>
+
+	<BoardListNav :isCatalog=false />
 </template>
 
 <style scoped>

@@ -15,7 +15,7 @@
 			console.error(err);	
 		});
 	});
-	
+
 </script>
 
 
@@ -33,20 +33,6 @@
 		<RouterLink to="/admin-users">Users</RouterLink>
 		|
 		<RouterLink to="/admin-boards">Boards</RouterLink>
-	</nav>
-	
-	<nav>
-		<template v-if="boardsError">
-			{{ boardsError }}
-		</template>
-		<template v-else>
-			[
-			<template v-for="board, i in boards">
-				<RouterLink :to="`/${board.code}`">{{ board.code}}</RouterLink>
-				<template v-if="i != boards.length - 1"> / </template>
-			</template>
-			]
-		</template>
 	</nav>
 
 	<main>	

@@ -1,0 +1,39 @@
+<script setup lang="ts">
+	import { BoardAPI, type BoardDTO } from '@/api/board.api';
+	import type { ApiResponse } from '@/api/http';
+	import type { AxiosError, AxiosResponse } from 'axios';
+	import { onMounted, ref } from 'vue';
+
+	interface BoardListNavProps {
+		isCatalog: boolean
+	}
+
+	const boards = ref<BoardDTO[]>([]);
+	const props = defineProps<BoardListNavProps>();
+
+	onMounted(() => {
+		// TODO: No offset/limit here...
+		BoardAPI.ListBoards(0, 10000).then((res: AxiosResponse<ApiResponse<BoardDTO[]>>) => {
+			boards.value = res.data.data!;
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
+	});
+
+	const getLinkForBoard = (board: BoardDTO): string => {
+		if (props.isCatalog) {
+			return `/${board.code}/catalog`;
+		} else {
+			return `/${board.code}`;
+		}
+	}
+</script>
+
+<template>
+	[
+	<span v-for="board, i in boards">
+		<RouterLink :to="getLinkForBoard(board)">{{ board.code }}</RouterLink>
+		<template v-if="i < boards.length - 1"> / </template>
+	</span>
+	]
+</template>

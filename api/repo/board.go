@@ -12,7 +12,7 @@ type BoardRepo struct {
 
 func (r *BoardRepo) ListBoards(offset int, limit int) ([]model.Board, error) {
 	var boards []model.Board
-	result := r.DB.Limit(limit).Offset(offset).Find(&boards)
+	result := r.DB.Limit(limit).Offset(offset).Order("id").Find(&boards)
 	return boards, result.Error
 }
 
