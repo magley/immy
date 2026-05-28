@@ -5,6 +5,7 @@
 	import type { ThreadDTO } from '@/api/thread.api';
 	import { GetPostTimeReadable, type PostImageData, type PostLinkToken, type PostToken } from '@/model/post/post.model';
 	import { GetFileSizeByteString } from '@/util/file.util';
+	import { GetUserIdColorBackground, GetUserIdColorForeground } from '@/util/various.util';
 
 	interface PostComponentProps {
 		board: BoardDTO;
@@ -20,10 +21,15 @@
 		post_tokens: PostToken[];
 
 		post_links: Record<string, PostLinkToken>;
+
+		/** Dictionary that maps user IDs to the number of posts made by that
+		  * ID in the current thread. Optional, if it's not specified then
+		  * this info won't be available inside the post. */
+		user_id_count: Record<string, number> | undefined;
 	}
 
 	const props = defineProps<PostComponentProps>()
-	const emit = defineEmits(['onClickPostNo', 'onClickPostNumber', 'onClickPostImage']);
+	const emit = defineEmits(['onClickPostNo', 'onClickPostNumber', 'onClickPostImage', 'onClickUserId']);
 
 	const onClickPostNo = (post_num: number) => {
 		emit('onClickPostNo', post_num);
@@ -33,6 +39,9 @@
 	}
 	const onClickPostImage = (post_id: number) => {
 		emit('onClickPostImage', post_id);
+	}
+	const onClickUserId = (user_id: string) => {
+		emit('onClickUserId', user_id);
 	}
 </script>
 
@@ -49,6 +58,14 @@
 			<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
 			<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
 			<span class="tripcode" v-if="post.tripcode">{{ post.tripcode }}</span>
+			<span
+				v-if="board.config.ids_enabled && post.user_id"
+				class="userid"
+				:style="{backgroundColor: GetUserIdColorBackground(post.user_id), color: GetUserIdColorForeground(post.user_id)}"
+				@click="onClickUserId(post.user_id)">
+				ID:{{post.user_id}}
+				<template v-if="user_id_count"> ({{user_id_count[post.user_id]}}) </template>
+			</span>
 			<span class="date">{{ GetPostTimeReadable(post.created_at) }}</span>
 			<span class="postno"><a @click.prevent="onClickPostNo(post.num)" href="#" class="postNumLink">No.</a></span>
 			<span class="postnum"><a @click.prevent="onClickPostNumber(post.num)" href="#" class="postNumLink">{{ post.num }}</a></span>
@@ -144,6 +161,13 @@
 				.username, .tripcode {
 					color: #157743;
 					font-weight: bolder;
+				}
+
+				.userid {
+					font-size: smaller;
+					padding: 2px;
+					border-radius: 10px;
+					cursor: pointer;
 				}
 
 				.subject {

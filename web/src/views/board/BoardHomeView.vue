@@ -24,6 +24,8 @@
 	const totalPages = ref<number>(0);
 	const pages = ref<number[]>([]);
 
+	/** `post.user_id` which should be highlighted */
+	const highlightedUserIDs = ref<Record<string, boolean>>({});
 	/** `post.id` => information about the image attached to the post */
 	const imageData = ref<Record<number, PostImageData>>({});
 	/** `post.id` => list of tokens that make up the post's content */
@@ -91,6 +93,10 @@
 		router.push(`${board.value!.code}/thread/${thread.thread.post_num}#p${post_num}`);
 	}
 
+	const onClickUserId = (userId: string) => {
+		highlightedUserIDs.value[userId] = !(highlightedUserIDs.value[userId] ?? false);
+	}
+
 	const onClickPostImage = (postId: number, thread: ThreadForHomeDTO) => {
 		imageData.value[postId]!.expanded = !imageData.value[postId]!.expanded;
 	}
@@ -149,16 +155,18 @@
 					:board="board"
 					:thread="thread.thread"
 					:post="post"
-					:is_highlighted="false"
+					:is_highlighted="(highlightedUserIDs[post.user_id ?? ''] ?? false)"
 					:is_op_post="i == 0"
 					:is_last_seen="false"
 					:backlinks="[]"
 					:image_data="imageData[post.id]"
 					:post_tokens="postTokens[post.id] ?? []"
 					:post_links="postLinks"
+					:user_id_count="undefined"
 					@onClickPostNo="(n: number) => onClickPostNo(n, thread)"
 					@onClickPostNumber="(n: number) => onClickPostNumber(n, thread)"
 					@onClickPostImage="(n: number) => onClickPostImage(n, thread)"
+					@onClickUserId="onClickUserId"
 					/>
 					<div v-if="i == 0 && thread.posts.length < thread.stats.post_count">
 						{{ thread.stats.image_count - thread.posts.filter((p) => p.filename).length }} images and {{ thread.stats.post_count - thread.posts.length }} replies ommited.

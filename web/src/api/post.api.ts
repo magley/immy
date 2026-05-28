@@ -10,6 +10,7 @@ export interface PostDTO {
     name: string;
     tripcode: string;
     ipv4: string;
+    user_id: string | undefined;
     created_at: string;
     sage: boolean;
     content: string;
@@ -60,7 +61,7 @@ export class PostAPI {
     }
 
     static async GetPostsByThread(threadId: number): Promise<AxiosResponse<ApiResponse<PostDTO[]>>> {
-        return axiosInstance.get<ApiResponse<PostDTO>>(`/posts/thread/${threadId}`);
+        return axiosInstance.get<ApiResponse<PostDTO[]>>(`/posts/thread/${threadId}`);
     }
 
     static async CreatePost(dto: CreatePostDTO): Promise<AxiosResponse<ApiResponse<PostDTO>>> {

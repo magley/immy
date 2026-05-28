@@ -35,6 +35,7 @@ create table posts (
 	board_id    integer references boards(id),  -- Redundant field to avoid joins
 	num 		integer,
 	ipv4 		varchar(16),
+	user_id		varchar(7),
 	name 		varchar(128) default 'Anonymous',
 	tripcode 	varchar(128),
 	created_at 	timestamp default now(),

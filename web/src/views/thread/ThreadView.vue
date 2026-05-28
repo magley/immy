@@ -29,6 +29,8 @@
 	const posts = ref<PostDTO[]>([]);
 	/** `post.num` of the post that should be highlighted */
 	const highlightedPost = ref<number | undefined>(undefined);
+	/** `post.user_id` which should be highlighted */
+	const highlightedUserIDs = ref<Record<string, boolean>>({});
 	/** `post.num` => list of post numbers that link to this post */
 	const backLinks = ref<Record<number, number[]>>({});
 	/** `post.id` => information about the image attached to the post */
@@ -44,6 +46,8 @@
 	  * will set its post id value here. A line will be drawn, and it
 	  * will be closed once you reach the bottom of the page. */
 	const lastSeenPostBeforeUpdate = ref<number | null>(null);
+	/** `post.user_id` => number of posts with that ID in this thread */
+	const userIdCount = ref<Record<string, number>>({});
 
 	const replyForm = useTemplateRef('reply-form');
 
@@ -135,6 +139,13 @@
 				processPost(p);
 			}
 
+			if (board.value!.config.ids_enabled) {
+				userIdCount.value = {};
+				for (let p of posts.value) {
+					userIdCount.value[p.user_id!] = (userIdCount.value[p.user_id!] ?? 0) + 1;
+				}
+			}
+
 			if (loadingPostsForTheFirstTime) {
 				if (posts.value.length > 0) {
 					lastSeenPostBeforeUpdate.value = posts.value.at(-1)!.id;
@@ -172,6 +183,10 @@
 	const onClickPostNo = (postNum: number) => {
 		router.replace({'hash': `#p${postNum}`});
 		highlightedPost.value = postNum;
+	}
+
+	const onClickUserId = (userId: string) => {
+		highlightedUserIDs.value[userId] = !(highlightedUserIDs.value[userId] ?? false);
 	}
 
 	const onClickPostImage = (postId: number) => {
@@ -262,16 +277,19 @@
 			:board="board"
 			:thread="thread"
 			:post="post"
-			:is_highlighted="highlightedPost == post.num"
+			:is_highlighted="highlightedPost == post.num || (highlightedUserIDs[post.user_id ?? ''] ?? false)"
 			:is_op_post="thread.post_num == post.num"
 			:is_last_seen="lastSeenPostBeforeUpdate == post.id && i != posts.length - 1"
 			:backlinks="backLinks[post.num] ?? []"
 			:image_data="imageData[post.id]"
 			:post_tokens="postTokens[post.id] ?? []"
 			:post_links="postLinks"
+			:user_id_count="userIdCount"
 			@onClickPostNo="onClickPostNo"
 			@onClickPostNumber="onClickPostNumber"
-			@onClickPostImage="onClickPostImage" />
+			@onClickPostImage="onClickPostImage"
+			@onClickUserId="onClickUserId"
+			/>
 		</template>
 
 		<span v-element-visibility="onLastPostSeenVisibilityNotify"></span>

@@ -139,6 +139,12 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 	
 	postName, postTripcode := s.createTripcode(dto.Name)
 
+	var userId *string
+	if board.Config.IDsEnabled {
+		userIdS := util.CreateUserID(requestIP, thread.ID)
+		userId = &userIdS
+	}
+
 	post := &model.Post{
 		ThreadID: thread.ID,
 		ThreadNum: thread.PostNum,
@@ -147,6 +153,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		Name: postName,
 		Tripcode: postTripcode,
 		IPv4: requestIP,
+		UserID: userId,
 		Sage: sage,
 		Content: dto.Content,
 		SrcFilename: "",
@@ -222,6 +229,12 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 	
 	postName, postTripcode := s.createTripcode(dto.Name)
 	
+	var userId *string
+	if board.Config.IDsEnabled {
+		userIdS := util.CreateUserID(requestIP, thread.ID)
+		userId = &userIdS
+	}
+
 	post := &model.Post{
 		ThreadID: thread.ID,
 		ThreadNum: board.PostCount,
@@ -230,6 +243,7 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		Name: postName,
 		Tripcode: postTripcode,
 		IPv4: requestIP,
+		UserID: userId,
 		Sage: sage,
 		Content: dto.Content,
 		SrcFilename: dto.Filename,

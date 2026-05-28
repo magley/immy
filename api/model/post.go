@@ -11,6 +11,7 @@ type Post struct {
 	BoardID		uint 		`json:"board_id"`   // Redundant
 	Num			uint 		`json:"num"`
 	Name 		string 		`json:"name"`
+	UserID		*string		`json:"user_id"`
 	Tripcode 	string 		`json:"tripcode"`
 	IPv4 		string		`json:"ipv4"`
 	CreatedAt	time.Time	`json:"created_at"`

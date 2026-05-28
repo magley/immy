@@ -93,7 +93,13 @@
 		</div>
 		<hr />
 
-		<CreateThreadForm id="create-thread" :board_code="board.code" :max_size_bytes="1*1024*1024" @threadCreated="loadThreads()" />
+		<CreateThreadForm
+			id="create-thread"
+			:board_code="board.code"
+			:max_size_bytes="board.config.max_file_size"
+			:mime_types_allowed="board.config.mime_types_allowed"
+			@threadCreated="loadThreads()"
+		/>
 		<hr />
 
 		<BoardViewNavList

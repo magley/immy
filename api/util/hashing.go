@@ -44,3 +44,10 @@ func randomStringFromKey(key []byte, charset string, length int) string {
 
     return string(result)
 }
+
+func CreateUserID(ip string, threadID uint) string {
+    const USERID_CHARSET = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890-=+/"
+    fullHash := sha256.Sum256([]byte(ip + string(threadID) + "vhe98wf2*(Hfh839f3h8 C_+Wf3hci32=v2"))
+    shortHash := fullHash[:16]
+    return randomStringFromKey(shortHash, USERID_CHARSET, 7)
+}
