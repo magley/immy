@@ -1,11 +1,13 @@
 package service
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"immy-api/model"
 	"immy-api/repo"
 	"immy-api/util"
+	"net/http"
 	"strings"
 
 	"gorm.io/gorm"
@@ -80,10 +82,25 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 	if err != nil {
 		return nil, err
 	}
-	
+
+	threadStats, err := s.ThreadService.GetThreadStats(thread)
+	if err != nil {
+		return nil, err
+	}
+
 	board, err := s.BoardService.GetBoard(thread.BoardID)
 	if err != nil {
 		return nil, err
+	}
+
+	err = s.validatePost(dto.Filebytes, thread, threadStats, board)
+	if err != nil {
+		return nil, err
+	}
+
+	sage := s.isSage(dto.Options)
+	if threadStats.PostCount >= board.Config.BumpLimit {
+		sage = true
 	}
 
 	md5 := ""
@@ -130,7 +147,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		Name: postName,
 		Tripcode: postTripcode,
 		IPv4: requestIP,
-		Sage: s.isSage(dto.Options),
+		Sage: sage,
 		Content: dto.Content,
 		SrcFilename: "",
 		Filename: "",
@@ -166,6 +183,21 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		return nil, err
 	}
 
+	threadStats, err := s.ThreadService.GetThreadStats(thread)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.validatePost(&dto.Filebytes, thread, threadStats, board)
+	if err != nil {
+		return nil, err
+	}
+
+	sage := s.isSage(dto.Options)
+	if threadStats.PostCount >= board.Config.BumpLimit {
+		sage = true
+	}
+
 	md5 := ""
 	{
 		md5 = util.GetFileHashB64(dto.Filebytes)
@@ -198,7 +230,7 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		Name: postName,
 		Tripcode: postTripcode,
 		IPv4: requestIP,
-		Sage: s.isSage(dto.Options),
+		Sage: sage,
 		Content: dto.Content,
 		SrcFilename: dto.Filename,
 		Filename: util.GetPostImageFilename(board.Code, dto.Filename),
@@ -220,6 +252,38 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 	return post, err 
 }
 
+func (s *PostService) validatePost(fileBytes *string, thread *model.Thread, threadStats model.ThreadStats, board *model.Board) error {
+	if fileBytes != nil {
+		if threadStats.ImageCount >= board.Config.ImageLimit {
+			return errors.New("Image limit reached")
+		}
+
+    	data, err := base64.StdEncoding.DecodeString(*fileBytes)
+    	if err != nil {
+    		return err
+    	}
+
+    	if len(data) > int(board.Config.MaxFileSize) {
+    		return errors.New("File too large")
+    	}
+
+    	mimeType := http.DetectContentType(data[:512])
+    	mimeOk := false
+    	for _, mime := range board.Config.MimeTypesAllowed {
+    		if mime == mimeType {
+    			mimeOk = true
+    			break
+    		}
+    	}
+
+    	if !mimeOk {
+    		return errors.New(fmt.Sprintf("Unsupported file type: %s", mimeType))
+    	}
+	}
+
+	return nil
+}
+
 func (s *PostService) createTripcode(fullName string) (string, string) {
 	parts, secure := splitCustom(fullName)
 	
@@ -238,7 +302,6 @@ func (s *PostService) createTripcode(fullName string) (string, string) {
 func (s *PostService) isSage(options string) bool {
 	return options == "sage"
 }
-
 
 // splitCustom splits a string into two parts: the username and the tripcode password.
 // The two are separated by a '#'. If they are separated by two '#', then the tripcode

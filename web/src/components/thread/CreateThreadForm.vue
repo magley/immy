@@ -9,6 +9,7 @@
 	export interface CreateThreadProps {
 		board_code: string,
 		max_size_bytes: number,
+		mime_types_allowed: string[],
 	}
 
 	const props = defineProps<CreateThreadProps>();
@@ -17,9 +18,9 @@
 	const createThreadDTO = ref<CreateThreadDTO>({
 		board_code: '',
 		subject: '',
-		locked: undefined,
-		sticky: undefined,
-		post: undefined
+		locked: false,
+		sticky: false,
+		post: undefined!
 	});
 	const createThreadPostDTO = ref<CreatePostForThreadDTO>({
 		name: '',
@@ -96,7 +97,7 @@
 		<input type=text placeholder="Name" v-model="createThreadPostDTO.name"/><br/>
 		<input type=text placeholder="Options" v-model="createThreadPostDTO.options"/><br/>
 		<textarea cols=30 rows=10 id="reply-area" placeholder="Text..." v-model="createThreadPostDTO.content"/><br/>
-		<input type="file" accept="image/png, image/jpeg, image/gif" @change="onFileSelected" id="reply-file-upload"><br/>
+		<input type="file" :accept="mime_types_allowed.join(', ')" @change="onFileSelected" id="reply-file-upload"><br/>
 		<template v-if="fileError"><span class="error">{{fileError}}</span></template>
 
 		<br/>

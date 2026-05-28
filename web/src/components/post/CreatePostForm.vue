@@ -8,6 +8,7 @@
 	export interface CreatePostProps {
 		thread_id: number,
 		max_size_bytes: number,
+		mime_types_allowed: string[],
 	}
 
 	const props = defineProps<CreatePostProps>();
@@ -109,7 +110,7 @@
 		<input type=text placeholder="Name" v-model="replyDTO.name"/><br/>
 		<input type=text placeholder="Options" v-model="replyDTO.options"/><br/>
 		<textarea cols=30 rows=10 id="reply-area" placeholder="Text..." ref='text-area' v-model="replyDTO.content"/><br/>
-		<input type="file" accept="image/png, image/jpeg, image/gif" @change="onFileSelected" id="reply-file-upload"><br/>
+		<input type="file" :accept="mime_types_allowed.join(', ')" @change="onFileSelected" id="reply-file-upload"><br/>
 		<template v-if="fileError"><span class="error">{{fileError}}</span></template>
 
 		<br/>

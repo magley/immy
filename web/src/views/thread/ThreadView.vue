@@ -179,9 +179,8 @@
 	}
 
 	const processPost = (post: PostDTO) => {
-		ProcessPost(
-			post, thread.value!, board.value!, imageData.value, postLinks.value, posts.value.map((p) => p.num)
-		).then((res: ProcessedPost) => {
+		ProcessPost(post, thread.value!, board.value!, imageData.value, postLinks.value, posts.value.map((p) => p.num))
+		.then((res: ProcessedPost) => {
 			if (res.image) {
 				imageData.value[post.id] = res.image;
 			}
@@ -239,8 +238,14 @@
 	<BoardListNav :isCatalog=false />
 
 	<template v-if="board && thread">
-		<CreatePostForm ref="reply-form" :thread_id="thread.id" :max_size_bytes="1*1024*1024" @postCreated="onPostCreated()"></CreatePostForm>
-		
+		<CreatePostForm
+		ref="reply-form"
+		:thread_id="thread.id"
+		:max_size_bytes="board.config.max_file_size"
+		:mime_types_allowed="board.config.mime_types_allowed"
+		@postCreated="onPostCreated()"
+		/>
+
 		<ThreadViewNavList
 		:board_code="board.code"
 		jump_to_id="bottom"
