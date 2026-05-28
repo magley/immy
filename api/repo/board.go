@@ -1,8 +1,10 @@
 package repo
 
 import (
+	"log"
+
 	"gorm.io/gorm"
-	
+
 	model "immy-api/model"
 )
 
@@ -23,6 +25,7 @@ func (r *BoardRepo) CreateBoard(dto model.CreateBoardDTO) (*model.Board, error) 
 		Description: dto.Description,
 		Config: dto.Config,
 	}
+	log.Println(dto.Config)
 	
 	result := r.DB.Create(&board)
 	return &board, result.Error

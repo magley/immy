@@ -54,3 +54,26 @@ export const GetFileSizeByteString = (bytes: number): string => {
 	}
 	return `${Math.round(bytes / (1024 * 1024 * 1024))} GB`;
 }
+
+export const GetFileSizeByteFromString = (bytes: string): number => {
+	bytes = bytes.trim();
+
+	let unit = 1;
+	let unitlen = 1;
+	if (bytes.endsWith("GB")) {
+		unit = 1024 * 1024 * 1024;
+		unitlen = 2;
+	} else if (bytes.endsWith("MB")) {
+		unit = 1024 * 1024;
+		unitlen = 2;
+	} else if (bytes.endsWith("KB")) {
+		unit = 1024;
+		unitlen = 2;
+	} else if (bytes.endsWith("B")) {
+		unit = 1;
+		unitlen = 1;
+	}
+
+	const withoutSuffix = bytes.substring(0, bytes.length - unitlen);
+	return (+withoutSuffix) * unit;
+}

@@ -61,11 +61,14 @@ func main() {
 	postHandler := &handler.PostHandler{PostService: postService}
 	threadHandler := &handler.ThreadHandler{ThreadService: threadService, BoardService: boardService, PostService: postService}
 	userHandler := &handler.UserHandler{UserService: userService}
+
+	metaHandler := &handler.MetaHandler{}
 	
 	api := router.Group("/api")
 	{
 		v1 := api.Group("/v1")
 		{
+			route.RegisterMetaRoutes(metaHandler, v1)
 			route.RegisterBoardRoutes(boardHandler, v1)
 			route.RegisterUserRoutes(userHandler, v1)
 			route.RegisterPostRoutes(postHandler, v1)
@@ -75,5 +78,3 @@ func main() {
 	
 	router.Run(":8080")
 }
-
-

@@ -2,6 +2,8 @@ package model
 
 import (
 	"time"
+
+	"github.com/lib/pq"
 )
 
 type Board struct {
@@ -19,7 +21,7 @@ type BoardConfig struct {
 	Hidden		bool			`json:"hidden"`
 	MaxFileSize	uint			`json:"max_file_size"`
 	ReplyFilesAllowed bool		`json:"reply_files_allowed"`
-	MimeTypesAllowed []string 	`json:"mime_types_allowed" gorm:"type:text[]"`
+	MimeTypesAllowed pq.StringArray 	`json:"mime_types_allowed" gorm:"type:text[]"`
 	BumpLimit	uint			`json:"bump_limit"`
 	ImageLimit	uint			`json:"image_limit"`
 	FlagsEnabled bool			`json:"flags_enabled"`
@@ -30,7 +32,7 @@ type CreateBoardDTO struct {
 	Name 		string 		`json:"name" binding:"required"`
 	Code  		string 		`json:"code" binding:"required"`
 	Description *string 	`json:"description"`
-	Config		BoardConfig		`json:"config"`
+	Config		BoardConfig		`json:"config" gorm:"embedded"`
 }
 
 type UpdateBoardDTO struct {
