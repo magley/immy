@@ -20,8 +20,6 @@
 		image_data: PostImageData | undefined;
 		post_tokens: PostToken[];
 
-		post_links: Record<string, PostLinkToken>;
-
 		/** Dictionary that maps user IDs to the number of posts made by that
 		  * ID in the current thread. Optional, if it's not specified then
 		  * this info won't be available inside the post. */
@@ -29,7 +27,7 @@
 	}
 
 	const props = defineProps<PostComponentProps>()
-	const emit = defineEmits(['onClickPostNo', 'onClickPostNumber', 'onClickPostImage', 'onClickUserId']);
+	const emit = defineEmits(['onClickPostNo', 'onClickPostNumber', 'onClickPostImage', 'onClickUserId', 'onPostLinkHover', 'onPostLinkUnhover']);
 
 	const onClickPostNo = (post_num: number) => {
 		emit('onClickPostNo', post_num);
@@ -42,6 +40,12 @@
 	}
 	const onClickUserId = (user_id: string) => {
 		emit('onClickUserId', user_id);
+	}
+	const onPostLinkHover = (postLink: any) => {
+		emit('onPostLinkHover', postLink);
+	}
+	const onPostLinkUnhover = (postLink: any) => {
+		emit('onPostLinkUnhover', postLink);
 	}
 </script>
 
@@ -71,7 +75,12 @@
 			<span class="postnum"><a @click.prevent="onClickPostNumber(post.num)" href="#" class="postNumLink">{{ post.num }}</a></span>
 			<span class="dropdown">&#9654;</span>
 			<span class="backlink-container" v-if="backlinks">
-				<a :href="`#p${num}`" class="backlink" v-for="num of backlinks">&gt;&gt;{{num}}</a>
+				<a
+					:href="`#p${num}`"
+					class="backlink" v-for="num of backlinks"
+					@mouseover="onPostLinkHover(`>>${num}`)"
+					@mouseleave="onPostLinkUnhover(`>>${num}`)"
+				>&gt;&gt;{{num}}</a>
 			</span>
 		</div>
 
@@ -104,12 +113,12 @@
 					</template>
 					<template v-else-if="token.kind == 'link'">
 						<template v-if="token.local">
-							<a :href="`${post_links[token.text]!.href}`" :class="{strikethrough: token.fail}" class="postRef">
+							<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @mouseover="onPostLinkHover(token.text)" @mouseleave="onPostLinkUnhover(token.text)">
 								{{token.text}}
 							</a>
 						</template>
 						<template v-else>
-							<a :href="`${post_links[token.text]!.href}`" :class="{strikethrough: token.fail}" class="postRef">
+							<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @mouseover="onPostLinkHover(token.text)" @mouseleave="onPostLinkUnhover(token.text)">
 								{{token.text}} →
 							</a>
 						</template>

@@ -161,7 +161,6 @@
 					:backlinks="[]"
 					:image_data="imageData[post.id]"
 					:post_tokens="postTokens[post.id] ?? []"
-					:post_links="postLinks"
 					:user_id_count="undefined"
 					@onClickPostNo="(n: number) => onClickPostNo(n, thread)"
 					@onClickPostNumber="(n: number) => onClickPostNumber(n, thread)"

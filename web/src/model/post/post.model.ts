@@ -143,22 +143,7 @@ export const ProcessPost = async (post: PostDTO,
 
 			// (1) Split text into `link_post_board` and `link_post_num`.
 
-			let link_post_board = board.code;
-			let link_post_num = 0;
-			{
-				const link_text = tok.text.substring(2); // First two chars are ">>"
-
-				if (link_text[0] == '/') {
-					const j = link_text.indexOf('/', 1);
-
-					if (j > 0) {
-						link_post_board = link_text.substring(1, j);
-						link_post_num = Number(link_text.substring(j + 1));
-					}
-				} else {
-					link_post_num = Number(link_text);
-				}
-			}
+			let [link_post_board, link_post_num] = SplitPostLink(tok.text, board.code);
 
 			// (2) Check if the link points to a post in this thread.
 
@@ -200,4 +185,30 @@ export const ProcessPost = async (post: PostDTO,
 	}
 
 	return result;
+}
+
+export const SplitPostLink = (postLink: string, fallbackBoardCode: string): [string, number] => {
+	postLink = postLink.trim();
+
+	if (!postLink.startsWith(">>")) {
+		console.error("postLink needs to be of format >>123 or >>/b/123. Got:", postLink);
+	};
+
+	let link_post_board = fallbackBoardCode;
+	let link_post_num = 0;
+
+	const link_text = postLink.substring(2); // First two chars are ">>"
+
+	if (link_text[0] == '/') {
+		const j = link_text.indexOf('/', 1);
+
+		if (j > 0) {
+			link_post_board = link_text.substring(1, j);
+			link_post_num = Number(link_text.substring(j + 1));
+		}
+	} else {
+		link_post_num = Number(link_text);
+	}
+
+	return [link_post_board, link_post_num];
 }

@@ -9,11 +9,13 @@
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
-	import { type PostImageData, type PostToken, type PostLinkToken, type ProcessedPost, ProcessPost } from '@/model/post/post.model';
+	import { type PostImageData, type PostToken, type PostLinkToken, type ProcessedPost, ProcessPost, SplitPostLink } from '@/model/post/post.model';
 	import { vElementVisibility } from '@vueuse/components';
 	import PostComponent from '@/components/post/PostComponent.vue';
 	import { AddRangeNoDuplicates } from '@/util/various.util';
 	import BoardListNav from '@/components/board/BoardListNav.vue';
+	import { GetPostPeek, PostPeekBundle } from '@/model/post/post.peek';
+import { TupleType } from 'typescript';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -53,6 +55,8 @@
 
 	const autoTimer = ref<number>(10);
 	const autoTimerIsEnabled = ref<boolean>(false);
+
+	const peekPost = ref<PostPeekBundle | undefined>(undefined);
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
@@ -193,6 +197,19 @@
 		imageData.value[postId]!.expanded = !imageData.value[postId]!.expanded;
 	}
 
+	const onPostLinkHover = (postLink: string) => {
+		let [link_post_board, link_post_num] = SplitPostLink(postLink, board.value!.code);
+		GetPostPeek(link_post_board, link_post_num, imageData.value).then((res: PostPeekBundle) => {
+			peekPost.value = res;
+		}).catch((err: any) => {
+			console.error(err);
+		});
+	}
+
+	const onPostLinkUnhover = (postLink: string) => {
+		peekPost.value = undefined;
+	}
+
 	const processPost = (post: PostDTO) => {
 		ProcessPost(post, thread.value!, board.value!, imageData.value, postLinks.value, posts.value.map((p) => p.num))
 		.then((res: ProcessedPost) => {
@@ -252,6 +269,22 @@
 <template>
 	<BoardListNav :isCatalog=false />
 
+	<template v-if="peekPost">
+		<PostComponent
+		class="peek"
+		:board="peekPost.board"
+		:thread="peekPost.thread"
+		:post="peekPost.post"
+		:is_highlighted="false"
+		:is_op_post="false"
+		:is_last_seen="false"
+		:backlinks="[]"
+		:image_data="undefined"
+		:post_tokens="peekPost.tokens"
+		:user_id_count="undefined"
+		/>
+	</template>
+
 	<template v-if="board && thread">
 		<CreatePostForm
 		ref="reply-form"
@@ -283,12 +316,13 @@
 			:backlinks="backLinks[post.num] ?? []"
 			:image_data="imageData[post.id]"
 			:post_tokens="postTokens[post.id] ?? []"
-			:post_links="postLinks"
 			:user_id_count="userIdCount"
 			@onClickPostNo="onClickPostNo"
 			@onClickPostNumber="onClickPostNumber"
 			@onClickPostImage="onClickPostImage"
 			@onClickUserId="onClickUserId"
+			@onPostLinkHover="onPostLinkHover"
+			@onPostLinkUnhover="onPostLinkUnhover"
 			/>
 		</template>
 
@@ -310,5 +344,15 @@
 <style scoped>
 	.error {
 		color: red;
+	}
+
+	.peek {
+		position: fixed;
+		z-index: 1000;
+		overflow: hidden;
+		pointer-events: none;
+		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+		background-color: #D6DAF0;
+		left: 50%;
 	}
 </style>
