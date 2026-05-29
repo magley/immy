@@ -9,7 +9,7 @@ export interface PostPeekBundle {
 	post: PostDTO;
 	thread: ThreadDTO;
 	board: BoardDTO;
-	imageData: PostImageData;
+	imageData: PostImageData | null;
 	tokens: PostToken[];
 }
 

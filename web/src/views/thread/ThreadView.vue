@@ -58,6 +58,7 @@
 
 	/** Key is `board + postNum` concatenated */
 	const peekPostCache = ref<Record<string, PostPeekBundle>>({});
+	const peekPostVisible = ref<boolean>(false);
 	const peekPost = ref<PostPeekBundle | undefined>(undefined);
 	const peekMouseX = ref<number>(0);
 	const peekMouseY = ref<number>(0);
@@ -219,15 +220,20 @@
 
 	const onPostLinkHover = (postLink: string) => {
 		let [link_post_board, link_post_num] = SplitPostLink(postLink, board.value!.code);
+		// Set to true immediately. If it's set to false before GetPostPeek
+		// resolves, that's fine, it should be overruled.
+		peekPostVisible.value = true;
 		GetPostPeek(link_post_board, link_post_num, imageData.value, peekPostCache.value).then((res: PostPeekBundle) => {
 			peekPost.value = res;
 		}).catch((err: any) => {
 			console.error(err);
+			peekPostVisible.value = false;
 		});
 	}
 
 	const onPostLinkUnhover = (postLink: string) => {
 		peekPost.value = undefined;
+		peekPostVisible.value = false;
 	}
 
 	const processPost = (post: PostDTO) => {
@@ -243,10 +249,19 @@
 			}
 
 			postTokens.value[post.id] = res.tokens;
-
 			for (const linkKey in res.links) {
 				postLinks.value[linkKey] = res.links[linkKey]!;
 			}
+
+			// Add to peek cache. Chances are most peeked posts will be part
+			// of the current thread instead of being cross-linked.
+			peekPostCache.value[`${board.value!.code}/${post.num}`] = {
+				post: post,
+				thread: thread.value!,
+				board: board.value!,
+				imageData: res.image,
+				tokens: res.tokens,
+			};
 		}).catch((err: any) => {
 			console.error(err);
 		});
@@ -289,7 +304,7 @@
 <template>
 	<BoardListNav :isCatalog=false />
 
-	<template v-if="peekPost">
+	<template v-if="peekPostVisible && peekPost">
 		<PostComponent
 		class="peek"
 		id="peekElement"
