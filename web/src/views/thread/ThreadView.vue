@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { ref, onMounted, watch, useTemplateRef } from 'vue';
+	import { ref, onMounted, watch, useTemplateRef, onUnmounted } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
 	import { ThreadAPI, type ThreadDTO, type ThreadFullDTO } from "@/api/thread.api.ts";
@@ -14,8 +14,8 @@
 	import PostComponent from '@/components/post/PostComponent.vue';
 	import { AddRangeNoDuplicates } from '@/util/various.util';
 	import BoardListNav from '@/components/board/BoardListNav.vue';
-	import { GetPostPeek, PostPeekBundle } from '@/model/post/post.peek';
-import { TupleType } from 'typescript';
+	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
+	import type { TupleType } from 'typescript';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -56,13 +56,33 @@ import { TupleType } from 'typescript';
 	const autoTimer = ref<number>(10);
 	const autoTimerIsEnabled = ref<boolean>(false);
 
+	/** Key is `board + postNum` concatenated */
+	const peekPostCache = ref<Record<string, PostPeekBundle>>({});
 	const peekPost = ref<PostPeekBundle | undefined>(undefined);
+	const peekMouseX = ref<number>(0);
+	const peekMouseY = ref<number>(0);
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
 		loadBoard(board_code);
 		autoTimerCountdown();
+		window.addEventListener('mousemove', updatePosition);
 	});
+
+	onUnmounted(() => {
+		window.removeEventListener('mousemove', updatePosition);
+	})
+
+	const updatePosition = (e: MouseEvent) => {
+		const elemHeight: number = document.getElementById("peekElement")?.clientHeight ?? 80;
+		const maxY = window.innerHeight - elemHeight;
+
+		peekMouseX.value = e.clientX;
+		peekMouseY.value = e.clientY - 64;
+		if (peekMouseY.value > maxY) {
+			peekMouseY.value -= elemHeight;
+		}
+	}
 
 	watch(() => route.hash, (newHash) => {
 		if (newHash) {
@@ -199,7 +219,7 @@ import { TupleType } from 'typescript';
 
 	const onPostLinkHover = (postLink: string) => {
 		let [link_post_board, link_post_num] = SplitPostLink(postLink, board.value!.code);
-		GetPostPeek(link_post_board, link_post_num, imageData.value).then((res: PostPeekBundle) => {
+		GetPostPeek(link_post_board, link_post_num, imageData.value, peekPostCache.value).then((res: PostPeekBundle) => {
 			peekPost.value = res;
 		}).catch((err: any) => {
 			console.error(err);
@@ -272,6 +292,8 @@ import { TupleType } from 'typescript';
 	<template v-if="peekPost">
 		<PostComponent
 		class="peek"
+		id="peekElement"
+		:style="{ transform: 'translate(' + peekMouseX + 'px,' + peekMouseY + 'px)' }"
 		:board="peekPost.board"
 		:thread="peekPost.thread"
 		:post="peekPost.post"
@@ -353,6 +375,5 @@ import { TupleType } from 'typescript';
 		pointer-events: none;
 		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 		background-color: #D6DAF0;
-		left: 50%;
 	}
 </style>

@@ -5,11 +5,12 @@
 	import { ThreadAPI, type ThreadForHomeDTO } from "@/api/thread.api.ts";
 	import PostComponent from "@/components/post/PostComponent.vue";
 	import CreateThreadForm from '@/components/thread/CreateThreadForm.vue';
-	import { type PostImageData, type PostToken, type PostLinkToken, ProcessPost, type ProcessedPost } from "@/model/post/post.model";
+	import { type PostImageData, type PostToken, type PostLinkToken, ProcessPost, type ProcessedPost, SplitPostLink } from "@/model/post/post.model";
 	import type { AxiosError, AxiosResponse } from 'axios';
-	import { onMounted, ref } from 'vue';
+	import { onMounted, onUnmounted, ref } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
 	import BoardListNav from '@/components/board/BoardListNav.vue';
+	import { GetPostPeek, type PostPeekBundle } from "@/model/post/post.peek";
 	
 	const board = ref<BoardDTO | null>(null);
 
@@ -39,12 +40,34 @@
 	  * will set its post id value here. A line will be drawn, and it
 	  * will be closed once you reach the bottom of the page. */
 	
+	/** Key is `board + postNum` concatenated */
+	const peekPostCache = ref<Record<string, PostPeekBundle>>({});
+	const peekPost = ref<PostPeekBundle | undefined>(undefined);
+	const peekMouseX = ref<number>(0);
+	const peekMouseY = ref<number>(0);
+
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
 		const page_num_string = route.query['page'] ?? "1";
 		page.value = Number(page_num_string) - 1;
 		loadBoard(board_code);
+		window.addEventListener('mousemove', updatePosition);
 	});
+
+	onUnmounted(() => {
+		window.removeEventListener('mousemove', updatePosition);
+	})
+
+	const updatePosition = (e: MouseEvent) => {
+		const elemHeight: number = document.getElementById("peekElement")?.clientHeight ?? 80;
+		const maxY = window.innerHeight - elemHeight;
+
+		peekMouseX.value = e.clientX;
+		peekMouseY.value = e.clientY - 64;
+		if (peekMouseY.value > maxY) {
+			peekMouseY.value -= elemHeight;
+		}
+	}
 	
 	const loadBoard = (boardCode: string) => {
 		BoardAPI.GetBoard(boardCode).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
@@ -101,6 +124,19 @@
 		imageData.value[postId]!.expanded = !imageData.value[postId]!.expanded;
 	}
 
+	const onPostLinkHover = (postLink: string) => {
+		let [link_post_board, link_post_num] = SplitPostLink(postLink, board.value!.code);
+		GetPostPeek(link_post_board, link_post_num, imageData.value, peekPostCache.value).then((res: PostPeekBundle) => {
+			peekPost.value = res;
+		}).catch((err: any) => {
+			console.error(err);
+		});
+	}
+
+	const onPostLinkUnhover = (postLink: string) => {
+		peekPost.value = undefined;
+	}
+
 	const processPost = (post: PostDTO, thread: ThreadForHomeDTO) => {
 		ProcessPost(post, thread.thread, board.value!, imageData.value, postLinks.value, thread.posts.map((p) => p.num))
 		.then((res: ProcessedPost) => {
@@ -121,6 +157,24 @@
 
 <template>
 	<BoardListNav :isCatalog=false />
+
+	<template v-if="peekPost">
+		<PostComponent
+		class="peek"
+		id="peekElement"
+		:style="{ transform: 'translate(' + peekMouseX + 'px,' + peekMouseY + 'px)' }"
+		:board="peekPost.board"
+		:thread="peekPost.thread"
+		:post="peekPost.post"
+		:is_highlighted="false"
+		:is_op_post="false"
+		:is_last_seen="false"
+		:backlinks="[]"
+		:image_data="undefined"
+		:post_tokens="peekPost.tokens"
+		:user_id_count="undefined"
+		/>
+	</template>
 
 	<template v-if="board">
 		<div id="title">
@@ -166,6 +220,8 @@
 					@onClickPostNumber="(n: number) => onClickPostNumber(n, thread)"
 					@onClickPostImage="(n: number) => onClickPostImage(n, thread)"
 					@onClickUserId="onClickUserId"
+					@onPostLinkHover="onPostLinkHover"
+					@onPostLinkUnhover="onPostLinkUnhover"
 					/>
 					<div v-if="i == 0 && thread.posts.length < thread.stats.post_count">
 						{{ thread.stats.image_count - thread.posts.filter((p) => p.filename).length }} images and {{ thread.stats.post_count - thread.posts.length }} replies ommited.
@@ -223,5 +279,14 @@
 
 	.currentPage {
 		font-weight: bold;
+	}
+
+	.peek {
+		position: fixed;
+		z-index: 1000;
+		overflow: hidden;
+		pointer-events: none;
+		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+		background-color: #D6DAF0;
 	}
 </style>

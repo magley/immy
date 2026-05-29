@@ -78,8 +78,8 @@
 				<a
 					:href="`#p${num}`"
 					class="backlink" v-for="num of backlinks"
-					@mouseover="onPostLinkHover(`>>${num}`)"
-					@mouseleave="onPostLinkUnhover(`>>${num}`)"
+					@pointerenter="onPostLinkHover(`>>${num}`)"
+					@pointerleave="onPostLinkUnhover(`>>${num}`)"
 				>&gt;&gt;{{num}}</a>
 			</span>
 		</div>
@@ -113,12 +113,12 @@
 					</template>
 					<template v-else-if="token.kind == 'link'">
 						<template v-if="token.local">
-							<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @mouseover="onPostLinkHover(token.text)" @mouseleave="onPostLinkUnhover(token.text)">
+							<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @pointerenter="onPostLinkHover(token.text)" @pointerleave="onPostLinkUnhover(token.text)">
 								{{token.text}}
 							</a>
 						</template>
 						<template v-else>
-							<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @mouseover="onPostLinkHover(token.text)" @mouseleave="onPostLinkUnhover(token.text)">
+							<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @pointerenter="onPostLinkHover(token.text)" @pointerleave="onPostLinkUnhover(token.text)">
 								{{token.text}} →
 							</a>
 						</template>
