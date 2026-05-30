@@ -11,8 +11,9 @@
 	import { useRoute, useRouter } from "vue-router";
 	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetPostPeek, type PostPeekBundle } from "@/model/post/post.peek";
+	import { GetTabTitleForBoard } from "@/util/tab.util";
 	
-	const board = ref<BoardDTO | null>(null);
+	const board = ref<BoardDTO | undefined>(undefined);
 
 	const route = useRoute();
 	const router = useRouter();
@@ -72,8 +73,9 @@
 	
 	const loadBoard = (boardCode: string) => {
 		BoardAPI.GetBoard(boardCode).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
-			board.value = res.data.data;
+			board.value = res.data.data!;
 			loadThreads();
+			document.title = GetTabTitleForBoard(board.value, false);
 		}).catch((err: AxiosError) => {
 			router.push("/");
 		});

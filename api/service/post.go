@@ -93,7 +93,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		return nil, err
 	}
 
-	err = s.validatePost(dto.Filebytes, thread, threadStats, board)
+	err = s.validatePost(dto.Filebytes, thread, threadStats, board, false)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +195,7 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		return nil, err
 	}
 
-	err = s.validatePost(&dto.Filebytes, thread, threadStats, board)
+	err = s.validatePost(&dto.Filebytes, thread, threadStats, board, true)
 	if err != nil {
 		return nil, err
 	}
@@ -266,10 +266,14 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 	return post, err 
 }
 
-func (s *PostService) validatePost(fileBytes *string, thread *model.Thread, threadStats model.ThreadStats, board *model.Board) error {
+func (s *PostService) validatePost(fileBytes *string, thread *model.Thread, threadStats model.ThreadStats, board *model.Board, opPost bool) error {
 	if fileBytes != nil {
 		if threadStats.ImageCount >= board.Config.ImageLimit {
 			return errors.New("Image limit reached")
+		}
+
+		if !board.Config.ReplyFilesAllowed && !opPost {
+			return errors.New("Only OP can attach files")
 		}
 
     	data, err := base64.StdEncoding.DecodeString(*fileBytes)

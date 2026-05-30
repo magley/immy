@@ -16,12 +16,13 @@
 	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
 	import type { TupleType } from 'typescript';
+	import { GetTabTitleForThread } from '@/util/tab.util';
 
 	const route = useRoute();
 	const router = useRouter();
 
-	const board = ref<BoardDTO | null>(null);
-	const thread = ref<ThreadDTO | null>(null);
+	const board = ref<BoardDTO | undefined>(undefined);
+	const thread = ref<ThreadDTO | undefined>(undefined);
 	const thread_stats = ref<ThreadStats>({
 		posts: 0,
 		images: 0,
@@ -97,48 +98,22 @@
 	});
 
 	const setTabTitle = () => {
-		const websiteTitle = "ImmyChan";
-		let title: string = "";
-
+		let newPostCount = 0;
 		if (lastSeenPostBeforeUpdate.value && posts.value) {
-			// How many new posts since last seen post
-			let newPostCount = 0;
 			for (var i = 0; i < posts.value.length; i++) {
 				if (posts.value[i]?.id == lastSeenPostBeforeUpdate.value) {
 					newPostCount = posts.value.length - (i + 1);
 					break;
 				}
 			}
-
-			if (newPostCount > 0) {
-				title += `(${newPostCount}) `;
-			}
 		}
 
-		if (board.value) {
-			title += `/${board.value?.code}/ - `;
-		}
-		if (thread.value && posts.value) {
-			if (thread.value?.subject) {
-				title += thread.value.subject;
-				title += " - ";
-			} else if (posts.value[0]?.content) {
-				title += posts.value[0].content;
-				title += " - "
-			}
-		}
-		if (board.value) {
-			title += `${board.value.name} - `;
-		}
-
-		title += websiteTitle;
-
-		document.title = title;
+		document.title = GetTabTitleForThread(board.value, thread.value, posts.value, newPostCount);
 	}
 
 	const loadBoard = (boardCode: string) => {
 		BoardAPI.GetBoard(boardCode).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
-			board.value = res.data.data;
+			board.value = res.data.data!;
 
 			const thread_num: number = Number(route.params.thread_num);
 			loadThread(boardCode, thread_num);

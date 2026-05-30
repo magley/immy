@@ -10,8 +10,9 @@
 	import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
 	import { ThreadSortModeInCatalog } from '@/model/thread/thread.model';
 	import BoardListNav from '@/components/board/BoardListNav.vue';
+	import { GetTabTitleForBoard } from '@/util/tab.util';
 
-	const board = ref<BoardDTO | null>(null);
+	const board = ref<BoardDTO | undefined>(undefined);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
 
 	const route = useRoute();
@@ -28,7 +29,8 @@
 	
 	const loadBoard = (boardCode: string) => {
 		BoardAPI.GetBoard(boardCode).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
-			board.value = res.data.data;
+			board.value = res.data.data!;
+			document.title = GetTabTitleForBoard(board.value, true);
 			loadThreads();
 		}).catch((err: AxiosError) => {
 			router.push("/");
