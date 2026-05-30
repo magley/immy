@@ -46,6 +46,7 @@ func Created(c *gin.Context, id uint) {
 }
 
 func Fail(c *gin.Context, status int, code, message string) {
+	fmt.Println(status, code, message)
 	c.JSON(status, Response{
 		Success: false,
 		Error:   &ErrorInfo{Code: code, Message: message},
