@@ -77,3 +77,21 @@ export const GetFileSizeByteFromString = (bytes: string): number => {
 	const withoutSuffix = bytes.substring(0, bytes.length - unitlen);
 	return (+withoutSuffix) * unit;
 }
+
+export const GetMimeTypeFromFilename = (fname: string): string => {
+	let dict: Record<string, string> = {
+		".png": "image/png",
+		".jpg": "image/jpeg",
+		".jpeg": "image/jpeg",
+		".gif": "image/gif",
+		".webm": "video/webm",
+		".mp4": "video/mp4",
+	};
+
+	const ext = '.' + fname.split(".").at(-1);
+	if (ext in dict) {
+		return dict[ext]!;
+	}
+	console.warn("Unknown file extension:", ext, " of file:", fname, ". Can't determine MIME type");
+	return "";
+}

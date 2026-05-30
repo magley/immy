@@ -4,7 +4,7 @@
 	import type { PostDTO } from '@/api/post.api';
 	import type { ThreadDTO } from '@/api/thread.api';
 	import { GetPostTimeReadable, type PostImageData, type PostLinkToken, type PostToken } from '@/model/post/post.model';
-	import { GetFileSizeByteString } from '@/util/file.util';
+	import { GetFileSizeByteString, GetMimeTypeFromFilename } from '@/util/file.util';
 	import { GetUserIdColorBackground, GetUserIdColorForeground } from '@/util/various.util';
 
 	interface PostComponentProps {
@@ -46,6 +46,13 @@
 	}
 	const onPostLinkUnhover = (postLink: any) => {
 		emit('onPostLinkUnhover', postLink);
+	}
+
+	const isPostImage = (post: PostDTO) => {
+		return GetMimeTypeFromFilename(post.filename).startsWith('image/');
+	}
+	const isPostVideo = (post: PostDTO) => {
+		return GetMimeTypeFromFilename(post.filename).startsWith('video/');
 	}
 </script>
 
@@ -89,18 +96,32 @@
 				<div class="post-file-container-header">
 					File: <a :href="CdnAPI.GetPostImageURI(post)" target="_blank">{{ post.src_filename }}</a>
 					({{GetFileSizeByteString(post.filesize)}}, {{post.img_width}}x{{post.img_height}})
+					<template v-if="image_data?.expanded && isPostVideo(post)">
+						- <a href="#" @click.prevent="onClickPostImage(post.id)">[Close]</a>
+					</template>
 				</div>
 
 				<a :href="CdnAPI.GetPostImageURI(post)" target="_blank" @click.prevent class="post-file-link">
 					<!-- Thumbnail or real image. -->
-					<img v-if="image_data?.expanded"
-					:src="CdnAPI.GetPostImageURI(post)"
-					@click="onClickPostImage(post.id)"
-					class="post-image-full" />
-					<img v-else
+					<img v-if="!image_data?.expanded"
 					:src="CdnAPI.GetPostImageThumbnailURI(post)"
 					@click="onClickPostImage(post.id)"
 					class="post-image-thumb" />
+					<template v-else>
+						<img v-if="isPostImage(post)"
+							:src="CdnAPI.GetPostImageURI(post)"
+							@click="onClickPostImage(post.id)"
+							class="post-image-full" />
+						<video v-if="isPostVideo(post)"
+							:width="post.img_width"
+							:height="post.img_height"
+							controls
+							autoplay
+							class="post-image-full">
+							<source :src="CdnAPI.GetPostImageURI(post)" :type="GetMimeTypeFromFilename(post.filename)" />
+							Your browser does not support the video tag.
+						</video>
+					</template>
 				</a>
 			</span>
 			<div v-else class="post-no-file">
@@ -217,17 +238,17 @@
 						img {
 							cursor: pointer;
 
-							&.post-image-full {
-								display: block;
-								max-height: 100%;
-								max-width: 100%;
-							}
-
 							&.post-image-thumb {
 								display: inline;
 								max-width: 40%;
 								max-height: 40%;
 								vertical-align: top;
+							}
+
+							&.post-image-full {
+								display: block;
+								max-height: 100%;
+								max-width: 100%;
 							}
 						}
 					}
