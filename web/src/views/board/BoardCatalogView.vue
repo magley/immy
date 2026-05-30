@@ -2,7 +2,7 @@
 	import { ref, onMounted } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
-	import { ThreadAPI, type ThreadFullDTO, type ThreadForCatalogDTO } from '@/api/thread.api';
+	import { ThreadAPI, type ThreadFullDTO, type ThreadForCatalogDTO, type ThreadDTO } from '@/api/thread.api';
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
 	import { CdnAPI } from '@/api/cdn.api';
@@ -81,6 +81,14 @@
 	const onShowCommentChanged = (show: boolean) => {
 		showComment.value = show;
 	}
+
+	const getDynamicImageStyle = (thread: ThreadForCatalogDTO): any => {
+		if (thread.post.img_height > thread.post.img_width) {
+			return { height: (140 * imageSize.value / 100) + 'px', };
+		} else {
+			return { width: (160 * imageSize.value / 100) + 'px', };
+		}
+	}
 </script>
 
 <template>
@@ -119,8 +127,8 @@
 			<span v-for="thread in threads" class="catalog-post">
 				<RouterLink :to="`/${board.code}/thread/${thread.thread.post_num}`">
 					<img
-					:src="CdnAPI.GetPostImageURI(thread.post)"
-					:style="{ maxWidth: (160 * imageSize / 100) + 'px', maxHeight: (140 * imageSize / 100) + 'px', }"
+					:src="CdnAPI.GetPostImageThumbnailURI(thread.post)"
+					:style="getDynamicImageStyle(thread)"
 					>
 				</RouterLink>
 				<br />

@@ -80,12 +80,8 @@ func SaveFile(filename string, fileBytesB64 string) (*SaveFileResult, error) {
 
     if strings.HasPrefix(mimeType, "image/") {
         return saveFileAsImage(filename, fileBytes)
-    } else {
-        if mimeType == "video/webm" {
-            return saveFileAsWebm(filename, fileBytes)
-        } else {
-
-        }
+    } else if strings.HasPrefix(mimeType, "video/") {
+        return saveFileAsVideo(filename, fileBytes)
     }
 
     return nil, errors.New("Unexpected MIME type: " + mimeType)
@@ -125,7 +121,7 @@ func saveFileAsImage(filename string, fileBytes []byte) (*SaveFileResult, error)
     }, nil
 }
 
-func saveFileAsWebm(filename string, fileBytes []byte) (*SaveFileResult, error) {
+func saveFileAsVideo(filename string, fileBytes []byte) (*SaveFileResult, error) {
     fnameBase := strings.TrimSuffix(filename, filepath.Ext(filename))
     filenameThumb := fmt.Sprintf("%s-thumb.jpg", fnameBase)
 
@@ -166,7 +162,7 @@ func saveFileAsWebm(filename string, fileBytes []byte) (*SaveFileResult, error) 
 
     // 3) Save video thumbnail using ffmpeg
 
-    cmd = exec.Command("/usr/local/bin/ffmpeg", "-i",  getFullPath(filename), "-ss", "00:00:01.000", "-vframes", "1", getFullPath(filenameThumb))
+    cmd = exec.Command("/usr/local/bin/ffmpeg", "-i",  getFullPath(filename), "-vf", fmt.Sprintf("scale=iw/%d:ih/%d", 6, 6), "-frames:v", "1", getFullPath(filenameThumb))
     cmd.Stderr = &stderr
     _, err = cmd.Output()
     if err != nil {

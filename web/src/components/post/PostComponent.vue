@@ -251,6 +251,14 @@
 								max-width: 100%;
 							}
 						}
+
+						video {
+							&.post-image-full {
+								display: block;
+								max-height: 100%;
+								max-width: 100%;
+							}
+						}
 					}
 				}
 			}
