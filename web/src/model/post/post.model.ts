@@ -16,7 +16,7 @@ export const GetPostTimeReadable = (dateStr: string) => {
 		case 4: return "Thu";
 		case 5: return "Fri";
 		case 6: return "Sat";
-		case 7: return "Sun";
+		case 0: return "Sun";
 		default: return "???";
 		}
 	}
