@@ -80,15 +80,34 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 		return n;
 	}
 
+	const isProbablyLink = (s: string): boolean => {
+		// >>1234
+		// >>/sometext/
+		// >>/sometext/1234
+		if (s.startsWith(">>>")) return false;
+		if (!s.startsWith(">>")) return false;
+		const ss = s.substring(2);
+		if (ss == "") return false;
+		if (ss.startsWith("/")) {
+			let i = ss.substring(1).indexOf("/");
+			if (i == -1) {
+				return false;
+			}
+			return true;
+		} else {
+			return !isNaN(+ss);
+		}
+	}
+
 	// Split text into `parts` like this:
 	//
-	// ['abc', '>>>>>>>>text123', '\n\n', '>what ', '>>/b/1234 ', '\n']
+	// ['abc', ' ', '>>>text123', '      ', \n\n', '>what ', '>>/b/1234 ', '\n']
 
 	let parts: string[] = [];
 	let p: string = "";
 	for (let i = 0; i < text.length; i++) {
 		const ci = text[i]!;
-		if (ci == '>' || ci == '\n') {
+		if (ci == '>' || ci == '\n' || ci == ' ') {
 			if (p != "") {
 				if (parts.length > 0 && isRepeated(parts.at(-1)!, '>')) {
 					parts[parts.length - 1] += p;
@@ -116,35 +135,55 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 		p = "";
 	}
 
-	// Create tokens based on `parts`.
+	// Merge consecutive non-link parts. Whether a part is a non-link is not
+	// determined with maximum precision.
+
+	let parts2: {text: string, isLink: boolean}[] = [];
+
+	for (let i = 0; i < parts.length; i++) {
+		const text: string = parts[i]!;
+		const isLink = isProbablyLink(text);
+		let canMergeWithPrevious: boolean = false;
+
+		if (!isLink && parts2.length > 0) {
+			const previous = parts2.at(-1)!;
+			if (!previous.isLink) {
+				canMergeWithPrevious = true;
+			}
+		}
+
+		if (canMergeWithPrevious) {
+			parts2[parts2.length - 1]!.text += text;
+		} else {
+			parts2.push({ text, isLink });
+		}
+	}
+
+	// Create tokens based on `parts2`.
 
 	const res: PostToken[] = [];
-	for (let i = 0; i < parts.length; i++) {
-		const part: string = parts[i]!;
-		const quoteArrows: number = startsWithHowMany(part, '>');
+	for (let i = 0; i < parts2.length; i++) {
+		const {text, isLink} = parts2[i]!;
 
-		// There could be more distinctions other than number of '>'.
-
-		if (quoteArrows == 2) {
+		if (isLink) {
 			res.push({
 				kind: "link",
 				href: "unknown",
-				text: part,
+				text,
 				local: true,
 				fail: false,
 			} as unknown as PostLinkToken);
 		} else {
+			const quoteArrows: number = startsWithHowMany(text, '>');
 			const isGreentext = quoteArrows > 0;
 
 			res.push({
 				kind: "text",
-				text: part,
+				text,
 				type: isGreentext ? 'greentext' : 'normal',
 			} as unknown as PostTextToken);
 		}
 	}
-
-	console.log(text, parts, res);
 
 	return res;
 }
