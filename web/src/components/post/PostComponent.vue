@@ -129,10 +129,11 @@
 
 			<span class="post-body">
 				<span v-for="token of post_tokens">
-					<template v-if="token.kind == 'text'">
+					<span v-if="token.kind == 'text'"
+					:class="{'redtext': token.type=='redtext', 'greentext': token.type=='greentext'}">
 						{{token.text}}
-					</template>
-					<template v-else-if="token.kind == 'link'">
+					</span>
+					<span v-else-if="token.kind == 'link'">
 						<template v-if="token.local">
 							<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @pointerenter="onPostLinkHover(token.text)" @pointerleave="onPostLinkUnhover(token.text)">
 								{{token.text}}
@@ -143,7 +144,7 @@
 								{{token.text}} →
 							</a>
 						</template>
-					</template>
+					</span>
 				</span>
 			</span>
 		</div>
@@ -222,6 +223,15 @@
 					.postNumLink:hover {
 						color: #DD0000;
 					}
+
+					.greentext {
+						color: #789922;
+					}
+
+					.redtext {
+						color: red;
+						font-weight: bold;
+					}
 				}
 
 				.post-no-file {
@@ -235,6 +245,7 @@
 					}
 
 					.post-file-link {
+						cursor: default;
 						img {
 							cursor: pointer;
 

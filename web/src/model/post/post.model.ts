@@ -51,6 +51,8 @@ export const GetPostTimeReadable = (dateStr: string) => {
 export type PostTextToken = {
 	kind: "text";
 	text: string;
+
+	type: 'normal' | 'greentext' | 'redtext';
 };
 
 export type PostLinkToken = {
@@ -65,21 +67,86 @@ export type PostLinkToken = {
 export type PostToken = PostTextToken | PostLinkToken;
 
 export const ParsePostTokens = (text: string): PostToken[] => {
-	return text.split(/(\s+|##\w+|\S+)/g).map(word => {
-		if (word.startsWith(">>")) {
-			return {
-				kind: "link",
-				text: word,
-			} as unknown as PostTextToken;
+	const isRepeated = (s: string, char: string): boolean => {
+		return s == char.repeat(s.length);
+	}
+
+	const startsWithHowMany = (s: string, startChar: string): number => {
+		let n = 0;
+		for (let c of s) {
+			if (c == startChar) n++;
+			else break;
 		}
-		return {
-			kind: "text",
-			href: "unknown",
-			text: word,
-			local: true,
-			fail: true,
-		} as unknown as PostLinkToken;
-	});
+		return n;
+	}
+
+	// Split text into `parts` like this:
+	//
+	// ['abc', '>>>>>>>>text123', '\n\n', '>what ', '>>/b/1234 ', '\n']
+
+	let parts: string[] = [];
+	let p: string = "";
+	for (let i = 0; i < text.length; i++) {
+		const ci = text[i]!;
+		if (ci == '>' || ci == '\n') {
+			if (p != "") {
+				if (parts.length > 0 && isRepeated(parts.at(-1)!, '>')) {
+					parts[parts.length - 1] += p;
+				} else {
+					parts.push(p);
+				}
+				p = "";
+			}
+
+			if (parts.length > 0 && isRepeated(parts.at(-1)!, ci)) {
+				parts[parts.length - 1] += ci;
+			} else {
+				parts.push(ci);
+			}
+		} else {
+			p += ci;
+		}
+	}
+	if (p != "") {
+		if (parts.length > 0 && isRepeated(parts.at(-1)!, '>')) {
+			parts[parts.length - 1] += p;
+		} else {
+			parts.push(p);
+		}
+		p = "";
+	}
+
+	// Create tokens based on `parts`.
+
+	const res: PostToken[] = [];
+	for (let i = 0; i < parts.length; i++) {
+		const part: string = parts[i]!;
+		const quoteArrows: number = startsWithHowMany(part, '>');
+
+		// There could be more distinctions other than number of '>'.
+
+		if (quoteArrows == 2) {
+			res.push({
+				kind: "link",
+				href: "unknown",
+				text: part,
+				local: true,
+				fail: false,
+			} as unknown as PostLinkToken);
+		} else {
+			const isGreentext = quoteArrows > 0;
+
+			res.push({
+				kind: "text",
+				text: part,
+				type: isGreentext ? 'greentext' : 'normal',
+			} as unknown as PostTextToken);
+		}
+	}
+
+	console.log(text, parts, res);
+
+	return res;
 }
 
 export interface PostImageData {
