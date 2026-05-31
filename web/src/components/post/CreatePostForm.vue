@@ -61,7 +61,6 @@
 		FileToBase64(file).then((b64: string) => {
 			fileName.value = file.name;
 			fileBytes.value = b64;
-			console.log(b64);
 		}).catch((err: any) => {
 			fileError.value = "Could not process file";
 			console.error(err);

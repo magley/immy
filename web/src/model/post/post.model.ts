@@ -251,38 +251,46 @@ export const ProcessPost = async (post: PostDTO,
 
 			let [link_post_board, link_post_num] = SplitPostLink(tok.text, board.code);
 
-			// (2) Check if the link points to a post in this thread.
+			// (A) Special case: no post number, just the board code.
 
-			let post_is_local = false;
-			if (link_post_board == board.code) {
-				for (let p of thread_post_nums) {
-					if (p == link_post_num) {
-						post_is_local = true;
-						break;
+			if (link_post_num == 0 && tok.text == `>>/${board.code}/`) {
+				tok.local = false;
+				tok.href = `/${link_post_board}`;
+			}
+			else {
+				// (2) Check if the link points to a post in this thread.
+
+				let post_is_local = false;
+				if (link_post_board == board.code) {
+					for (let p of thread_post_nums) {
+						if (p == link_post_num) {
+							post_is_local = true;
+							break;
+						}
 					}
 				}
-			}
 
-			// (3) Set link token.
-			// Local link => use a direct href
-			// Non-local link => need to check where it points to (if anywhere).
+				// (3) Set link token.
+				// Local link => use a direct href
+				// Non-local link => need to check where it points to (if anywhere).
 
-			tok.local = post_is_local;
+				tok.local = post_is_local;
 
-			if (tok.local) {
-				tok.href = `#p${link_post_num}`;
+				if (tok.local) {
+					tok.href = `#p${link_post_num}`;
 
-				if (result.backlinks.indexOf(link_post_num) == -1) {
-					result.backlinks.push(link_post_num);
+					if (result.backlinks.indexOf(link_post_num) == -1) {
+						result.backlinks.push(link_post_num);
+					}
+				} else {
+					await PostAPI.GetPostByNum(link_post_board, link_post_num).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
+						const post: PostDTO = res.data.data!;
+						tok.href = `/${link_post_board}/thread/${post.thread_num}#p${link_post_num}`;
+					}).catch((err: AxiosError) => {
+						tok.fail = true;
+						console.error(err);
+					});
 				}
-			} else {
-				await PostAPI.GetPostByNum(link_post_board, link_post_num).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
-					const post: PostDTO = res.data.data!;
-					tok.href = `/${link_post_board}/thread/${post.thread_num}#p${link_post_num}`;
-				}).catch((err: AxiosError) => {
-					tok.fail = true;
-					console.error(err);
-				});
 			}
 
 			// Cache the link token.

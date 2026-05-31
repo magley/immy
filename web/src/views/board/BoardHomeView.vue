@@ -129,6 +129,7 @@
 
 	const onPostLinkHover = (postLink: string) => {
 		let [link_post_board, link_post_num] = SplitPostLink(postLink, board.value!.code);
+		if (link_post_num == 0) return;
 		// Set to true immediately. If it's set to false before GetPostPeek
 		// resolves, that's fine, it should be overruled.
 		peekPostVisible.value = true;

@@ -17,6 +17,7 @@
 	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
 	import type { TupleType } from 'typescript';
 	import { GetTabTitleForThread } from '@/util/tab.util';
+	import { useTextSelection } from '@vueuse/core';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -53,9 +54,11 @@
 	const userIdCount = ref<Record<string, number>>({});
 
 	const replyForm = useTemplateRef('reply-form');
+	const textSelection = useTextSelection();
 
 	const autoTimer = ref<number>(10);
 	const autoTimerIsEnabled = ref<boolean>(false);
+
 
 	/** Key is `board + postNum` concatenated */
 	const peekPostCache = ref<Record<string, PostPeekBundle>>({});
@@ -177,6 +180,17 @@
 	const onClickPostNumber = (postNum: number) => {
 		if (replyForm.value) {
 			replyForm.value.AppendText(`>>${postNum}\n`);
+
+			// If any selected text, add it to the reply box.
+			var selectionParts: string[] = textSelection.text.value.split("\n");
+
+			var quoted = "";
+			for (let part of selectionParts) {
+				quoted += ">" + part + "\n";
+			}
+			if (quoted.length > 0) {
+				replyForm.value.AppendText(quoted);
+			}
 		}
 	}
 
@@ -195,6 +209,7 @@
 
 	const onPostLinkHover = (postLink: string) => {
 		let [link_post_board, link_post_num] = SplitPostLink(postLink, board.value!.code);
+		if (link_post_num == 0) return;
 		// Set to true immediately. If it's set to false before GetPostPeek
 		// resolves, that's fine, it should be overruled.
 		peekPostVisible.value = true;
