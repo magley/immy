@@ -4,6 +4,7 @@ import type { ApiResponse } from "@/api/http";
 import { type PostDTO, PostAPI } from "@/api/post.api";
 import type { ThreadDTO } from "@/api/thread.api";
 import type { AxiosResponse, AxiosError } from "axios";
+import { isWhiteSpaceLike, isWhiteSpaceSingleLine } from "typescript";
 
 export const GetPostTimeReadable = (dateStr: string) => {
 	var date: Date = new Date(dateStr);
@@ -59,6 +60,7 @@ export type PostLinkToken = {
 	kind: "link";
 	text: string;
 
+	textTrimmed: string; // Untrimmed text can cause cache misses and stuff.
 	href: string;
 	local: boolean;
 	fail: boolean;
@@ -97,6 +99,10 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 		} else {
 			return !isNaN(+ss);
 		}
+	}
+
+	const isJustWhitespace = (s: string): boolean => {
+		return s.trim().length == 0;
 	}
 
 	// Split text into `parts` like this:
@@ -150,6 +156,9 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 			if (!previous.isLink) {
 				canMergeWithPrevious = true;
 			}
+			if (previous.isLink && isJustWhitespace(text)) {
+				canMergeWithPrevious = true;
+			}
 		}
 
 		if (canMergeWithPrevious) {
@@ -170,6 +179,7 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 				kind: "link",
 				href: "unknown",
 				text,
+				textTrimmed: text.trim(),
 				local: true,
 				fail: false,
 			} as unknown as PostLinkToken);
@@ -237,8 +247,8 @@ export const ProcessPost = async (post: PostDTO,
 	for (let tok of result.tokens) {
 		if (tok.kind == 'link') {
 			// Cache hit.
-			if (tok.text in linksCache && linksCache[tok.text]!.href != '#') {
-				const refToken: PostLinkToken = linksCache[tok.text]!;
+			if (tok.textTrimmed in linksCache && linksCache[tok.textTrimmed]!.href != '#') {
+				const refToken: PostLinkToken = linksCache[tok.textTrimmed]!;
 				tok.href = refToken.href;
 				tok.local = refToken.local;
 				tok.fail = refToken.fail;
@@ -249,11 +259,11 @@ export const ProcessPost = async (post: PostDTO,
 
 			// (1) Split text into `link_post_board` and `link_post_num`.
 
-			let [link_post_board, link_post_num] = SplitPostLink(tok.text, board.code);
+			let [link_post_board, link_post_num] = SplitPostLink(tok.textTrimmed, board.code);
 
 			// (A) Special case: no post number, just the board code.
 
-			if (link_post_num == 0 && tok.text == `>>/${board.code}/`) {
+			if (link_post_num == 0 && tok.textTrimmed == `>>/${board.code}/`) {
 				tok.local = false;
 				tok.href = `/${link_post_board}`;
 			}
@@ -294,7 +304,7 @@ export const ProcessPost = async (post: PostDTO,
 			}
 
 			// Cache the link token.
-			result.links[tok.text] = tok as PostLinkToken;
+			result.links[tok.textTrimmed] = tok as PostLinkToken;
 		}
 	}
 

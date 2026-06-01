@@ -54,6 +54,12 @@
 	const isPostVideo = (post: PostDTO) => {
 		return GetMimeTypeFromFilename(post.filename).startsWith('video/');
 	}
+
+	const getTrailingWhitespace = (s: string): string => {
+		const trimmed: string = s.trim();
+		const trimmedStart: number = s.indexOf(trimmed);
+		return s.substring(trimmedStart + trimmed.length);
+	}
 </script>
 
 <template>
@@ -134,16 +140,10 @@
 						{{token.text}}
 					</span>
 					<span v-else-if="token.kind == 'link'">
-						<template v-if="token.local">
-							<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @pointerenter="onPostLinkHover(token.text)" @pointerleave="onPostLinkUnhover(token.text)">
-								{{token.text}}
-							</a>
-						</template>
-						<template v-else>
-							<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @pointerenter="onPostLinkHover(token.text)" @pointerleave="onPostLinkUnhover(token.text)">
-								{{token.text}} →
-							</a>
-						</template>
+						<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @pointerenter="onPostLinkHover(token.text)" @pointerleave="onPostLinkUnhover(token.text)">
+							{{token.text.trim()}}<template v-if="!token.local"> →</template>
+						</a>
+						{{getTrailingWhitespace(token.text)}}
 					</span>
 				</span>
 			</span>
