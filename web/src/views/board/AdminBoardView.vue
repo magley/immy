@@ -256,12 +256,12 @@
 	}
 	
 	th {
-		background: rgb(208, 208, 255);
+		background-color: var(--background-color-darker);
 		padding: 0em 1em;
 	}
 	
 	.error {
-		color: red;
+		color: var(--user-error-color);
 	}
 
 	.input-group {

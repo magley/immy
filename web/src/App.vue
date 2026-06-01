@@ -16,6 +16,17 @@
 		});
 	});
 
+	const theme = ref<string>("yotsuba");
+	const themeChanged = () => {
+		setTheme(theme.value);
+	}
+	onMounted(() => {
+		setTheme(localStorage.getItem("theme") ?? "yotsuba");
+	});
+	const setTheme = (theme: string) => {
+		document.documentElement.setAttribute('data-theme', theme);
+		localStorage.setItem("theme", theme);
+	}
 </script>
 
 
@@ -41,6 +52,14 @@
 		ell. -->
 		<RouterView :key="$route.path"/>
 	</main>
+
+	<label>Theme:</label>
+	<select v-model="theme" @change="themeChanged">
+	  <option value="yotsuba">Yotsuba</option>
+	  <option value="yotsuba-b">Yotsuba B</option>
+	  <option value="futaba">Futaba</option>
+	  <option value="burichan">Burichan</option>
+	</select>
 	
 	<span id="bottom"></span>
 </template>

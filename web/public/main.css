@@ -1,21 +1,115 @@
+:root {
+  --background-color: #EEF2FF;
+  --background-color-darker: #d0d0ff;
+  --background-color-accent: #98E;
+  --link-color: #34345c;
+  --link-hover-color: #DD0000;
+  --post-link-color: #DD0000;
+  --user-error-color: red;
+  --banner-title-color: #af0a0f;
+  --post-background-color: #D6DAF0;
+  --highlighted-post-background-color: #D6DAF0;
+  --unread-posts-separator: red;
+  --username-color: #157743;
+  --thread-subject-color: #0F0C5D;
+  --greentext-color: #789922;
+  --redtext-color: red;
+  --hr-color: #d0d0ff;
+
+  --font: sans-serif;
+  --font-size: 1em;
+}
+
+[data-theme="yotsuba"] {
+  --background-color: #ffffee;
+  --background-color-darker: #eeaa88;
+  --background-color-accent: #eeaa88;
+  --link-color: #000080;
+  --link-hover-color: red;
+  --post-link-color: #000080;
+  --banner-title-color: #800000;
+  --post-background-color: #f0e0d6;
+  --highlighted-post-background-color: #f0c0b0;
+  --username-color: #117743;
+  --thread-subject-color: #cc1105;
+  --hr-color: #eeaa88;
+}
+
+[data-theme="yotsuba-b"] {
+}
+
+[data-theme="futaba"] {
+  --font: serif;
+  --font-size: 1.25em;
+  --hr-color: black;
+
+  /** Inherit from yotsuba */
+  --background-color: #ffffee;
+  --background-color-darker: #ddddff;
+  --background-color-accent: #eeaa88;
+  --link-color: #000080;
+  --link-hover-color: red;
+  --post-link-color: #000080;
+  --banner-title-color: #800000;
+  --post-background-color: #f0e0d6;
+  --highlighted-post-background-color: #f0c0b0;
+  --username-color: #117743;
+  --thread-subject-color: #cc1105;
+}
+
+[data-theme="burichan"] {
+  --font: serif;
+  --font-size: 1.25em;
+  --hr-color: black;
+}
+
+
 body {
-	background-color: #EEF2FF;
+	background-color: var(--background-color);
+  font-family: var(--font);
+  font-size: var(--font-size);
 }
 
 a {
-  color: #34345c;
+  color: var(--link-color);
 }
 
 a:hover {
-  color: #DD0000;
+  color: var(--link-hover-color);
 }
 
-
-/* Links and cross-links */
 .postRef, .postRef:visited {
-	color: #DD0000;
-	text-decoration: underline;
+  color: var(--post-link-color);
+  text-decoration: underline;
 }
+
+.postRef:hover {
+  color: var(--link-hover-color);
+}
+
+hr {
+  border-top: 1px solid var(--hr-color);
+}
+
+.peek {
+  position: fixed;
+  z-index: 1000;
+  overflow: hidden;
+  pointer-events: none;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  background-color: var(--post-background-color);
+}
+
+.greentext {
+  color: var(--greentext-color);
+}
+
+.redtext {
+  color: var(--redtext-color);
+  font-weight: bold;
+}
+
+
 
 
 /* Tooltip container : https://www.w3schools.com/css/css_tooltip.asp */

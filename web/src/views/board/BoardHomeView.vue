@@ -280,7 +280,7 @@
 	#title {
 		text-align: center;
 		h1 {
-			color: #af0a0f;
+			color: var(--banner-title-color);
 		}
 	}
 
@@ -291,21 +291,11 @@
 		margin: auto;
 	}
 
-
 	.error {
-		color: red;
+		color: var(--user-error-color);
 	}
 
 	.currentPage {
 		font-weight: bold;
-	}
-
-	.peek {
-		position: fixed;
-		z-index: 1000;
-		overflow: hidden;
-		pointer-events: none;
-		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-		background-color: #D6DAF0;
 	}
 </style>

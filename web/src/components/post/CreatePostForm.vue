@@ -124,6 +124,6 @@
 
 <style scoped>
 	.error {
-		color: red;
+		color: var(--user-error-color);
 	}
 </style>

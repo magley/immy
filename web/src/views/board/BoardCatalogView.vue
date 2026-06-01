@@ -172,7 +172,7 @@
 	#title {
 		text-align: center;
 		h1 {
-			color: #af0a0f;
+			color: var(--banner-title-color);
 		}
 	}
 

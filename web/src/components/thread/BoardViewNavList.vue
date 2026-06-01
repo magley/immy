@@ -59,14 +59,6 @@
 </template>
 
 <style scoped>
-	RouterLink, a {
-		color: #34345c;
-	}
-
-	RouterLink:hover, a:hover {
-		color: #DD0000;
-	}
-
 	nav {
 		display: flex;
 		justify-content: space-between;

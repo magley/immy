@@ -163,18 +163,18 @@
 		}
 */
 		.lastSeenPost {
-			border-bottom: 2px solid red;
+			border-bottom: 2px solid var(--unread-posts-separator);
 		}
 
 		.post {
-			background-color: #D6DAF0;
+			background-color: var(--post-background-color);
 			padding-top: 0.25em;
 			padding-bottom: 1em;
 			padding-left: 1em;
 			padding-right: 1em;
 
 			&.opPost {
-				background-color: #EEF2FF !important;
+				background-color: var(--background-color) !important;
 			}
 
 			.post-header {
@@ -186,11 +186,25 @@
 					.backlink {
 						font-size: small;
 						margin-right: 0.25em;
+						color: var(--link-color) !important;
+					}
+					.backlink:hover {
+						color: var(--link-hover-color) !important;
+
 					}
 				}
 
+				.postno a, .postnum a {
+					color: black;
+					text-decoration: none !important;
+				}
+
+				.postno a:hover, .postnum a:hover {
+					color: var(--link-hover-color);
+				}
+
 				.username, .tripcode {
-					color: #157743;
+					color: var(--username-color);
 					font-weight: bolder;
 				}
 
@@ -202,7 +216,7 @@
 				}
 
 				.subject {
-					color: #0F0C5D;
+					color: var(--thread-subject-color);
 					font-weight: bolder;
 				}
 
@@ -214,24 +228,6 @@
 					margin-left: 1em;
 					white-space: pre-wrap;
 					word-wrap: break-word;
-
-					.postNumLink {
-						color: black;
-						text-decoration: none;
-					}
-
-					.postNumLink:hover {
-						color: #DD0000;
-					}
-
-					.greentext {
-						color: #789922;
-					}
-
-					.redtext {
-						color: red;
-						font-weight: bold;
-					}
 				}
 
 				.post-no-file {
@@ -276,12 +272,12 @@
 		}
 
 		.highlightedPost {
-			background-color: #d6bad0;
+			background-color: var(--highlighted-post-background-color);
 		}
 	}
 
 	.error {
-		color: red;
+		color: var(--user-error-color);
 	}
 
 	.strikethrough {

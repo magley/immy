@@ -408,22 +408,13 @@
 
 <style scoped>
 	.error {
-		color: red;
-	}
-
-	.peek {
-		position: fixed;
-		z-index: 1000;
-		overflow: hidden;
-		pointer-events: none;
-		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-		background-color: #D6DAF0;
+		color: var(--user-error-color);
 	}
 
 	#title {
 		text-align: center;
 		h1 {
-			color: #af0a0f;
+			color: var(--banner-title-color);
 		}
 	}
 
@@ -438,16 +429,15 @@
 		position: fixed;
 		z-index: 600;
 		overflow: hidden;
-		background-color: #D6DAF0;
+		background-color: var(--post-background-color);;
 		border: 1px solid gray;
 		padding: 2px;
 
 		.header {
-			background-color: #98E;
+			background-color: var(--background-color-accent);
 			font-weight: bold;
 			text-align: center;
 			cursor: move;
-			padding: 1px 0px;
 
 			label {
 				-webkit-user-select: none;

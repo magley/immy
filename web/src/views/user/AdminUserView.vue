@@ -118,11 +118,11 @@
 	}
 	
 	th {
-		background: lightgray;
+		background-color: var(--background-color-darker);
 		padding: 0em 1em;
 	}
 	
 	.error {
-		color: red;
+		color: var(--user-error-color);
 	}
 </style>
