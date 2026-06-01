@@ -184,12 +184,14 @@
 			// If any selected text, add it to the reply box.
 			var selectionParts: string[] = textSelection.text.value.split("\n");
 
-			var quoted = "";
-			for (let part of selectionParts) {
-				quoted += ">" + part + "\n";
-			}
-			if (quoted.length > 0) {
-				replyForm.value.AppendText(quoted);
+			if (selectionParts.length > 1 || (selectionParts[0]?.length ?? 0 > 0)) {
+				var quoted = "";
+				for (let part of selectionParts) {
+					quoted += ">" + part + "\n";
+				}
+				if (quoted.length > 0) {
+					replyForm.value.AppendText(quoted);
+				}
 			}
 		}
 	}
