@@ -17,8 +17,7 @@
 	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
 	import type { TupleType } from 'typescript';
 	import { GetTabTitleForThread } from '@/util/tab.util';
-	import { useTextSelection } from '@vueuse/core';
-
+	import { useTextSelection, useDraggable } from '@vueuse/core';
 	const route = useRoute();
 	const router = useRouter();
 
@@ -59,6 +58,10 @@
 	const autoTimer = ref<number>(10);
 	const autoTimerIsEnabled = ref<boolean>(false);
 
+	const floatingReplyBox = useTemplateRef("floating-reply-box");
+	const floatingReplyBoxDragHandle = useTemplateRef("drag-handle");
+	const floatingReplyBoxVisible = ref<boolean>(false);
+	const { style: floatingReplyBoxStyle } = useDraggable(floatingReplyBox, {initialValue: { x: 200, y: 100 }, handle: floatingReplyBoxDragHandle, });
 
 	/** Key is `board + postNum` concatenated */
 	const peekPostCache = ref<Record<string, PostPeekBundle>>({});
@@ -178,6 +181,8 @@
 	}
 
 	const onClickPostNumber = (postNum: number) => {
+		openFloatingReplyBox();
+
 		if (replyForm.value) {
 			replyForm.value.AppendText(`>>${postNum}\n`);
 
@@ -291,11 +296,20 @@
 			}
 		}
 	}
+
+	const closeFloatingReplyBox = () => {
+		floatingReplyBoxVisible.value = false;
+	}
+
+	const openFloatingReplyBox = () => {
+		floatingReplyBoxVisible.value = true;
+	}
 </script>
 
 <template>
 	<BoardListNav :isCatalog=false />
 
+	<!-- Peek post -->
 	<template v-if="peekPostVisible && peekPost">
 		<PostComponent
 		class="peek"
@@ -315,13 +329,35 @@
 	</template>
 
 	<template v-if="board && thread">
+		<div id="title">
+			<h1>/{{board.code}}/ - {{board.name}}</h1>
+			<small>{{board.description}}</small>
+		</div>
+		<hr />
+
+		<!-- Static reply box -->
 		<CreatePostForm
-		ref="reply-form"
-		:thread_id="thread.id"
-		:max_size_bytes="board.config.max_file_size"
-		:mime_types_allowed="board.config.mime_types_allowed"
-		@postCreated="onPostCreated()"
-		/>
+			id="static-reply-box"
+			:thread_id="thread.id"
+			:max_size_bytes="board.config.max_file_size"
+			:mime_types_allowed="board.config.mime_types_allowed"
+			@postCreated="onPostCreated()"
+			/>
+
+		<!-- Floating reply box -->
+		<div id="floating-reply-box" ref="floating-reply-box" :style="floatingReplyBoxStyle" v-if="floatingReplyBoxVisible">
+			<div class="header" ref="drag-handle">
+				<label>Reply to Thread No.{{thread.post_num}}</label>
+				<img src="/icons/cross.png" @click="closeFloatingReplyBox" />
+			</div>
+			<CreatePostForm
+			ref="reply-form"
+			:thread_id="thread.id"
+			:max_size_bytes="board.config.max_file_size"
+			:mime_types_allowed="board.config.mime_types_allowed"
+			@postCreated="onPostCreated()"
+			/>
+		</div>
 
 		<ThreadViewNavList
 		:board_code="board.code"
@@ -382,5 +418,49 @@
 		pointer-events: none;
 		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 		background-color: #D6DAF0;
+	}
+
+	#title {
+		text-align: center;
+		h1 {
+			color: #af0a0f;
+		}
+	}
+
+	#static-reply-box {
+		display: block;
+		text-align: center;
+		width: 100%;
+		margin: auto;
+	}
+
+	#floating-reply-box {
+		position: fixed;
+		z-index: 600;
+		overflow: hidden;
+		background-color: #D6DAF0;
+		border: 1px solid gray;
+		padding: 2px;
+
+		.header {
+			background-color: #98E;
+			font-weight: bold;
+			text-align: center;
+			cursor: move;
+			padding: 1px 0px;
+
+			label {
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+				cursor: move;
+			}
+
+			img {
+				float: right;
+				cursor: pointer;
+			}
+		}
 	}
 </style>
