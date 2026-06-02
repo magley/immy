@@ -8,7 +8,7 @@
 	import { CdnAPI } from '@/api/cdn.api';
 	import CreateThreadForm from '@/components/thread/CreateThreadForm.vue';
 	import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
-	import { ThreadSortModeInCatalog } from '@/model/thread/thread.model';
+	import { SortThreadsForCatalog, ThreadSortModeInCatalog } from '@/model/thread/thread.model';
 	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetTabTitleForBoard } from '@/util/tab.util';
 
@@ -48,32 +48,7 @@
 
 	const onSortChanged = (sortCol: ThreadSortModeInCatalog) => {
 		sortBy.value = sortCol;
-
-		switch (sortBy.value) {
-		case ThreadSortModeInCatalog.BumpOrder:
-			const cmpLastBump = (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => {
-				const dateA = new Date(a.stats.last_bump);
-				const dateB = new Date(b.stats.last_bump);
-				return -(dateA.getTime() - dateB.getTime());
-			}
-			threads.value = threads.value.sort(cmpLastBump);
-			break;
-		case ThreadSortModeInCatalog.LastReply:
-			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.last_post.id - b.last_post.id));
-			break;
-		case ThreadSortModeInCatalog.CreationDate:
-			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.thread.id - b.thread.id));
-			break;
-		case ThreadSortModeInCatalog.ReplyCount:
-			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.post_count - b.stats.post_count));
-			break;
-		case ThreadSortModeInCatalog.ImageCount:
-			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.image_count - b.stats.image_count));
-			break;
-		case ThreadSortModeInCatalog.UserCount:
-			threads.value = threads.value.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.user_count - b.stats.user_count));
-			break;
-		}
+		SortThreadsForCatalog(threads.value, sortBy.value);
 	}
 
 	const onImageSizeChanged = (imageSizePctg: number) => {

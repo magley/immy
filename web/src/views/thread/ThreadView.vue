@@ -2,10 +2,10 @@
 	import { ref, onMounted, watch, useTemplateRef, onUnmounted } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
-	import { ThreadAPI, type ThreadDTO, type ThreadFullDTO } from "@/api/thread.api.ts";
+	import { ThreadAPI, type ThreadDTO, type ThreadFullDTO, type ThreadForCatalogDTO } from "@/api/thread.api.ts";
 	import { type PostDTO } from "@/api/post.api.ts";
 	import ThreadViewNavList from "@/components/thread/ThreadViewNavList.vue";
-	import { type ThreadStats } from "@/model/thread/thread.model.ts";
+	import { ThreadSortModeInCatalog, type ThreadStats, SortThreadsForCatalog } from "@/model/thread/thread.model.ts";
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
@@ -169,6 +169,24 @@
 			}
 
 			setTabTitle();
+			determinePage();
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
+	}
+
+	const determinePage = () => {
+		ThreadAPI.GetThreadsForCatalog(board.value!.code).then((res: AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>) => {
+			let threads: ThreadForCatalogDTO[] = res.data.data!;
+			SortThreadsForCatalog(threads, ThreadSortModeInCatalog.BumpOrder);
+
+			const index = threads.findIndex((t) => t.thread.id == thread.value!.id);
+
+			if (index >= 0) {
+				thread_stats.value.page = Math.floor(index / 10) + 1;
+			}
+
+			console.log(index, " ", threads.length);
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});

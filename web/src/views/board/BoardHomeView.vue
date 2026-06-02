@@ -22,7 +22,7 @@
 	const threadsError = ref<string | undefined>(undefined);
 
 	const page = ref<number>(0);
-	const pageSize = ref<number>(2);
+	const pageSize = ref<number>(10);
 	const totalPages = ref<number>(0);
 	const pages = ref<number[]>([]);
 
