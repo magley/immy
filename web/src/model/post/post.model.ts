@@ -68,7 +68,7 @@ export type PostLinkToken = {
 
 export type PostToken = PostTextToken | PostLinkToken;
 
-export const ParsePostTokens = (text: string): PostToken[] => {
+const ParseNonSemanticToken = (text: string): PostToken[] => {
 	const isRepeated = (s: string, char: string): boolean => {
 		return s == char.repeat(s.length);
 	}
@@ -103,6 +103,23 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 
 	const isJustWhitespace = (s: string): boolean => {
 		return s.trim().length == 0;
+	}
+
+	const canMergeTokens = (a: PostToken, b: PostToken): boolean => {
+		let canMerge: boolean = false;
+
+		if (isJustWhitespace(b.text)) {
+			canMerge = true;
+		}
+		else if (a.kind == b.kind) {
+			if (a.kind == "text" && b.kind == "text") {
+				canMerge = a.type == b.type;
+			} else if (a.kind == "link") {
+				canMerge = false;
+			}
+		}
+
+		return canMerge;
 	}
 
 	// Split text into `parts` like this:
@@ -141,61 +158,53 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 		p = "";
 	}
 
-	// Merge consecutive non-link parts. Whether a part is a non-link is not
-	// determined with maximum precision.
+	// Create one token for each part.
 
-	let parts2: {text: string, isLink: boolean}[] = [];
-
-	for (let i = 0; i < parts.length; i++) {
-		const text: string = parts[i]!;
-		const isLink = isProbablyLink(text);
-		let canMergeWithPrevious: boolean = false;
-
-		if (!isLink && parts2.length > 0) {
-			const previous = parts2.at(-1)!;
-			if (!previous.isLink) {
-				canMergeWithPrevious = true;
-			}
-			if (previous.isLink && isJustWhitespace(text)) {
-				canMergeWithPrevious = true;
-			}
-		}
-
-		if (canMergeWithPrevious) {
-			parts2[parts2.length - 1]!.text += text;
-		} else {
-			parts2.push({ text, isLink });
-		}
-	}
-
-	// Create tokens based on `parts2`.
-
-	const res: PostToken[] = [];
-	for (let i = 0; i < parts2.length; i++) {
-		const {text, isLink} = parts2[i]!;
+	let tokens: PostToken[] = [];
+	for (let p of parts) {
+		let isLink: boolean = isProbablyLink(p);
 
 		if (isLink) {
-			res.push({
+			tokens.push({
 				kind: "link",
 				href: "unknown",
-				text,
-				textTrimmed: text.trim(),
+				text: p,
+				textTrimmed: p.trim(),
 				local: true,
 				fail: false,
 			} as unknown as PostLinkToken);
 		} else {
-			const quoteArrows: number = startsWithHowMany(text, '>');
+			const quoteArrows: number = startsWithHowMany(p, '>');
 			const isGreentext = quoteArrows > 0;
 
-			res.push({
+			tokens.push({
 				kind: "text",
-				text,
+				text: p,
 				type: isGreentext ? 'greentext' : 'normal',
 			} as unknown as PostTextToken);
 		}
 	}
 
-	return res;
+	// Merge consecutive tokens (if possible).
+
+	let tokens2: PostToken[] = [];
+
+	for (let t of tokens) {
+		// Try to merge with previous token.
+		if (tokens2.length > 0 && canMergeTokens(tokens2.at(-1)!, t)) {
+			tokens2[tokens2.length - 1]!.text += t.text;
+		}
+		// Nevermind.
+		else {
+			tokens2.push(t);
+		}
+	}
+
+	return tokens2;
+}
+
+export const ParsePostTokens = (text: string): PostToken[] => {
+	return ParseNonSemanticToken(text);
 }
 
 export interface PostImageData {

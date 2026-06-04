@@ -185,8 +185,6 @@
 			if (index >= 0) {
 				thread_stats.value.page = Math.floor(index / 10) + 1;
 			}
-
-			console.log(index, " ", threads.length);
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});

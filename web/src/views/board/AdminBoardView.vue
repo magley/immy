@@ -6,7 +6,6 @@
 	import { GetElipsisString, IsAlphaNumeric, StripSlashes } from '@/util/various.util';
 	import { GetFileSizeByteFromString, GetFileSizeByteString } from '@/util/file.util';
 	import { MetaAPI } from '@/api/meta.api';
-	import { latex } from '@latex2js/vue';
 
 	const boards = ref<BoardDTO[]>([]);
 	const createBoardDTO = ref<CreateBoardDTO>({
@@ -141,7 +140,6 @@
 
 <template>
 	<h1>Boards</h1>
-	
 	<form @submit.prevent="onSubmitCreateBoard">
 		<h2>Create new board</h2>
 		<label for="code"><abbr title="Shorthand name for the board, used in URLs and when cross-referencing">Code</abbr>: </label>
