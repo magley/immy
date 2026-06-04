@@ -224,12 +224,12 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 		t += text[i]!;
 
 		// Regular block
-		if (t.endsWith("[math]")) {
+		if (t.endsWith("[math]") || t.endsWith("[code]")) {
 			semanticBlocks.push({
 				text: t.substring(0, t.length - 6),
 				kind: "text"
 			});
-			t = "[math]";
+			t = t.substring(t.length - 6);
 		}
 
 		// Math block
@@ -237,6 +237,14 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 			semanticBlocks.push({
 				text: t.substring(6, t.length - 7),
 				kind: "math"
+			});
+			t = "";
+		}
+		// Code block
+		else if (t.startsWith("[code]") && t.endsWith("[/code]")) {
+			semanticBlocks.push({
+				text: t.substring(6, t.length - 7),
+				kind: "code"
 			});
 			t = "";
 		}
@@ -257,7 +265,7 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 		} else if (semanticBlock.kind == "code") {
 			res.push({
 				kind: "semantic",
-				text: semanticBlock.text,
+				text: semanticBlock.text.trim(),
 				type: "code",
 			});
 		}

@@ -11,9 +11,11 @@
     "type-check": "vue-tsc --build"
   },
   "dependencies": {
+    "@highlightjs/vue-plugin": "^2.1.0",
     "@vueuse/components": "^14.3.0",
     "@vueuse/core": "^14.3.0",
     "axios": "^1.16.0",
+    "highlight.js": "^11.11.1",
     "katex": "^0.13.24",
     "pinia": "^3.0.4",
     "vatex": "^0.1.0",

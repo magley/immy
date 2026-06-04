@@ -149,6 +149,9 @@
 						<template v-if="token.type == 'math'">
 							<vue-latex :expression="token.text" />
 						</template>
+						<template v-else-if="token.type == 'code'">
+							<highlightjs autodetect :code="token.text" />
+						</template>
 					</span>
 				</span>
 			</span>

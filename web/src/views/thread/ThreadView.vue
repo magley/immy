@@ -361,18 +361,20 @@
 			/>
 
 		<!-- Floating reply box -->
-		<div id="floating-reply-box" ref="floating-reply-box" :style="floatingReplyBoxStyle" v-if="floatingReplyBoxVisible">
-			<div class="header" ref="drag-handle">
-				<label>Reply to Thread No.{{thread.post_num}}</label>
-				<img src="/icons/cross.png" @click="closeFloatingReplyBox" />
+		<div :style="{display: floatingReplyBoxVisible ? 'block' : 'none'}">
+			<div id="floating-reply-box" ref="floating-reply-box" :style="floatingReplyBoxStyle">
+				<div class="header" ref="drag-handle">
+					<label>Reply to Thread No.{{thread.post_num}}</label>
+					<img src="/icons/cross.png" @click="closeFloatingReplyBox" />
+				</div>
+				<CreatePostForm
+				ref="reply-form"
+				:thread_id="thread.id"
+				:max_size_bytes="board.config.max_file_size"
+				:mime_types_allowed="board.config.mime_types_allowed"
+				@postCreated="onPostCreated()"
+				/>
 			</div>
-			<CreatePostForm
-			ref="reply-form"
-			:thread_id="thread.id"
-			:max_size_bytes="board.config.max_file_size"
-			:mime_types_allowed="board.config.mime_types_allowed"
-			@postCreated="onPostCreated()"
-			/>
 		</div>
 
 		<ThreadViewNavList
