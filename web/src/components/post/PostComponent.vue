@@ -145,6 +145,11 @@
 						</a>
 						{{getTrailingWhitespace(token.text)}}
 					</span>
+					<span v-else-if="token.kind == 'semantic'">
+						<template v-if="token.type == 'math'">
+							<vue-latex :expression="token.text" />
+						</template>
+					</span>
 				</span>
 			</span>
 		</div>

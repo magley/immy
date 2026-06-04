@@ -66,7 +66,14 @@ export type PostLinkToken = {
 	fail: boolean;
 };
 
-export type PostToken = PostTextToken | PostLinkToken;
+export type PostSemanticToken = {
+	kind: "semantic";
+	text: string;
+
+	type: "math" | "code";
+}
+
+export type PostToken = PostTextToken | PostLinkToken | PostSemanticToken;
 
 const ParseNonSemanticToken = (text: string): PostToken[] => {
 	const isRepeated = (s: string, char: string): boolean => {
@@ -158,7 +165,7 @@ const ParseNonSemanticToken = (text: string): PostToken[] => {
 		p = "";
 	}
 
-	// Create one token for each part.
+	// Create tokens from each part.
 
 	let tokens: PostToken[] = [];
 	for (let p of parts) {
@@ -185,16 +192,16 @@ const ParseNonSemanticToken = (text: string): PostToken[] => {
 		}
 	}
 
-	// Merge consecutive tokens (if possible).
+	// Merge consecutive tokens is their attributes all match.
 
 	let tokens2: PostToken[] = [];
 
 	for (let t of tokens) {
-		// Try to merge with previous token.
+		// Try to merge with previous
 		if (tokens2.length > 0 && canMergeTokens(tokens2.at(-1)!, t)) {
 			tokens2[tokens2.length - 1]!.text += t.text;
 		}
-		// Nevermind.
+		// Nevermind, push to result.
 		else {
 			tokens2.push(t);
 		}
@@ -204,7 +211,59 @@ const ParseNonSemanticToken = (text: string): PostToken[] => {
 }
 
 export const ParsePostTokens = (text: string): PostToken[] => {
-	return ParseNonSemanticToken(text);
+	type SemanticBlock = {
+		text: string;
+		kind: "text" | "math" | "code";
+	};
+
+	// Split text into semantic blocks.
+
+	let semanticBlocks: SemanticBlock[] = [];
+	let t: string = "";
+	for (let i = 0; i < text.length; i++) {
+		t += text[i]!;
+
+		// Regular block
+		if (t.endsWith("[math]")) {
+			semanticBlocks.push({
+				text: t.substring(0, t.length - 6),
+				kind: "text"
+			});
+			t = "[math]";
+		}
+
+		// Math block
+		if (t.startsWith("[math]") && t.endsWith("[/math]")) {
+			semanticBlocks.push({
+				text: t.substring(6, t.length - 7),
+				kind: "math"
+			});
+			t = "";
+		}
+	}
+	semanticBlocks.push({ text: t, kind: "text"});
+
+	const res: PostToken[] = [];
+
+	for (let semanticBlock of semanticBlocks) {
+		if (semanticBlock.kind == "text") {
+			res.push(...ParseNonSemanticToken(semanticBlock.text));
+		} else if (semanticBlock.kind == "math") {
+			res.push({
+				kind: "semantic",
+				text: semanticBlock.text,
+				type: "math",
+			});
+		} else if (semanticBlock.kind == "code") {
+			res.push({
+				kind: "semantic",
+				text: semanticBlock.text,
+				type: "code",
+			});
+		}
+	}
+
+	return res;
 }
 
 export interface PostImageData {
