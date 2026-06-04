@@ -6,6 +6,7 @@
 	import { GetElipsisString, IsAlphaNumeric, StripSlashes } from '@/util/various.util';
 	import { GetFileSizeByteFromString, GetFileSizeByteString } from '@/util/file.util';
 	import { MetaAPI } from '@/api/meta.api';
+	import { latex } from '@latex2js/vue';
 
 	const boards = ref<BoardDTO[]>([]);
 	const createBoardDTO = ref<CreateBoardDTO>({
@@ -21,7 +22,9 @@
 			bump_limit: 250,
 			image_limit: 150,
 			flags_enabled: false,
-			ids_enabled: false
+			ids_enabled: false,
+			code_enabled: false,
+			math_enabled: false
 		},
 	});
 	const addMimeTypeInputVal = ref<string>("");
@@ -193,6 +196,12 @@
 		<label for="ids-enabled">IDs enabled: </label>
 		<input id="ids-enabled" type=checkbox v-model="createBoardDTO.config.ids_enabled" /><br/>
 
+		<label for="math-enabled">Math typesetting enabled: </label>
+		<input id="math-enabled" type=checkbox v-model="createBoardDTO.config.math_enabled" /><br/>
+
+		<label for="code-enabled">Code blocks enabled: </label>
+		<input id="code-enabled" type=checkbox v-model="createBoardDTO.config.code_enabled" /><br/>
+
 		<br/>
 		<button type=submit>Create</button>
 		
@@ -223,6 +232,8 @@
 				<th>Image Limit</th>
 				<th>Flags</th>
 				<th>IDs</th>
+				<th>Math</th>
+				<th>Code</th>
 
 				<th><b>Update</b></th>
 				<th><b>Delete</b></th>
@@ -237,11 +248,13 @@
 
 				<td>{{GetFileSizeByteString(board.config.max_file_size)}}</td>
 				<td>{{board.config.reply_files_allowed}}</td>
-				<td><span v-for="mime, i of board.config.mime_types_allowed">{{mime}}, </span></td>
+				<td><span v-for="mime, i of board.config.mime_types_allowed">{{mime}}<br/></span></td>
 				<td>{{board.config.bump_limit}}</td>
 				<td>{{board.config.image_limit}}</td>
 				<td>{{board.config.flags_enabled}}</td>
 				<td>{{board.config.ids_enabled}}</td>
+				<td>{{board.config.math_enabled}}</td>
+				<td>{{board.config.code_enabled}}</td>
 
 				<td><button @click="onSubmitChangesToBoard(i)">Update...</button></td>
 				<td><button @click="onDeleteBoard(i)">Delete</button></td>

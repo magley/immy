@@ -11,6 +11,8 @@ export interface BoardConfig {
     image_limit: number;
     flags_enabled: boolean;
     ids_enabled: boolean;
+    code_enabled: boolean;
+    math_enabled: boolean;
 }
 
 export interface BoardDTO {

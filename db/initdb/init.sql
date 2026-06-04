@@ -16,7 +16,9 @@ create table boards (
 	bump_limit			integer		default 250,
 	image_limit			integer		default 150,
 	flags_enabled		bool		default false,
-	ids_enabled			bool		default false
+	ids_enabled			bool		default false,
+	code_enabled		bool		default false,
+	math_enabled		bool		default false
 );
 
 create table threads (

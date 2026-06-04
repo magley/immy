@@ -26,6 +26,8 @@ type BoardConfig struct {
 	ImageLimit	uint			`json:"image_limit"`
 	FlagsEnabled bool			`json:"flags_enabled"`
 	IDsEnabled	bool			`json:"ids_enabled"`
+	CodeEnabled bool 			`json:"code_enabled"`
+	MathEnabled bool			`json:"math_enabled"`
 }
 
 type CreateBoardDTO struct {
