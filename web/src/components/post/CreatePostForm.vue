@@ -1,14 +1,19 @@
 <script setup lang="ts">
 	import { ref, useTemplateRef } from 'vue';
-	import { PostAPI, type CreatePostDTO, type PostDTO } from "@/api/post.api.ts";
+	import { PostAPI, type CreatePostDTO, type PostDTO, type CreatePostForThreadDTO } from "@/api/post.api.ts";
 	import type { ApiResponse } from '@/api/http';
 	import type { AxiosResponse, AxiosError } from 'axios';
 	import { FileToBase64, GetFileFromEvent } from '@/util/file.util';
+	import { type BoardDTO } from '@/api/board.api';
+	import { ThreadAPI, type CreateThreadDTO, type ThreadDTO } from '@/api/thread.api';
 	
 	export interface CreatePostProps {
+		/** If `thread_id` is a negative number, then it's assumed that this
+		  * post is being created as part of a new thread. */
 		thread_id: number,
 		max_size_bytes: number,
 		mime_types_allowed: string[],
+		board: BoardDTO,
 	}
 
 	const props = defineProps<CreatePostProps>();
@@ -28,9 +33,50 @@
 	const fileBytes = ref<string | null>(null);
 	const fileError = ref<string | null>(null);
 
+	const subject = ref<string>('');
 	const textArea = useTemplateRef('text-area');
 
+	const mathExpanded = ref<boolean>(false);
+	const codeExpanded = ref<boolean>(false);
+
+	const Clear = () => {
+		clearSelectedFile();
+		replyDTO.value = {
+			name: '',
+			content: '',
+			filename: null,
+			filebytes: null,
+			options: '',
+			thread_id: 0
+		};
+	}
+
+	const AppendText = (text: string) => {
+		if (replyDTO.value.content == undefined) {
+			replyDTO.value.content = "";
+		}
+		replyDTO.value.content += text;
+
+		if (!textArea.value) {
+			console.error("Text area is null. This shouldn't happen");
+			return;
+		}
+		textArea.value.scrollTop = textArea.value.scrollHeight;
+	}
+
+	defineExpose({ AppendText, Clear });
+
 	const onSubmitReply = () => {
+		if (isFormForNewThread()) {
+			createThread();
+		} else {
+			createReply();
+		}
+	}
+
+	const isFormForNewThread = () => props.thread_id < 0;
+
+	const createReply = () => {
 		replyError.value = undefined;
 
 		replyDTO.value.thread_id = props.thread_id;
@@ -41,6 +87,40 @@
 			emit('postCreated');
 		}).catch((err: AxiosError) => {
 			replyError.value = "Could not post reply";
+			console.error(err);
+		});
+	}
+
+	const createThread = () => {
+		replyError.value = undefined;
+
+		if (!fileName.value || !fileBytes.value) {
+			replyError.value = "No file attached";
+			return;
+		}
+
+		replyDTO.value.filename = fileName.value ?? null;
+		replyDTO.value.filebytes = fileBytes.value ?? null;
+
+		const createThreadPostDTO: CreatePostForThreadDTO = {
+			name: replyDTO.value.name,
+			content: replyDTO.value.content,
+			filename: replyDTO.value.filename,
+			filebytes: replyDTO.value.filebytes,
+			options: replyDTO.value.options
+		};
+		const createThreadDTO: CreateThreadDTO = {
+			board_code: props.board.code,
+			subject: subject.value,
+			locked: false,
+			sticky: false,
+			post: createThreadPostDTO
+		};
+
+		ThreadAPI.CreateThread(createThreadDTO).then((res: AxiosResponse<ApiResponse<ThreadDTO>>) => {
+			emit('postCreated');
+		}).catch((err: AxiosError) => {
+			replyError.value = "Could not create thread";
 			console.error(err);
 		});
 	}
@@ -76,32 +156,12 @@
 		fileName.value = null;
 	}
 
-	const Clear = () => {
-		clearSelectedFile();
-		replyDTO.value = {
-			name: '',
-			content: '',
-			filename: null,
-			filebytes: null,
-			options: '',
-			thread_id: 0
-		};
+	const toggleHelpMath = () => {
+		mathExpanded.value = !mathExpanded.value;
 	}
-
-	const AppendText = (text: string) => {
-		if (replyDTO.value.content == undefined) {
-			replyDTO.value.content = "";
-		}
-		replyDTO.value.content += text;
-
-		if (!textArea.value) {
-			console.error("Text area is null. This shouldn't happen");
-			return;
-		}
-		textArea.value.scrollTop = textArea.value.scrollHeight;
+	const toggleHelpCode = () => {
+		codeExpanded.value = !codeExpanded.value;
 	}
-
-	defineExpose({ AppendText, Clear });
 </script>
 
 <template>
@@ -113,7 +173,56 @@
 		<template v-if="fileError"><span class="error">{{fileError}}</span></template>
 
 		<br/>
-		<button type=submit>Post reply</button>
+
+		<div class="help-container">
+			<div v-if="board.config.math_enabled">
+				<vue-latex expression="\LaTeX" /> is supported <a @click.prevent="toggleHelpMath">[Help]</a>
+				<div v-if="mathExpanded" class="help-explanation">
+					Wrap your equations between <tt>[math] [/math]</tt> tags:
+<pre>
+The Pythagorean theorem is:
+[math]
+a^2 + b^2 = c^2
+[/math]
+</pre>
+					This will render:
+					<p>
+					The Pythagorean theorem is:<br/>
+					<vue-latex expression="a^2 + b^2 = c^2" />
+					</p>
+				</div>
+			</div>
+			<div v-if="board.config.code_enabled">
+				<tt><strong>Syntax highlighting</strong></tt> is supported <a @click.prevent="toggleHelpCode">[Help]</a>
+				<div v-if="codeExpanded" class="help-explanation">
+					Wrap your code between <tt>[code] [/code]</tt> tags:
+<pre>
+Hello world in C:
+[code]
+#import &lt;stdio.h&gt;
+int main() {
+    printf("Hello world\n");
+    return 0;
+}
+[/code]
+</pre>
+					This will render:
+					<p>
+					Hello world in C:<br/>
+<highlightjs autodetect code='#import <stdio.h>
+int main() {
+    printf("Hello world\n");
+    return 0;
+}' />
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<button type=submit class="submit-button">
+			<template v-if="isFormForNewThread()">Create new Thread</template>
+			<template v-else>Post Reply</template>
+		</button>
 
 		<template v-if="replyError">
 			<div/>
@@ -125,5 +234,27 @@
 <style scoped>
 	.error {
 		color: var(--user-error-color);
+	}
+
+	.help-container {
+		a {
+			cursor: pointer;
+			user-select: none;
+		}
+
+		.help-explanation {
+			display: block;
+			background-color: var(--background-color-darker);
+			border: 1px solid black;
+			padding: 0.5em;
+
+			text-align: left !important;
+		}
+	}
+
+	.submit-button {
+		margin: 1em 0;
+		text-align: center;
+		padding: 0.25em;
 	}
 </style>

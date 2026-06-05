@@ -15,7 +15,6 @@
 	import { AddRangeNoDuplicates } from '@/util/various.util';
 	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
-	import type { TupleType } from 'typescript';
 	import { GetTabTitleForThread } from '@/util/tab.util';
 	import { useTextSelection, useDraggable } from '@vueuse/core';
 	const route = useRoute();
@@ -354,6 +353,7 @@
 		<!-- Static reply box -->
 		<CreatePostForm
 			id="static-reply-box"
+			:board="board"
 			:thread_id="thread.id"
 			:max_size_bytes="board.config.max_file_size"
 			:mime_types_allowed="board.config.mime_types_allowed"
@@ -369,6 +369,7 @@
 				</div>
 				<CreatePostForm
 				ref="reply-form"
+				:board="board"
 				:thread_id="thread.id"
 				:max_size_bytes="board.config.max_file_size"
 				:mime_types_allowed="board.config.mime_types_allowed"
@@ -439,7 +440,7 @@
 	#static-reply-box {
 		display: block;
 		text-align: center;
-		width: 100%;
+		width: 30%;
 		margin: auto;
 	}
 
@@ -447,7 +448,7 @@
 		position: fixed;
 		z-index: 600;
 		overflow: hidden;
-		background-color: var(--post-background-color);;
+		background-color: var(--post-background-color);
 		border: 1px solid gray;
 		padding: 2px;
 

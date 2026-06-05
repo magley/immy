@@ -4,7 +4,6 @@
 	import { type PostDTO } from "@/api/post.api";
 	import { ThreadAPI, type ThreadForHomeDTO } from "@/api/thread.api.ts";
 	import PostComponent from "@/components/post/PostComponent.vue";
-	import CreateThreadForm from '@/components/thread/CreateThreadForm.vue';
 	import { type PostImageData, type PostToken, type PostLinkToken, ProcessPost, type ProcessedPost, SplitPostLink } from "@/model/post/post.model";
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import { onMounted, onUnmounted, ref } from 'vue';
@@ -12,6 +11,7 @@
 	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetPostPeek, type PostPeekBundle } from "@/model/post/post.peek";
 	import { GetTabTitleForBoard } from "@/util/tab.util";
+	import CreatePostForm from "@/components/post/CreatePostForm.vue";
 	
 	const board = ref<BoardDTO | undefined>(undefined);
 
@@ -202,12 +202,14 @@
 		</div>
 		<hr />
 
-		<CreateThreadForm
-		id="create-thread"
-		:board_code="board.code"
-		:max_size_bytes="board.config.max_file_size"
-		:mime_types_allowed="board.config.mime_types_allowed"
-		@threadCreated="loadThreads()" />
+		<CreatePostForm
+			id="create-thread"
+			:thread_id="-1"
+			:board="board"
+			:max_size_bytes="board.config.max_file_size"
+			:mime_types_allowed="board.config.mime_types_allowed"
+			@postCreated="loadThreads()"
+		/>
 		<hr />
 
 		<!-- Navigation and search -->
@@ -287,7 +289,7 @@
 	#create-thread {
 		display: block;
 		text-align: center;
-		width: 100%;
+		width: 30%;
 		margin: auto;
 	}
 

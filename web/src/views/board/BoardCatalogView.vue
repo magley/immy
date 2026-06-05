@@ -6,11 +6,11 @@
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
 	import { CdnAPI } from '@/api/cdn.api';
-	import CreateThreadForm from '@/components/thread/CreateThreadForm.vue';
 	import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
 	import { SortThreadsForCatalog, ThreadSortModeInCatalog } from '@/model/thread/thread.model';
 	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetTabTitleForBoard } from '@/util/tab.util';
+	import CreatePostForm from '@/components/post/CreatePostForm.vue';
 
 	const board = ref<BoardDTO | undefined>(undefined);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
@@ -78,12 +78,13 @@
 		</div>
 		<hr />
 
-		<CreateThreadForm
+		<CreatePostForm
 			id="create-thread"
-			:board_code="board.code"
+			:thread_id="-1"
+			:board="board"
 			:max_size_bytes="board.config.max_file_size"
 			:mime_types_allowed="board.config.mime_types_allowed"
-			@threadCreated="loadThreads()"
+			@postCreated="loadThreads()"
 		/>
 		<hr />
 
@@ -154,7 +155,7 @@
 	#create-thread {
 		display: block;
 		text-align: center;
-		width: 100%;
+		width: 30%;
 		margin: auto;
 	}
 

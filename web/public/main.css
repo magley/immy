@@ -22,7 +22,7 @@
 
 [data-theme="yotsuba"] {
   --background-color: #ffffee;
-  --background-color-darker: #eeaa88;
+  --background-color-darker: #f7d2cb;
   --background-color-accent: #eeaa88;
   --link-color: #000080;
   --link-hover-color: red;
@@ -40,12 +40,12 @@
 
 [data-theme="futaba"] {
   --font: serif;
-  --font-size: 1.25em;
+  --font-size: 1.15em;
   --hr-color: black;
 
   /** Inherit from yotsuba */
   --background-color: #ffffee;
-  --background-color-darker: #ddddff;
+  --background-color-darker: #f7d2cb;
   --background-color-accent: #eeaa88;
   --link-color: #000080;
   --link-hover-color: red;
@@ -59,7 +59,7 @@
 
 [data-theme="burichan"] {
   --font: serif;
-  --font-size: 1.25em;
+  --font-size: 1.15em;
   --hr-color: black;
 }
 
