@@ -36,10 +36,3 @@ type CreateBoardDTO struct {
 	Description *string 	`json:"description"`
 	Config		BoardConfig		`json:"config" gorm:"embedded"`
 }
-
-type UpdateBoardDTO struct {
-	Name 		*string 	`json:"name"`
-	Code  		*string 	`json:"code"`
-	Description *string 	`json:"description"`
-	PostCount	*uint 		/* No json */
-}

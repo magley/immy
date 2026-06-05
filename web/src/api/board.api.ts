@@ -50,10 +50,14 @@ export class BoardAPI {
     }
 
     static async GetBoard(boardCode: string): Promise<AxiosResponse<ApiResponse<BoardDTO>>> {
-        return axiosInstance.get<ApiResponse<BoardDTO>>(`/boards/${boardCode}`);
+        return axiosInstance.get<ApiResponse<BoardDTO>>(`/boards/code/${boardCode}`);
     }
 
-    static async UpdateBoard(boardCode: string, dto: UpdateBoardDTO): Promise<AxiosResponse<ApiResponse<BoardDTO>>> {
+    static async GetBoardById(id: number): Promise<AxiosResponse<ApiResponse<BoardDTO>>> {
+        return axiosInstance.get<ApiResponse<BoardDTO>>(`/boards/id/${id}`);
+    }
+
+    static async UpdateBoard(boardCode: string, dto: BoardDTO): Promise<AxiosResponse<ApiResponse<BoardDTO>>> {
         return axiosInstance.put<ApiResponse<BoardDTO>>(`/boards/${boardCode}`, dto);
     }
 

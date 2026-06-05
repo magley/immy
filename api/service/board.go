@@ -25,7 +25,7 @@ func (s *BoardService) GetBoard(boardId uint) (*model.Board, error) {
 	return s.BoardRepo.GetBoard(boardId)
 }
 
-func (s *BoardService) UpdateBoard(boardCode string, dto model.UpdateBoardDTO) (*model.Board, error) {
+func (s *BoardService) UpdateBoard(boardCode string, dto model.Board) (*model.Board, error) {
 	board, err := s.GetBoardByCode(boardCode)
 	if err != nil {
 		return nil, err
@@ -35,12 +35,8 @@ func (s *BoardService) UpdateBoard(boardCode string, dto model.UpdateBoardDTO) (
 }
 
 func (s *BoardService) IncrementBoardPostCount(board *model.Board) (*model.Board, error) {
-	nextCount := board.PostCount + 1
-	dto := model.UpdateBoardDTO{
-		PostCount: &nextCount,
-	}
-	
-	return s.BoardRepo.UpdateBoard(board, dto)
+	board.PostCount += 1
+	return s.BoardRepo.UpdateBoard(board, *board)
 }
 
 func (s *BoardService) DeleteBoard(boardCode string) (error) {

@@ -43,11 +43,12 @@ func (r *BoardRepo) GetBoard(boardId uint) (*model.Board, error) {
 	return &board, result.Error
 }
 
-func (r *BoardRepo) UpdateBoard(board *model.Board, dto model.UpdateBoardDTO) (*model.Board, error) {
-	if dto.Name != nil { board.Name = *dto.Name }
-	if dto.Code != nil { board.Code = *dto.Code }
-	if dto.Description != nil { board.Description = dto.Description }
-	if dto.PostCount != nil { board.PostCount = *dto.PostCount }
+func (r *BoardRepo) UpdateBoard(board *model.Board, dto model.Board) (*model.Board, error) {
+	board.Name = dto.Name
+	board.Code = dto.Code
+	board.Description = dto.Description
+	board.PostCount = dto.PostCount
+	board.Config = dto.Config
 
 	result := r.DB.Save(&board)
 	return board, result.Error

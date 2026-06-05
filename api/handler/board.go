@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 	util "immy-api/util"
-	
+
 	"immy-api/service"
 	"immy-api/model"
 )
@@ -58,10 +58,26 @@ func (h *BoardHandler) GetBoard(c *gin.Context) {
 	}
 }
 
+func (h *BoardHandler) GetBoardById(c *gin.Context) {
+	boardId, ok := util.ParamUintSafe(c, "id", "Board")
+	if !ok {
+		return
+	}
+
+	res, err := h.BoardService.GetBoard(boardId)
+	if err != nil {
+		util.NotFound(c, "Board", boardId)
+		return
+	} else {
+		util.OK(c, res)
+		return
+	}
+}
+
 func (h *BoardHandler) UpdateBoard(c *gin.Context) {
 	boardCode := c.Param("code")
 
-	var dto model.UpdateBoardDTO
+	var dto model.Board
 	err := c.ShouldBindJSON(&dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "ERROR", err.Error())

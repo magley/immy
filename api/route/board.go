@@ -10,7 +10,8 @@ func RegisterBoardRoutes(h *handler.BoardHandler, rg *gin.RouterGroup) {
 	{
     	boards.GET("/", h.ListBoards)
     	boards.POST("/", h.CreateBoard)
-    	boards.GET("/:code", h.GetBoard)
+    	boards.GET("/id/:id", h.GetBoardById)
+    	boards.GET("/code/:code", h.GetBoard)
     	boards.PUT("/:code", h.UpdateBoard)
     	boards.DELETE("/:code", h.DeleteBoard)
 	}
