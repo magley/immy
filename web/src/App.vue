@@ -26,6 +26,18 @@
 	const setTheme = (theme: string) => {
 		document.documentElement.setAttribute('data-theme', theme);
 		localStorage.setItem("theme", theme);
+
+		const codeThemeDict: Record<string, string> = {
+			'yotsuba': 'a11y-light',
+			'futaba': 'a11y-light',
+
+			'yotsuba-b': 'stackoverflow-light',
+			'burichan': 'stackoverflow-light',
+		}
+		const codeTheme: string = codeThemeDict[theme] ?? 'a11y-light';
+
+		const hljsThemeLink: HTMLLinkElement = document.getElementById('code-syntax-theme')! as any as HTMLLinkElement;
+		hljsThemeLink.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${codeTheme}.min.css`;
 	}
 </script>
 

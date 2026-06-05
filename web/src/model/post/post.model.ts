@@ -75,6 +75,7 @@ export type PostSemanticToken = {
 
 export type PostToken = PostTextToken | PostLinkToken | PostSemanticToken;
 
+// Called by ParsePostTokens, used to parse regular text (comments, links, greentext) into tokens.
 const ParseNonSemanticToken = (text: string): PostToken[] => {
 	const isRepeated = (s: string, char: string): boolean => {
 		return s == char.repeat(s.length);
@@ -210,7 +211,7 @@ const ParseNonSemanticToken = (text: string): PostToken[] => {
 	return tokens2;
 }
 
-export const ParsePostTokens = (text: string): PostToken[] => {
+const ParsePostTokens = (text: string, allowMath: boolean, allowCode: boolean): PostToken[] => {
 	type SemanticBlock = {
 		text: string;
 		kind: "text" | "math" | "code";
@@ -233,7 +234,7 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 		}
 
 		// Math block
-		if (t.startsWith("[math]") && t.endsWith("[/math]")) {
+		if (allowMath && t.startsWith("[math]") && t.endsWith("[/math]")) {
 			semanticBlocks.push({
 				text: t.substring(6, t.length - 7),
 				kind: "math"
@@ -241,7 +242,7 @@ export const ParsePostTokens = (text: string): PostToken[] => {
 			t = "";
 		}
 		// Code block
-		else if (t.startsWith("[code]") && t.endsWith("[/code]")) {
+		else if (allowCode && t.startsWith("[code]") && t.endsWith("[/code]")) {
 			semanticBlocks.push({
 				text: t.substring(6, t.length - 7),
 				kind: "code"
@@ -311,7 +312,7 @@ export const ProcessPost = async (post: PostDTO,
 		};
 	}
 
-	result.tokens = ParsePostTokens(post.content);
+	result.tokens = ParsePostTokens(post.content, board.config.math_enabled, board.config.code_enabled);
 	for (let tok of result.tokens) {
 		if (tok.kind == 'link') {
 			// Before the proper routes are attributed to each link, add a
