@@ -43,7 +43,7 @@
 
 	onMounted(() => {
 		if (props.currentBoardValue) {
-			boardDTO.value = props.currentBoardValue;
+			boardDTO.value = Object.assign(boardDTO.value, props.currentBoardValue);
 		}
 		setMimePreset("image+video");
 	});

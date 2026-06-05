@@ -68,11 +68,14 @@
 <template>
 	<h1>Boards</h1>
 
+	<div id="new-board-container">
+	<h3>Create new Board</h3>
 	<BoardUpdate
 		:allowed-mime-types="allowedMimeTypes"
 		:current-board-value="undefined"
 		@created="onBoardCreated"
 		/>
+	</div>
 	
 	<br />
 
@@ -128,7 +131,9 @@
 						<BoardUpdate
 						:current-board-value="board"
 						:allowed-mime-types="allowedMimeTypes"
-						@created="onBoardUpdated" />
+						@created="onBoardUpdated"
+						class="update-board-form"
+						/>
 					</td>
 				</tr>
 			</template>
@@ -144,5 +149,25 @@
 	th {
 		background-color: var(--background-color-darker);
 		padding: 0em 1em;
+	}
+
+	#new-board-container {
+		text-align: center;
+
+		padding: 1em;
+		border: 1px solid black;
+		background-color: var(--background-color-darker);
+		display: block;
+		margin: auto;
+		width: 40%;
+	}
+
+	.update-board-form {
+		padding: 1em;
+		border: 1px solid black;
+		background-color: var(--background-color-darker);
+		display: block;
+		margin: auto;
+		width: 50%;
 	}
 </style>
