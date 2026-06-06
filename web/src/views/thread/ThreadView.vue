@@ -2,7 +2,7 @@
 	import { ref, onMounted, watch, useTemplateRef, onUnmounted } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
-	import { ThreadAPI, type ThreadDTO, type ThreadFullDTO, type ThreadForCatalogDTO } from "@/api/thread.api.ts";
+	import { ThreadAPI, type ThreadDTO, type ThreadFullDTO, type ThreadForCatalogDTO, type UpdateThreadDTO } from "@/api/thread.api.ts";
 	import { type PostDTO } from "@/api/post.api.ts";
 	import ThreadViewNavList from "@/components/thread/ThreadViewNavList.vue";
 	import { ThreadSortModeInCatalog, type ThreadStats, SortThreadsForCatalog } from "@/model/thread/thread.model.ts";
@@ -248,6 +248,30 @@
 		peekPostVisible.value = false;
 	}
 
+	const onToggleSticky = (threadObj: ThreadDTO) => {
+		const dto: UpdateThreadDTO = {
+			sticky: !threadObj.sticky,
+			locked: threadObj.locked,
+		}
+		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
+			thread.value = res.data.data!;
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
+	}
+
+	const onToggleLocked = (threadObj: ThreadDTO) => {
+		const dto: UpdateThreadDTO = {
+			sticky: threadObj.sticky,
+			locked: !threadObj.locked,
+		}
+		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
+			thread.value = res.data.data!;
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
+	}
+
 	const processPost = (post: PostDTO) => {
 		ProcessPost(post, thread.value!, board.value!, imageData.value, postLinks.value, posts.value.map((p) => p.num))
 		.then((res: ProcessedPost) => {
@@ -348,7 +372,6 @@
 			<h1>/{{board.code}}/ - {{board.name}}</h1>
 			<small>{{board.description}}</small>
 		</div>
-		<hr />
 
 		<!-- Static reply box -->
 		<CreatePostForm
@@ -385,6 +408,8 @@
 		:thread_stats="thread_stats"
 		:autoTimer="autoTimer"
 		:isAutoTimerUsed="autoTimerIsEnabled"
+		:sticky="thread!.sticky"
+		:locked="thread!.locked"
 		@updateClicked="reloadThread"
 		@autoTimerToggled="onAutoTimerToggled" />
 
@@ -407,6 +432,8 @@
 			@onClickUserId="onClickUserId"
 			@onPostLinkHover="onPostLinkHover"
 			@onPostLinkUnhover="onPostLinkUnhover"
+			@onToggleSticky="onToggleSticky"
+			@onToggleLocked="onToggleLocked"
 			/>
 		</template>
 
@@ -418,6 +445,8 @@
 		:thread_stats="thread_stats"
 		:autoTimer="autoTimer"
 		:isAutoTimerUsed="autoTimerIsEnabled"
+		:sticky="thread!.sticky"
+		:locked="thread!.locked"
 		@updateClicked="reloadThread"
 		@autoTimerToggled="onAutoTimerToggled" />
 	</template>
@@ -442,6 +471,12 @@
 		text-align: center;
 		width: 30%;
 		margin: auto;
+	}
+
+	.red {
+		text-align: center;
+		font-weight: bold;
+		color: var(--user-error-color);
 	}
 
 	#floating-reply-box {

@@ -112,6 +112,8 @@
 				<br />
 
 				<span class="stats">
+					<img src="/icons/sticky.png" v-if="thread.thread.sticky" title="Sticky"/>
+					<img src="/icons/lock.png" v-if="thread.thread.locked" title="Locked"/>
 					<abbr title="Number of replies">R</abbr>: <strong>{{ thread.stats.post_count }}</strong>
 					/
 					<abbr title="Number of images">I</abbr>: <strong>{{ thread.stats.image_count }}</strong>

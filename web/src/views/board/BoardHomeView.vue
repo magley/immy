@@ -2,7 +2,7 @@
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
 	import type { ApiResponse } from '@/api/http';
 	import { type PostDTO } from "@/api/post.api";
-	import { ThreadAPI, type ThreadForHomeDTO } from "@/api/thread.api.ts";
+	import { ThreadAPI, type ThreadForHomeDTO, type ThreadDTO, type UpdateThreadDTO } from "@/api/thread.api.ts";
 	import PostComponent from "@/components/post/PostComponent.vue";
 	import { type PostImageData, type PostToken, type PostLinkToken, ProcessPost, type ProcessedPost, SplitPostLink } from "@/model/post/post.model";
 	import type { AxiosError, AxiosResponse } from 'axios';
@@ -127,6 +127,40 @@
 		imageData.value[postId]!.expanded = !imageData.value[postId]!.expanded;
 	}
 
+	const onToggleSticky = (threadObj: ThreadDTO) => {
+		const dto: UpdateThreadDTO = {
+			sticky: !threadObj.sticky,
+			locked: threadObj.locked,
+		}
+		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
+			for (let i = 0; i < threads.value.length; i++) {
+				if (threads.value[i]!.thread.id == threadObj.id) {
+					threads.value[i]!.thread = res.data.data!;
+					break;
+				}
+			}
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
+	}
+
+	const onToggleLocked = (threadObj: ThreadDTO) => {
+		const dto: UpdateThreadDTO = {
+			sticky: threadObj.sticky,
+			locked: !threadObj.locked,
+		}
+		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
+			for (let i = 0; i < threads.value.length; i++) {
+				if (threads.value[i]!.thread.id == threadObj.id) {
+					threads.value[i]!.thread = res.data.data!;
+					break;
+				}
+			}
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
+	}
+
 	const onPostLinkHover = (postLink: string) => {
 		let [link_post_board, link_post_num] = SplitPostLink(postLink, board.value!.code);
 		if (link_post_num == 0) return;
@@ -243,6 +277,8 @@
 					@onClickUserId="onClickUserId"
 					@onPostLinkHover="onPostLinkHover"
 					@onPostLinkUnhover="onPostLinkUnhover"
+					@onToggleSticky="onToggleSticky"
+					@onToggleLocked="onToggleLocked"
 					/>
 					<div v-if="i == 0 && thread.posts.length < thread.stats.post_count">
 						{{ thread.stats.image_count - thread.posts.filter((p) => p.filename).length }} images and {{ thread.stats.post_count - thread.posts.length }} replies ommited.

@@ -6,6 +6,8 @@
 		jump_to_id: string | null,
 		jump_to_label: string | null,
 		thread_stats: ThreadStats,
+		sticky: boolean,
+		locked: boolean,
 		//
 		autoTimer: number,
 		isAutoTimerUsed: boolean,
@@ -38,6 +40,11 @@
 		<template v-if="props.isAutoTimerUsed">{{ props.autoTimer }}</template>
 	</span>
 	<span class ="right">
+		<template v-if="sticky">Sticky / </template>
+		<template v-if="locked">Locked / </template>
+		<span class="tooltip">{{ props.thread_stats.posts }}
+			<span class="tooltiptext">Replies</span>
+		</span> /
 		<span class="tooltip">{{ props.thread_stats.posts }}
 			<span class="tooltiptext">Replies</span>
 		</span> / 

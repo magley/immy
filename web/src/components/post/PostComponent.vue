@@ -27,7 +27,16 @@
 	}
 
 	const props = defineProps<PostComponentProps>()
-	const emit = defineEmits(['onClickPostNo', 'onClickPostNumber', 'onClickPostImage', 'onClickUserId', 'onPostLinkHover', 'onPostLinkUnhover']);
+	const emit = defineEmits([
+		'onClickPostNo',
+		'onClickPostNumber',
+		'onClickPostImage',
+		'onClickUserId',
+		'onPostLinkHover',
+		'onPostLinkUnhover',
+		'onToggleSticky',
+		'onToggleLocked',
+	]);
 
 	const onClickPostNo = (post_num: number) => {
 		emit('onClickPostNo', post_num);
@@ -47,6 +56,13 @@
 	const onPostLinkUnhover = (postLink: any) => {
 		emit('onPostLinkUnhover', postLink);
 	}
+	const onToggleSticky = (thread: ThreadDTO) => {
+		emit('onToggleSticky', thread);
+	}
+	const onToggleLocked = (thread: ThreadDTO) => {
+		emit('onToggleLocked', thread);
+	}
+
 
 	const isPostImage = (post: PostDTO) => {
 		return GetMimeTypeFromFilename(post.filename).startsWith('image/');
@@ -60,6 +76,8 @@
 		const trimmedStart: number = s.indexOf(trimmed);
 		return s.substring(trimmedStart + trimmed.length);
 	}
+
+
 </script>
 
 <template>
@@ -72,6 +90,10 @@
 		}">
 
 		<div class="post-header">
+			<div v-if="post.num == post.thread_num">
+				<button @click="onToggleSticky(thread)">Toggle Sticky</button>
+				<button @click="onToggleLocked(thread)">Toggle Locked</button>
+			</div>
 			<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
 			<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
 			<span class="tripcode" v-if="post.tripcode">{{ post.tripcode }}</span>
@@ -86,6 +108,10 @@
 			<span class="date">{{ GetPostTimeReadable(post.created_at) }}</span>
 			<span class="postno"><a @click.prevent="onClickPostNo(post.num)" href="#" class="postNumLink">No.</a></span>
 			<span class="postnum"><a @click.prevent="onClickPostNumber(post.num)" href="#" class="postNumLink">{{ post.num }}</a></span>
+			<span v-if="post.num == post.thread_num">
+				<img src="/icons/sticky.png" v-if="thread.sticky" title="Sticky"/>
+				<img src="/icons/lock.png" v-if="thread.locked" title="Locked"/>
+			</span>
 			<span class="dropdown">&#9654;</span>
 			<span class="backlink-container" v-if="backlinks">
 				<a
