@@ -29,6 +29,7 @@ func (r *ThreadRepo) ListThreadsOfBoardOrderByBump(boardId uint, offset int, lim
 		Where("threads.board_id = ?", boardId).
 		Joins("LEFT JOIN posts ON posts.thread_id = threads.id AND posts.sage = false").
 		Group("threads.id").
+		Order("threads.sticky DESC").
 		Order("MAX(posts.created_at) DESC").
 		Limit(limit).
 		Offset(offset).

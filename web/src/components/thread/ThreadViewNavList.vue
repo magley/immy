@@ -44,9 +44,6 @@
 		<template v-if="locked">Locked / </template>
 		<span class="tooltip">{{ props.thread_stats.posts }}
 			<span class="tooltiptext">Replies</span>
-		</span> /
-		<span class="tooltip">{{ props.thread_stats.posts }}
-			<span class="tooltiptext">Replies</span>
 		</span> / 
 		<span class="tooltip">{{ props.thread_stats.images }}
 			<span class="tooltiptext">Images</span>

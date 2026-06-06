@@ -116,7 +116,7 @@ func (s *ThreadService) GetFullThreadFrom(thread *model.Thread) (*model.ThreadFu
 
 func (s *ThreadService) GetThreadsForCatalog(boardCode string) ([]model.ThreadForCatalogDTO, error) {
 	// TODO: Hardcoding it like this is bad.
-	threads, err := s.ListThreadsOfBoard(boardCode, 0, 1000)
+	threads, err := s.ListThreadsOfBoardOrderByBump(boardCode, 0, 1000)
 	if err != nil {
 		return nil, err
 	}
