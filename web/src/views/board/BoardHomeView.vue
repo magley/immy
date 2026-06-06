@@ -238,7 +238,7 @@
 
 		<CreatePostForm
 			id="create-thread"
-			:thread_id="-1"
+			:thread="undefined"
 			:board="board"
 			:max_size_bytes="board.config.max_file_size"
 			:mime_types_allowed="board.config.mime_types_allowed"

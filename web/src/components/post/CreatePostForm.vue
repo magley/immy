@@ -8,9 +8,9 @@
 	import { ThreadAPI, type CreateThreadDTO, type ThreadDTO } from '@/api/thread.api';
 	
 	export interface CreatePostProps {
-		/** If `thread_id` is a negative number, then it's assumed that this
+		/** If `thread` is undefined, then it's assumed that this
 		  * post is being created as part of a new thread. */
-		thread_id: number,
+		thread: ThreadDTO | undefined,
 		max_size_bytes: number,
 		mime_types_allowed: string[],
 		board: BoardDTO,
@@ -74,12 +74,15 @@
 		}
 	}
 
-	const isFormForNewThread = () => props.thread_id < 0;
+	const isFormForNewThread = () => props.thread == undefined;
 
 	const createReply = () => {
+		if (props.thread == undefined) return;
+		if (props.thread.locked) return;
+
 		replyError.value = undefined;
 
-		replyDTO.value.thread_id = props.thread_id;
+		replyDTO.value.thread_id = props.thread.id;
 		replyDTO.value.filename = fileName.value ?? null;
 		replyDTO.value.filebytes = fileBytes.value ?? null;
 

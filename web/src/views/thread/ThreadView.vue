@@ -196,6 +196,10 @@
 	}
 
 	const onClickPostNumber = (postNum: number) => {
+		if (thread.value?.locked) {
+			return;
+		}
+
 		openFloatingReplyBox();
 
 		if (replyForm.value) {
@@ -374,14 +378,23 @@
 		</div>
 
 		<!-- Static reply box -->
-		<CreatePostForm
-			id="static-reply-box"
-			:board="board"
-			:thread_id="thread.id"
-			:max_size_bytes="board.config.max_file_size"
-			:mime_types_allowed="board.config.mime_types_allowed"
-			@postCreated="onPostCreated()"
-			/>
+		<div v-if="!thread.locked">
+			<hr />
+			<CreatePostForm
+				id="static-reply-box"
+				:board="board"
+				:thread="thread"
+				:max_size_bytes="board.config.max_file_size"
+				:mime_types_allowed="board.config.mime_types_allowed"
+				@postCreated="onPostCreated()"
+				/>
+		</div>
+		<div v-else>
+			<p class="red">
+				Thread closed. <br/>
+				You my not reply at this time.
+			</p>
+		</div>
 
 		<!-- Floating reply box -->
 		<div :style="{display: floatingReplyBoxVisible ? 'block' : 'none'}">
@@ -393,7 +406,7 @@
 				<CreatePostForm
 				ref="reply-form"
 				:board="board"
-				:thread_id="thread.id"
+				:thread="thread"
 				:max_size_bytes="board.config.max_file_size"
 				:mime_types_allowed="board.config.mime_types_allowed"
 				@postCreated="onPostCreated()"
