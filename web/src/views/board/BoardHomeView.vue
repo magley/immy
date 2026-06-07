@@ -161,6 +161,31 @@
 		});
 	}
 
+
+	const deleteThread = (thread: ThreadDTO) => {
+		if (!board.value) {
+			return;
+		}
+		ThreadAPI.DeleteThread(thread.id).then((_) => {
+			loadThreads();
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
+	}
+
+	const archiveThread = (thread: ThreadDTO) => {
+		ThreadAPI.ArchiveThread(thread.id).then((res: AxiosResponse<ApiResponse<ThreadDTO>>) => {
+			for (let i = 0; i < threads.value.length; i++) {
+				if (threads.value[i]!.thread.id == thread.id) {
+					threads.value[i]!.thread = res.data.data!;
+					break;
+				}
+			}
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
+	}
+
 	const onPostLinkHover = (postLink: string) => {
 		let [link_post_board, link_post_num] = SplitPostLink(postLink, board.value!.code);
 		if (link_post_num == 0) return;
@@ -279,6 +304,8 @@
 					@onPostLinkUnhover="onPostLinkUnhover"
 					@onToggleSticky="onToggleSticky"
 					@onToggleLocked="onToggleLocked"
+					@onArchive="archiveThread"
+					@onDelete="deleteThread"
 					/>
 					<div v-if="i == 0 && thread.posts.length < thread.stats.post_count">
 						{{ thread.stats.image_count - thread.posts.filter((p) => p.filename).length }} images and {{ thread.stats.post_count - thread.posts.length }} replies ommited.

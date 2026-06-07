@@ -217,7 +217,7 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 	{
 		md5 = util.GetFileHashB64(dto.Filebytes)
 
-		dupPost, err := s.PostRepo.GetOPPostWithDuplicateFileInBoard(board.ID, md5)
+		dupPost, err := s.PostRepo.GetOPPostWithDuplicateFileInBoard(board.ID, md5, true)
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
 				// We want this.

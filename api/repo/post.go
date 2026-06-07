@@ -53,9 +53,20 @@ func (r *PostRepo) GetPostWithDuplicateFileInThread(boardId, threadId uint, md5 
 	return &post, result.Error
 }
 
-func (r *PostRepo) GetOPPostWithDuplicateFileInBoard(boardId uint, md5 string) (*model.Post, error) {
+func (r *PostRepo) GetOPPostWithDuplicateFileInBoard(boardId uint, md5 string, ignoreArchivedThreads bool) (*model.Post, error) {
 	var post model.Post
-	result := r.DB.Where("board_id = ?", boardId).Where("thread_num = num").Where("md5 = ?", md5).First(&post)
+
+	query := r.DB.Model(&model.Post{}).
+		Where("posts.board_id = ?", boardId).
+		Where("posts.thread_num = posts.num").
+		Where("posts.md5 = ?", md5)
+
+	if ignoreArchivedThreads {
+		query = query.Joins("LEFT JOIN threads ON threads.id = posts.thread_id").
+		Where("threads.archived = false")
+	}
+
+	result := query.First(&post)
 	return &post, result.Error
 }
 

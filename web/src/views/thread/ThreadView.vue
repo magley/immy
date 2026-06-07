@@ -277,11 +277,11 @@
 	}
 
 	const deleteThread = () => {
-		if (!thread.value) {
+		if (!(thread.value && board.value)) {
 			return;
 		}
 		ThreadAPI.DeleteThread(thread.value.id).then((_) => {
-			router.push(`/${board.value}`);
+			router.push(`/${board.value!.code}`);
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		})
