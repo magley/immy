@@ -87,6 +87,10 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		return nil, errors.New("Thread closed. You may not reply at this time.")
 	}
 
+	if thread.Archived {
+		return nil, errors.New("Thread archived. You may not reply at this time.")
+	}
+
 	threadStats, err := s.ThreadService.GetThreadStats(thread)
 	if err != nil {
 		return nil, err

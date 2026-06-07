@@ -29,6 +29,7 @@
 <nav>
 	<span class="left">
 		[<RouterLink class="link" :to="`/${props.board_code}`">Return</RouterLink>]
+		[<RouterLink class="link" :to="`/${props.board_code}/archive`">Archive</RouterLink>]
 		<template v-if="props.jump_to_id && props.jump_to_label">
 			[<a class="link" :href="`#${props.jump_to_id}`">{{ props.jump_to_label }}</a>]
 		</template>

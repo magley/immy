@@ -80,6 +80,10 @@ export class ThreadAPI {
         return axiosInstance.get(`/threads/board/${boardCode}/catalog`);
     }
 
+    static async GetThreadsForArchive(boardCode: string): Promise<AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>> {
+        return axiosInstance.get(`/threads/board/${boardCode}/archive`);
+    }
+
     static async GetThreadsForHome(boardCode: string, page: number, pageSize: number): Promise<AxiosResponse<ApiResponse<ThreadForHomeDTO[]>>> {
         return axiosInstance.get(`/threads/board/${boardCode}/home?page=${page}&perPage=${pageSize}`);
     }

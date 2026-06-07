@@ -13,6 +13,7 @@ func RegisterThreadRoutes(h *handler.ThreadHandler, rg *gin.RouterGroup) {
     	threads.GET("/board/:boardCode/:num", h.GetThreadByNum)
     	threads.GET("/board/:boardCode/:num/full", h.GetFullThreadByNum)
     	threads.GET("/board/:boardCode/catalog", h.GetThreadsForCatalog)
+    	threads.GET("/board/:boardCode/archive", h.GetThreadsForArchive)
     	threads.GET("/board/:boardCode/home", h.GetThreadsForHome)
     	threads.GET("/:id/full", h.GetFullThread)
     	threads.GET("/:id", h.GetThread)

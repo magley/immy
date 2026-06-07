@@ -34,6 +34,14 @@ func (s *ThreadService) ListThreadsOfBoardOrderByBump(boardCode string, offset, 
 	return s.ThreadRepo.ListThreadsOfBoardOrderByBump(board.ID, offset, limit)
 }
 
+func (s *ThreadService) ListArchivedThreadsOfBoard(boardCode string, offset, limit int) ([]model.Thread, error) {
+	board, err := s.BoardService.GetBoardByCode(boardCode)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.ThreadRepo.ListArchivedThreadsOfBoard(board.ID, offset, limit)
+}
 
 func (s *ThreadService) GetThreadCountPerBoard(boardCode string) (int64, error) {
 	board, err := s.BoardService.GetBoardByCode(boardCode)
@@ -117,6 +125,41 @@ func (s *ThreadService) GetFullThreadFrom(thread *model.Thread) (*model.ThreadFu
 func (s *ThreadService) GetThreadsForCatalog(boardCode string) ([]model.ThreadForCatalogDTO, error) {
 	// TODO: Hardcoding it like this is bad.
 	threads, err := s.ListThreadsOfBoardOrderByBump(boardCode, 0, 1000)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []model.ThreadForCatalogDTO
+
+	for _, thread := range threads {
+		post, err := s.PostService.GetPostByNum(boardCode, thread.PostNum)
+		if err != nil {
+			return nil, err
+		}
+		stats, err := s.GetThreadStats(&thread)
+		if err != nil {
+			return nil, err
+		}
+		lastPos, err := s.PostService.GetNPostsByThread(thread.ID, -1)
+		if err != nil {
+			return nil, err
+		}
+
+		threadWithPost := model.ThreadForCatalogDTO{
+			Thread:   thread,
+			Post:     *post,
+			Stats:    stats,
+			LastPost: lastPos[0],
+		}
+		res = append(res, threadWithPost)
+	}
+
+	return res, nil
+}
+
+func (s *ThreadService) GetThreadsForArchive(boardCode string) ([]model.ThreadForCatalogDTO, error) {
+	// TODO: Hardcoding it like this is bad.
+	threads, err := s.ListArchivedThreadsOfBoard(boardCode, 0, 1000)
 	if err != nil {
 		return nil, err
 	}

@@ -248,7 +248,7 @@
 
 		<!-- Navigation and search -->
 		[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
-		<!-- [<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>] -->
+		[<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>]
 		[<a class="link" :href="`#bottom`">Bottom</a>]
 
 		<hr />
@@ -307,7 +307,7 @@
 
 		<!-- Navigation and search #2 -->
 		[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
-		<!-- [<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>] -->
+		[<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>]
 		[<a class="link" :href="`#top`">Top</a>]
 	</template>
 

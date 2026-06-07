@@ -141,6 +141,19 @@ func (h *ThreadHandler) GetThreadsForCatalog(c *gin.Context) {
 	}
 }
 
+func (h *ThreadHandler) GetThreadsForArchive(c *gin.Context) {
+	boardCode := c.Param("boardCode")
+
+	res, err := h.ThreadService.GetThreadsForArchive(boardCode)
+	if err != nil {
+		util.NotFound(c, "Threads of board", boardCode)
+		return
+	} else {
+		util.OK(c, res)
+		return
+	}
+}
+
 func (h *ThreadHandler) GetThreadsForHome(c *gin.Context) {
 	boardCode := c.Param("boardCode")
 	page, ok := util.QueryIntSafe(c, "page", "Threads")
