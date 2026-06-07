@@ -19,5 +19,6 @@ func RegisterThreadRoutes(h *handler.ThreadHandler, rg *gin.RouterGroup) {
     	threads.POST("/", h.CreateThread)
     	threads.PUT("/:id", h.UpdateThread)
     	threads.DELETE("/:id", h.DeleteThread)
+    	threads.PUT("/:id/archive", h.ArchiveThread)
 	}
 }

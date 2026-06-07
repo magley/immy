@@ -23,6 +23,7 @@ export interface BoardDTO {
     created_at: string;
     post_count: number;
     config: BoardConfig;
+    max_threads: number;
 }
 
 export interface CreateBoardDTO {

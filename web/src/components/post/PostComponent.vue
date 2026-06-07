@@ -36,6 +36,8 @@
 		'onPostLinkUnhover',
 		'onToggleSticky',
 		'onToggleLocked',
+		'onArchive',
+		'onDelete',
 	]);
 
 	const onClickPostNo = (post_num: number) => {
@@ -61,6 +63,12 @@
 	}
 	const onToggleLocked = (thread: ThreadDTO) => {
 		emit('onToggleLocked', thread);
+	}
+	const onArchive = (thread: ThreadDTO) => {
+		emit('onArchive', thread);
+	}
+	const onDelete = (thread: ThreadDTO) => {
+		emit('onDelete', thread);
 	}
 
 
@@ -91,8 +99,10 @@
 
 		<div class="post-header">
 			<div v-if="post.num == post.thread_num">
-				<button @click="onToggleSticky(thread)">Toggle Sticky</button>
-				<button @click="onToggleLocked(thread)">Toggle Locked</button>
+				<button @click="onToggleSticky(thread)">Toggle Sticky <img src="/icons/sticky.png" /></button>
+				<button @click="onToggleLocked(thread)">Toggle Locked <img src="/icons/lock.png" /></button>
+				<button @click="onArchive(thread)">Archive <img src="/icons/archive.png" /></button>
+				<button @click="onDelete(thread)">Delete <img src="/icons/delete.png" /></button>
 			</div>
 			<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
 			<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
@@ -111,6 +121,7 @@
 			<span v-if="post.num == post.thread_num">
 				<img src="/icons/sticky.png" v-if="thread.sticky" title="Sticky"/>
 				<img src="/icons/lock.png" v-if="thread.locked" title="Locked"/>
+				<img src="/icons/archive.png" v-if="thread.archived" :title="`Archived at ${GetPostTimeReadable(thread.archived_at)}`"/>
 			</span>
 			<span class="dropdown">&#9654;</span>
 			<span class="backlink-container" v-if="backlinks">

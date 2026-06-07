@@ -9,6 +9,8 @@ export interface ThreadDTO {
     subject: string;
     locked: boolean;
     sticky: boolean;
+    archived: boolean;
+    archived_at: string;
 }
 
 export interface CreateThreadDTO {
@@ -92,5 +94,9 @@ export class ThreadAPI {
 
     static async DeleteThread(threadId: number): Promise<AxiosResponse<ApiResponse<number>>> {
         return axiosInstance.delete(`/threads/${threadId}`);
+    }
+
+    static async ArchiveThread(threadId: number): Promise<AxiosResponse<ApiResponse<ThreadDTO>>> {
+        return axiosInstance.put(`/threads/${threadId}/archive`);
     }
 }

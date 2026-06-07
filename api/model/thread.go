@@ -9,6 +9,8 @@ type Thread struct {
 	Subject 	string		`json:"subject"`
 	Locked		bool		`json:"locked"`
 	Sticky		bool		`json:"sticky"`
+	Archived	bool		`json:"archived"`
+	ArchivedAt	time.Time	`json:"archived_at"`
 }
 
 type CreateThreadDTO struct {

@@ -18,7 +18,8 @@ create table boards (
 	flags_enabled		bool		default false,
 	ids_enabled			bool		default false,
 	code_enabled		bool		default false,
-	math_enabled		bool		default false
+	math_enabled		bool		default false,
+	max_threads			integer		default 100,
 );
 
 create table threads (
@@ -27,7 +28,9 @@ create table threads (
 	post_num 	integer,  -- Redundant field to simplify search and avoid joins.
 	subject		varchar(128),
 	locked 		bool default false,
-	sticky 		bool default false
+	sticky 		bool default false,
+	archived 	bool default false,
+	archived_at timestamp default now()
 );
 
 create table posts (

@@ -207,3 +207,20 @@ func (h *ThreadHandler) DeleteThread(c *gin.Context) {
 		return
 	}
 }
+
+func (h *ThreadHandler) ArchiveThread(c *gin.Context) {
+	threadId, ok := util.ParamUintSafe(c, "id", "Thread")
+	if !ok {
+		return
+	}
+
+	res, err := h.ThreadService.ArchiveThread(threadId)
+	if err != nil {
+		util.Fail(c, http.StatusBadRequest, "DELETE_FAIL", err.Error())
+		return
+	} else {
+		util.OK(c, res)
+		return
+	}
+}
+

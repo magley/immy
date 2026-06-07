@@ -214,3 +214,12 @@ func (s *ThreadService) GetFullThreadByNum(boardCode string, threadNum uint) (*m
 func (s *ThreadService) GetThreadStats(thread *model.Thread) (model.ThreadStats, error) {
 	return s.ThreadRepo.GetThreadStats(thread.ID)
 }
+
+func (s *ThreadService) ArchiveThread(threadId uint) (*model.Thread, error) {
+	thread, err := s.GetThread(threadId)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.ThreadRepo.ArchiveThread(thread)
+}

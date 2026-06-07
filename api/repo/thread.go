@@ -1,6 +1,8 @@
 package repo
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 
 	model "immy-api/model"
@@ -98,4 +100,11 @@ func (r *ThreadRepo) GetThreadStats(threadId uint) (model.ThreadStats, error) {
 			"MAX(CASE WHEN sage = false THEN created_at ELSE NULL END) AS last_bump").
 		Scan(&stats)
 	return stats, result.Error
+}
+
+func (r *ThreadRepo) ArchiveThread(thread *model.Thread) (*model.Thread, error) {
+	thread.ArchivedAt = time.Now()
+	thread.Archived = true
+	result := r.DB.Save(&thread)
+	return thread, result.Error
 }

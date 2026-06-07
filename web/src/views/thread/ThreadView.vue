@@ -196,7 +196,7 @@
 	}
 
 	const onClickPostNumber = (postNum: number) => {
-		if (thread.value?.locked) {
+		if (!canReply()) {
 			return;
 		}
 
@@ -276,6 +276,28 @@
 		});
 	}
 
+	const deleteThread = () => {
+		if (!thread.value) {
+			return;
+		}
+		ThreadAPI.DeleteThread(thread.value.id).then((_) => {
+			router.push(`/${board.value}`);
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		})
+	}
+
+	const archiveThread = () => {
+		if (!thread.value) {
+			return;
+		}
+		ThreadAPI.ArchiveThread(thread.value.id).then((res: AxiosResponse<ApiResponse<ThreadDTO>>) => {
+			thread.value = res.data.data!;
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		})
+	}
+
 	const processPost = (post: PostDTO) => {
 		ProcessPost(post, thread.value!, board.value!, imageData.value, postLinks.value, posts.value.map((p) => p.num))
 		.then((res: ProcessedPost) => {
@@ -347,6 +369,10 @@
 	const openFloatingReplyBox = () => {
 		floatingReplyBoxVisible.value = true;
 	}
+
+	const canReply = (): boolean => {
+		return !thread.value!.locked && !thread.value!.archived;
+	}
 </script>
 
 <template>
@@ -378,7 +404,7 @@
 		</div>
 
 		<!-- Static reply box -->
-		<div v-if="!thread.locked">
+		<div v-if="canReply()">
 			<hr />
 			<CreatePostForm
 				id="static-reply-box"
@@ -391,7 +417,10 @@
 		</div>
 		<div v-else>
 			<p class="red">
-				Thread closed. <br/>
+				Thread
+				<template v-if="thread.locked">closed.</template>
+				<template v-if="thread.archived">archived.</template>
+				<br/>
 				You my not reply at this time.
 			</p>
 		</div>
@@ -447,6 +476,8 @@
 			@onPostLinkUnhover="onPostLinkUnhover"
 			@onToggleSticky="onToggleSticky"
 			@onToggleLocked="onToggleLocked"
+			@onArchive="archiveThread"
+			@onDelete="deleteThread"
 			/>
 		</template>
 
