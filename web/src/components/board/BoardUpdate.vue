@@ -30,7 +30,8 @@
 			flags_enabled: false,
 			ids_enabled: false,
 			code_enabled: false,
-			math_enabled: false
+			math_enabled: false,
+			max_threads: 100
 		},
 		id: 0,
 		created_at: '',
@@ -199,6 +200,9 @@
 			<button type="button" @click="setMimePreset('image')">Image only</button>
 			<button type="button" @click="setMimePreset('video')">Video only</button>
 		</span><br/>
+
+		<label for="max-threads">Maximum threads: </label>
+		<input id="max-threads" type=number :min="1" :max="1000" v-model="boardDTO.config.max_threads" /><br/>
 
 		<label for="bump-limit">Bump limit: </label>
 		<input id="bump-limit" type=number :min="1" :max="1000" v-model="boardDTO.config.bump_limit" /><br/>

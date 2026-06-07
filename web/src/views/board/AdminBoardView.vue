@@ -94,6 +94,7 @@
 				<th>Max File</th>
 				<th><abbr title="Can non OPs post files in replies?">Reply Files</abbr></th>
 				<th>MIME Types</th>
+				<th>Max Threads</th>
 				<th>Bump Limit</th>
 				<th>Image Limit</th>
 				<th>Flags</th>
@@ -116,6 +117,7 @@
 					<td>{{GetFileSizeByteString(board.config.max_file_size)}}</td>
 					<td>{{board.config.reply_files_allowed}}</td>
 					<td><span v-for="mime, i of board.config.mime_types_allowed">{{mime}}<br/></span></td>
+					<td>{{board.config.max_threads}}</td>
 					<td>{{board.config.bump_limit}}</td>
 					<td>{{board.config.image_limit}}</td>
 					<td>{{board.config.flags_enabled}}</td>

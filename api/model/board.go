@@ -14,7 +14,6 @@ type Board struct {
 	CreatedAt	time.Time		`json:"created_at"`
 	PostCount	uint 			`json:"post_count"`
 	Config		BoardConfig		`json:"config" gorm:"embedded"`
-	MaxThreads  uint			`json:"max_threads"`
 }
 
 type BoardConfig struct {
@@ -29,6 +28,7 @@ type BoardConfig struct {
 	IDsEnabled	bool			`json:"ids_enabled"`
 	CodeEnabled bool 			`json:"code_enabled"`
 	MathEnabled bool			`json:"math_enabled"`
+	MaxThreads  uint			`json:"max_threads"`
 }
 
 type CreateBoardDTO struct {

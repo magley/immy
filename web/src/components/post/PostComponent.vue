@@ -99,9 +99,9 @@
 
 		<div class="post-header">
 			<div v-if="post.num == post.thread_num">
-				<button @click="onToggleSticky(thread)">Toggle Sticky <img src="/icons/sticky.png" /></button>
-				<button @click="onToggleLocked(thread)">Toggle Locked <img src="/icons/lock.png" /></button>
-				<button @click="onArchive(thread)">Archive <img src="/icons/archive.png" /></button>
+				<button v-if="!thread.archived" @click="onToggleSticky(thread)">Toggle Sticky <img src="/icons/sticky.png" /></button>
+				<button v-if="!thread.archived" @click="onToggleLocked(thread)">Toggle Locked <img src="/icons/lock.png" /></button>
+				<button v-if="!thread.archived" @click="onArchive(thread)">Archive <img src="/icons/archive.png" /></button>
 				<button @click="onDelete(thread)">Delete <img src="/icons/delete.png" /></button>
 			</div>
 			<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>

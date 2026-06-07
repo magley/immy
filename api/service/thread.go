@@ -76,7 +76,9 @@ func (s *ThreadService) CreateThread(dto model.CreateThreadDTO, requestIP string
 		// TODO: What about board number?
 	}
 
-	return thread, nil
+	err = s.ArchiveBumpedOffThreads(board)
+
+	return thread, err // Last error isn't major enough to return nil.
 }
 
 func (s *ThreadService) GetThread(threadId uint) (*model.Thread, error) {
@@ -264,5 +266,28 @@ func (s *ThreadService) ArchiveThread(threadId uint) (*model.Thread, error) {
 		return nil, err
 	}
 
+	return s.archiveThread(thread)
+}
+
+func (s *ThreadService) archiveThread(thread *model.Thread) (*model.Thread, error) {
 	return s.ThreadRepo.ArchiveThread(thread)
+}
+
+func (s *ThreadService) ArchiveBumpedOffThreads(board *model.Board) (error) {
+	threads, err := s.ListThreadsOfBoardOrderByBump(board.Code, 0, 1000)
+	if err != nil {
+		return err
+	}
+
+	L := min(board.Config.MaxThreads, uint(len(threads)))
+	R := uint(len(threads)) - 1
+
+	for i := L; i <= R; i++ {
+		_, err := s.archiveThread(&threads[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

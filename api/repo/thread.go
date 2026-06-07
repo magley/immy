@@ -55,7 +55,7 @@ func (r *ThreadRepo) ListArchivedThreadsOfBoard(boardId uint, offset int, limit 
 
 func (r *ThreadRepo) GetThreadCountPerBoard(boardId uint) (int64, error) {
 	var total int64
-	result := r.DB.Model(&model.Thread{}).Where("board_id = ?", boardId).Count(&total)
+	result := r.DB.Model(&model.Thread{}).Where("archived = ?", false).Where("board_id = ?", boardId).Count(&total)
 	return total, result.Error
 }
 

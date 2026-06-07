@@ -308,7 +308,16 @@
 					@onDelete="deleteThread"
 					/>
 					<div v-if="i == 0 && thread.posts.length < thread.stats.post_count">
-						{{ thread.stats.image_count - thread.posts.filter((p) => p.filename).length }} images and {{ thread.stats.post_count - thread.posts.length }} replies ommited.
+						<template v-if="thread.stats.image_count - thread.posts.filter((p) => p.filename).length > 0">
+							{{ thread.stats.image_count - thread.posts.filter((p) => p.filename).length }} images
+						</template>
+						<template v-if="thread.stats.image_count - thread.posts.filter((p) => p.filename).length > 0 && thread.stats.post_count - thread.posts.length > 0">
+							and
+						</template>
+						<template v-if="thread.stats.post_count - thread.posts.length > 0">
+							{{ thread.stats.post_count - thread.posts.length }} replies
+						</template>
+						ommited.
 						<RouterLink :to="`${board.code}/thread/${thread.thread.post_num}`">Click here</RouterLink> to view them.
 					</div>
 				</template>
