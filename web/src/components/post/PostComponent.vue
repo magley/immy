@@ -3,11 +3,14 @@
 	import { CdnAPI } from '@/api/cdn.api';
 	import type { PostDTO } from '@/api/post.api';
 	import type { ThreadDTO } from '@/api/thread.api';
+	import { UserType } from '@/api/user.api';
 	import { GetPostTimeReadable, type PostImageData, type PostLinkToken, type PostToken } from '@/model/post/post.model';
 	import { GetFileSizeByteString, GetMimeTypeFromFilename } from '@/util/file.util';
 	import { GetUserIdColorBackground, GetUserIdColorForeground } from '@/util/various.util';
 
 	interface PostComponentProps {
+		userRole: UserType | undefined;
+
 		board: BoardDTO;
 		thread: ThreadDTO;
 		post: PostDTO;
@@ -71,7 +74,6 @@
 		emit('onDelete', thread);
 	}
 
-
 	const isPostImage = (post: PostDTO) => {
 		return GetMimeTypeFromFilename(post.filename).startsWith('image/');
 	}
@@ -85,6 +87,18 @@
 		return s.substring(trimmedStart + trimmed.length);
 	}
 
+	const canStickyThread = () => {
+		return props.userRole == UserType.Moderator || props.userRole == UserType.Admin;
+	}
+	const canLockThread = () => {
+		return props.userRole == UserType.Moderator || props.userRole == UserType.Admin;
+	}
+	const canArchiveThread = () => {
+		return props.userRole == UserType.Moderator || props.userRole == UserType.Admin || props.userRole == UserType.Janitor;
+	}
+	const canDeleteThread = () => {
+		return props.userRole == UserType.Moderator || props.userRole == UserType.Admin || props.userRole == UserType.Janitor;
+	}
 
 </script>
 
@@ -98,12 +112,14 @@
 		}">
 
 		<div class="post-header">
-			<div v-if="post.num == post.thread_num">
-				<button v-if="!thread.archived" @click="onToggleSticky(thread)">Toggle Sticky <img src="/icons/sticky.png" /></button>
-				<button v-if="!thread.archived" @click="onToggleLocked(thread)">Toggle Locked <img src="/icons/lock.png" /></button>
-				<button v-if="!thread.archived" @click="onArchive(thread)">Archive <img src="/icons/archive.png" /></button>
-				<button @click="onDelete(thread)">Delete <img src="/icons/delete.png" /></button>
+			<!-- Thread management by staff user -->
+			<div v-if="userRole != undefined && post.num == post.thread_num">
+				<button v-if="!thread.archived && canStickyThread()"  @click="onToggleSticky(thread)">Toggle Sticky <img src="/icons/sticky.png" /></button>
+				<button v-if="!thread.archived && canLockThread()"    @click="onToggleLocked(thread)">Toggle Locked <img src="/icons/lock.png" /></button>
+				<button v-if="!thread.archived && canArchiveThread()" @click="onArchive(thread)">Archive <img src="/icons/archive.png" /></button>
+				<button v-if="!thread.archived && canDeleteThread()"  @click="onDelete(thread)">Delete <img src="/icons/delete.png" /></button>
 			</div>
+
 			<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
 			<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
 			<span class="tripcode" v-if="post.tripcode">{{ post.tripcode }}</span>

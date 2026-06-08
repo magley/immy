@@ -17,6 +17,7 @@
 	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
 	import { GetTabTitleForThread } from '@/util/tab.util';
 	import { useTextSelection, useDraggable } from '@vueuse/core';
+	import { UserType } from '@/api/user.api';
 	const route = useRoute();
 	const router = useRouter();
 
@@ -69,11 +70,15 @@
 	const peekMouseX = ref<number>(0);
 	const peekMouseY = ref<number>(0);
 
+	const userType = ref<UserType | undefined>(undefined);
+
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
 		loadBoard(board_code);
 		autoTimerCountdown();
 		window.addEventListener('mousemove', updatePosition);
+
+		userType.value = (localStorage.getItem("role") ?? undefined) as UserType;
 	});
 
 	onUnmounted(() => {
@@ -383,6 +388,7 @@
 		<PostComponent
 		class="peek"
 		id="peekElement"
+		:userRole="undefined"
 		:style="{ transform: 'translate(' + peekMouseX + 'px,' + peekMouseY + 'px)' }"
 		:board="peekPost.board"
 		:thread="peekPost.thread"
@@ -458,6 +464,7 @@
 		<template v-if="thread">
 			<PostComponent
 			v-for="post, i of posts"
+			:userRole="userType"
 			:board="board"
 			:thread="thread"
 			:post="post"

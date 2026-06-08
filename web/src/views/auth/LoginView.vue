@@ -1,40 +1,46 @@
 <script setup lang="ts">
-	import { ref, onMounted } from 'vue';
-	import { UserAPI, UserDTO, CreateUserDTO, UpdateUserDTO, UserType, LoginUserDTO, JWTClaims} from "@/api/user.api.ts";
+	import { ref } from 'vue';
+	import { UserAPI, type LoginUserDTO, type LoginResponseDTO} from "@/api/user.api.ts";
+	import type { ApiResponse } from '@/api/http';
+	import type { AxiosResponse, AxiosError } from 'axios';
+import BoardListNav from '@/components/board/BoardListNav.vue';
 
-	const loginUserDTO = ref<LoginUserDTO>({});
-	const errorMessage = ref<string>(undefined);
+	const loginUserDTO = ref<LoginUserDTO>({
+		username: '',
+		password: ''
+	});
+	const errorMessage = ref<string | undefined>(undefined);
 
 	const onSubmitLogin = () => {
 		errorMessage.value = "";
 		UserAPI.LoginUser(loginUserDTO.value).then((res: AxiosResponse<ApiResponse<LoginResponseDTO>>) => {
-			const dto: LoginResponseDTO = res.data.data;
+			const dto: LoginResponseDTO = res.data.data!;
 			onSuccess(dto);
 		}).catch((err: AxiosError) => {
-			onFail(err);
+			if (err.status! == 401) {
+				errorMessage.value = "Incorrect username or password";
+			} else {
+				errorMessage.value = "Failed to log in";
+			}
+			console.error(err);
 		});
 	}
 	
 	const onSuccess = (dto: LoginResponseDTO) => {
 		localStorage.setItem("username", dto.username);
-		localStorage.setItem("id", dto.id);
+		localStorage.setItem("id", `${dto.id}`);
 		localStorage.setItem("role", dto.type);
 		localStorage.setItem("jwt", dto.jwt);
-	}
-	
-	const onFail = (error: AxiosError) => {
-		if (error.status == 401) {
-			errorMessage.value = "Incorrect username or password";
-		} else if (error.ok) {
-			errorMessage.value = "Failed to log in";
-			console.error(error.response.data);
-		}
+		location.reload();
 	}
 </script>
 
 <template>
+	<BoardListNav :isCatalog=false />
+	<hr/>
+
 	<form @submit.prevent="onSubmitLogin">
-		<h2>Login</h2>
+		<h1>Login</h1>
 		
 		<input type=text placeholder="Username" required v-model="loginUserDTO.username"/>
 		<br/>
@@ -48,9 +54,24 @@
 			<span class="error">{{errorMessage}}</span>
 		</template>
 	</form>
+
+	<hr/>
+	<BoardListNav :isCatalog=false />
 </template>
 
 <style scoped>
+	form {
+		width: 40%;
+		margin: 2em auto;
+		border: 1px solid black;
+		background-color: var(--background-color-darker);
+		padding: 1em;
+		text-align: center;
+	}
+
+	h1 {
+		color: var(--banner-title-color);
+	}
 	.error {
 		color: var(--user-error-color);
 	}

@@ -9,6 +9,7 @@
 	import BoardUpdate from '@/components/board/BoardUpdate.vue';
 	import { UserAPI, UserType } from '@/api/user.api';
 	import { useRouter } from 'vue-router';
+import BoardListNav from '@/components/board/BoardListNav.vue';
 
 	const router = useRouter();
 
@@ -74,10 +75,12 @@
 			console.error(err);
 		});
 	}
-
 </script>
 
 <template>
+	<BoardListNav :isCatalog=false />
+	<hr/>
+
 	<h1>Boards</h1>
 
 	<div id="new-board-container">
@@ -153,9 +156,16 @@
 			</template>
 		</tbody>
 	</table>
+
+	<hr/>
+	<BoardListNav :isCatalog=false />
 </template>
 
 <style scoped>
+	h1, h2, h3 {
+		color: var(--banner-title-color);
+	}
+
 	table {
 		border: 1px solid black;
 	}

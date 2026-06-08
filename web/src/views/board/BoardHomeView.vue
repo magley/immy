@@ -12,6 +12,7 @@
 	import { GetPostPeek, type PostPeekBundle } from "@/model/post/post.peek";
 	import { GetTabTitleForBoard } from "@/util/tab.util";
 	import CreatePostForm from "@/components/post/CreatePostForm.vue";
+	import type { UserType } from "@/api/user.api";
 	
 	const board = ref<BoardDTO | undefined>(undefined);
 
@@ -48,12 +49,16 @@
 	const peekMouseX = ref<number>(0);
 	const peekMouseY = ref<number>(0);
 
+	const userType = ref<UserType | undefined>(undefined);
+
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
 		const page_num_string = route.query['page'] ?? "1";
 		page.value = Number(page_num_string) - 1;
 		loadBoard(board_code);
 		window.addEventListener('mousemove', updatePosition);
+
+		userType.value = (localStorage.getItem("role") ?? undefined) as UserType;
 	});
 
 	onUnmounted(() => {
@@ -240,6 +245,7 @@
 		<PostComponent
 		class="peek"
 		id="peekElement"
+		:userRole="undefined"
 		:style="{ transform: 'translate(' + peekMouseX + 'px,' + peekMouseY + 'px)' }"
 		:board="peekPost.board"
 		:thread="peekPost.thread"
@@ -286,6 +292,7 @@
 			<div v-for="thread in threads">
 				<template v-for="post, i of thread.posts">
 					<PostComponent
+					:userRole="userType"
 					:board="board"
 					:thread="thread.thread"
 					:post="post"

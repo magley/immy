@@ -93,6 +93,7 @@
 		<PostComponent
 		class="peek"
 		id="peekElement"
+		:userRole="undefined"
 		:style="{ transform: 'translate(' + peekMouseX + 'px,' + peekMouseY + 'px)' }"
 		:board="peekPost.board"
 		:thread="peekPost.thread"

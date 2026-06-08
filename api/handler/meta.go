@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
 	util "immy-api/util"
+
+	"github.com/gin-gonic/gin"
 )
 
 type MetaHandler struct {}
