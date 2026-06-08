@@ -101,6 +101,10 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		return nil, err
 	}
 
+	if board.Config.Locked {
+		return nil, errors.New("Board locked. You may not reply at this time.")
+	}
+
 	err = s.validatePost(dto.Filebytes, thread, threadStats, board, false)
 	if err != nil {
 		return nil, err
@@ -196,6 +200,10 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 	board, err := s.BoardService.IncrementBoardPostCount(board)
 	if err != nil {
 		return nil, err
+	}
+
+	if board.Config.Locked {
+		return nil, errors.New("Board locked. You may not create threads at this time.")
 	}
 
 	threadStats, err := s.ThreadService.GetThreadStats(thread)

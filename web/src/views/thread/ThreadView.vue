@@ -376,7 +376,7 @@
 	}
 
 	const canReply = (): boolean => {
-		return !thread.value!.locked && !thread.value!.archived;
+		return !thread.value!.locked && !thread.value!.archived && !board.value!.config.locked;
 	}
 </script>
 
@@ -405,7 +405,9 @@
 
 	<template v-if="board && thread">
 		<div id="title">
-			<h1>/{{board.code}}/ - {{board.name}}</h1>
+			<h1>/{{board.code}}/ - {{board.name}}
+				<img v-if="board.config.locked" src="/icons/lock.png" title="Board locked for further posts" class="icon" />
+			</h1>
 			<small>{{board.description}}</small>
 		</div>
 
@@ -413,6 +415,7 @@
 		<div v-if="canReply()">
 			<hr />
 			<CreatePostForm
+				v-if="!board.config.locked"
 				id="static-reply-box"
 				:board="board"
 				:thread="thread"
@@ -426,6 +429,7 @@
 				Thread
 				<template v-if="thread.locked">closed.</template>
 				<template v-if="thread.archived">archived.</template>
+				<template v-if="board.config.locked">locked with the board.</template>
 				<br/>
 				You my not reply at this time.
 			</p>
@@ -508,13 +512,6 @@
 <style scoped>
 	.error {
 		color: var(--user-error-color);
-	}
-
-	#title {
-		text-align: center;
-		h1 {
-			color: var(--banner-title-color);
-		}
 	}
 
 	#static-reply-box {

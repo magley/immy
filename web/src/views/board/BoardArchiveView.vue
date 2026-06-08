@@ -109,8 +109,10 @@
 	</template>
 
 	<div v-if="board">
-		<div class="title">
-			<h1>/{{board.code}}/ - {{board.name}}</h1>
+		<div id="title">
+			<h1>/{{board.code}}/ - {{board.name}}
+				<img v-if="board.config.locked" src="/icons/lock.png" title="Board locked for further posts" class="icon" />
+			</h1>
 			<small>{{board.description}}</small>
 		</div>
 

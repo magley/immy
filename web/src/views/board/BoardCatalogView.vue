@@ -73,20 +73,25 @@
 
 	<template v-if="board">
 		<div id="title">
-			<h1>/{{board.code}}/ - {{board.name}}</h1>
+			<h1>/{{board.code}}/ - {{board.name}}
+				<img v-if="board.config.locked" src="/icons/lock.png" title="Board locked for further posts" class="icon" />
+			</h1>
 			<small>{{board.description}}</small>
 		</div>
+
 		<hr />
 
-		<CreatePostForm
-			id="create-thread"
-			:thread="undefined"
-			:board="board"
-			:max_size_bytes="board.config.max_file_size"
-			:mime_types_allowed="board.config.mime_types_allowed"
-			@postCreated="loadThreads()"
-		/>
-		<hr />
+		<div v-if="!board.config.locked">
+			<CreatePostForm
+				id="create-thread"
+				:thread="undefined"
+				:board="board"
+				:max_size_bytes="board.config.max_file_size"
+				:mime_types_allowed="board.config.mime_types_allowed"
+				@postCreated="loadThreads()"
+			/>
+			<hr />
+		</div>
 
 		<BoardViewNavList
 		:board_code="board.code"
@@ -147,13 +152,6 @@
 </template>
 
 <style scoped>
-	#title {
-		text-align: center;
-		h1 {
-			color: var(--banner-title-color);
-		}
-	}
-
 	#create-thread {
 		display: block;
 		text-align: center;

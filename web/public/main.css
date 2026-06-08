@@ -139,3 +139,14 @@ hr {
 .tooltip:hover .tooltiptext {
 	visibility: visible;
 }
+
+#title {
+  text-align: center;
+  h1 {
+    color: var(--banner-title-color);
+    img.icon {
+      width: 32px;
+      image-rendering: pixelated;
+    }
+  }
+}
