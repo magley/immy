@@ -15,6 +15,7 @@
 		// TODO: No offset/limit here...
 		BoardAPI.ListBoards(0, 10000).then((res: AxiosResponse<ApiResponse<BoardDTO[]>>) => {
 			boards.value = res.data.data!;
+			boards.value = boards.value.filter((b) => !b.config.hidden);
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});

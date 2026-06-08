@@ -201,6 +201,12 @@
 			<button type="button" @click="setMimePreset('video')">Video only</button>
 		</span><br/>
 
+		<label for="locked">Locked: </label>
+		<input id="locked" type=checkbox v-model="boardDTO.config.locked" /><br/>
+
+		<label for="hidden">Hidden: </label>
+		<input id="hidden" type=checkbox v-model="boardDTO.config.hidden" /><br/>
+
 		<label for="max-threads">Maximum threads: </label>
 		<input id="max-threads" type=number :min="1" :max="1000" v-model="boardDTO.config.max_threads" /><br/>
 

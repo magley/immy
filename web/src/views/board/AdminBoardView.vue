@@ -9,7 +9,7 @@
 	import BoardUpdate from '@/components/board/BoardUpdate.vue';
 	import { UserAPI, UserType } from '@/api/user.api';
 	import { useRouter } from 'vue-router';
-import BoardListNav from '@/components/board/BoardListNav.vue';
+	import BoardListNav from '@/components/board/BoardListNav.vue';
 
 	const router = useRouter();
 
@@ -84,8 +84,8 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 	<h1>Boards</h1>
 
 	<div id="new-board-container">
-	<h3>Create new Board</h3>
-	<BoardUpdate
+		<h3>Create new Board</h3>
+		<BoardUpdate
 		:allowed-mime-types="allowedMimeTypes"
 		:current-board-value="undefined"
 		@created="onBoardCreated"
@@ -126,12 +126,12 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 					<td><RouterLink :to="`/${board.code}`">/{{board.code}}/</RouterLink></td>
 					<td>{{board.name}}</td>
 					<td>{{GetElipsisString(board.description)}}</td>
-					<td>{{board.config.locked}}</td>
-					<td>{{board.config.hidden}}</td>
+					<td><img src="/icons/lock.png" v-if="board.config.locked" /></td>
+					<td><img src="/icons/invisible.png" v-if="board.config.hidden" /></td>
 
 					<td>{{GetFileSizeByteString(board.config.max_file_size)}}</td>
 					<td>{{board.config.reply_files_allowed}}</td>
-					<td><span v-for="mime, i of board.config.mime_types_allowed">{{mime}}<br/></span></td>
+					<td><span v-for="mime, i of board.config.mime_types_allowed"></span></td>
 					<td>{{board.config.max_threads}}</td>
 					<td>{{board.config.bump_limit}}</td>
 					<td>{{board.config.image_limit}}</td>
@@ -168,12 +168,22 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 
 	table {
 		border: 1px solid black;
+
+		th {
+			background-color: var(--background-color-accent);
+			padding: 0.5em 0.5em;
+		}
+
+		td {
+			padding: 0.5em 0;
+			img {
+				display: block;
+				margin: auto;
+			}
+		}
 	}
 	
-	th {
-		background-color: var(--background-color-darker);
-		padding: 0em 1em;
-	}
+
 
 	#new-board-container {
 		text-align: center;
