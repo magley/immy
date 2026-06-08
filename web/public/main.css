@@ -8,7 +8,9 @@
   --user-error-color: red;
   --banner-title-color: #af0a0f;
   --post-background-color: #D6DAF0;
-  --highlighted-post-background-color: #D6DAF0;
+  --post-border-color: #B7C5D9;
+  --highlighted-post-background-color: #d6bad0;
+  --highlighted-post-border-color: #BA9DBF;
   --unread-posts-separator: red;
   --username-color: #157743;
   --thread-subject-color: #0F0C5D;
@@ -29,7 +31,9 @@
   --post-link-color: #000080;
   --banner-title-color: #800000;
   --post-background-color: #f0e0d6;
+  --post-border-color: #D9BFB7;
   --highlighted-post-background-color: #f0c0b0;
+  --highlighted-post-border-color: #D99F91;
   --username-color: #117743;
   --thread-subject-color: #cc1105;
   --hr-color: #eeaa88;
@@ -52,7 +56,9 @@
   --post-link-color: #000080;
   --banner-title-color: #800000;
   --post-background-color: #f0e0d6;
+  --post-border-color: #D9BFB7;
   --highlighted-post-background-color: #f0c0b0;
+  --highlighted-post-border-color: #D99F91;
   --username-color: #117743;
   --thread-subject-color: #cc1105;
 }

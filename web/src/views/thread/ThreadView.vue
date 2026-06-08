@@ -228,6 +228,7 @@
 	const onClickPostNo = (postNum: number) => {
 		router.replace({'hash': `#p${postNum}`});
 		highlightedPost.value = postNum;
+		console.log(highlightedPost.value);
 	}
 
 	const onClickUserId = (userId: string) => {
@@ -462,6 +463,7 @@
 		:isAutoTimerUsed="autoTimerIsEnabled"
 		:sticky="thread!.sticky"
 		:locked="thread!.locked"
+		:showCenterElements="false"
 		@updateClicked="reloadThread"
 		@autoTimerToggled="onAutoTimerToggled" />
 
@@ -502,6 +504,8 @@
 		:isAutoTimerUsed="autoTimerIsEnabled"
 		:sticky="thread!.sticky"
 		:locked="thread!.locked"
+		:showCenterElements="true"
+		@openedReplyBox="openFloatingReplyBox"
 		@updateClicked="reloadThread"
 		@autoTimerToggled="onAutoTimerToggled" />
 	</template>

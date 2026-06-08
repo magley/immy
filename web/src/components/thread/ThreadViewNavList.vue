@@ -8,13 +8,14 @@
 		thread_stats: ThreadStats,
 		sticky: boolean,
 		locked: boolean,
+		showCenterElements: boolean,
 		//
 		autoTimer: number,
 		isAutoTimerUsed: boolean,
 	}
 
 	const props = defineProps<ThreadNavProps>();
-	const emit = defineEmits(['autoTimerToggled', 'updateClicked']);
+	const emit = defineEmits(['autoTimerToggled', 'updateClicked', 'openedReplyBox']);
 	
 	const onSetAutoTimer = (ev: Event) => {
 		emit('autoTimerToggled', (ev.target as HTMLInputElement).checked);
@@ -23,7 +24,10 @@
 	const doUpdate = () => {
 		emit('updateClicked');
 	}
-	
+
+	const openedReplyBox = () => {
+		emit('openedReplyBox');
+	}
 </script>
 
 <template>
@@ -38,6 +42,9 @@
 		[<a class="link" href="#" @click.prevent="doUpdate">Update</a>]
 		[<input type="checkbox" :checked="props.isAutoTimerUsed" @change="onSetAutoTimer" name="auto"><label for="auto"> Auto</label>]
 		<template v-if="props.isAutoTimerUsed">{{ props.autoTimer }}</template>
+	</span>
+	<span class="middle" v-if="showCenterElements">
+		[<a class="link" href="#" @click.prevent="openedReplyBox">Post a Reply</a>]
 	</span>
 	<span class ="right">
 		<template v-if="sticky">Sticky / </template>
@@ -63,9 +70,20 @@
 	nav {
 		display: flex;
 		justify-content: space-between;
-		
+
+		.left {
+			flex: 1;
+		}
+
+		.middle {
+			flex: 1;
+			text-align: center;
+		}
+
 		.right {
+			flex: 1;
 			cursor: default;
+			text-align: right;
 		}
 	}
 </style>

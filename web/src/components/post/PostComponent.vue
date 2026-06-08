@@ -109,6 +109,7 @@
 			highlightedPost: is_highlighted,
 			opPost: is_op_post,
 			lastSeenPost: is_last_seen,
+			notOP: !is_op_post
 		}">
 
 		<div class="post-header">
@@ -238,6 +239,17 @@
 				background-color: var(--background-color) !important;
 			}
 
+			&.notOP {
+				border: 1px solid var(--post-border-color);
+			}
+
+			&.highlightedPost {
+				&.notOP {
+					border: 1px solid var(--highlighted-post-border-color);
+				}
+				background-color: var(--highlighted-post-background-color);
+			}
+
 			.post-header {
 				span {
 					margin-right: 0.25em;
@@ -330,10 +342,6 @@
 					}
 				}
 			}
-		}
-
-		.highlightedPost {
-			background-color: var(--highlighted-post-background-color);
 		}
 	}
 
