@@ -1,28 +1,21 @@
 <script setup lang="ts">
-	import { type BoardDTO, BoardAPI } from '@/api/board.api.ts';
-	import type { AxiosResponse, AxiosError } from 'axios';
 	import { ref, onMounted } from 'vue';
-	import type { ApiResponse } from './api/http';
-	
-	const boards = ref<BoardDTO[]>([]);
-	const boardsError = ref<string | null>(null);
-	
+	import { UserType } from './api/user.api';
+
+	const userRole = ref<string | undefined>(undefined);
+	const userName = ref<string | undefined>(undefined);
+	const theme = ref<string>("yotsuba");
+
 	onMounted(() => {
-		BoardAPI.ListBoards().then((res: AxiosResponse<ApiResponse<BoardDTO[]>>) => {
-			boards.value = res.data.data!;
-		}).catch((err: AxiosError) => {
-			boardsError.value = "Failed to fetch boards";
-			console.error(err);	
-		});
+		userRole.value = localStorage.getItem("role") ?? undefined;
+		userName.value = localStorage.getItem("username") ?? undefined;
+		setTheme(localStorage.getItem("theme") ?? "yotsuba");
 	});
 
-	const theme = ref<string>("yotsuba");
 	const themeChanged = () => {
 		setTheme(theme.value);
 	}
-	onMounted(() => {
-		setTheme(localStorage.getItem("theme") ?? "yotsuba");
-	});
+
 	const setTheme = (theme: string) => {
 		document.documentElement.setAttribute('data-theme', theme);
 		localStorage.setItem("theme", theme);
@@ -39,6 +32,15 @@
 		const hljsThemeLink: HTMLLinkElement = document.getElementById('code-syntax-theme')! as any as HTMLLinkElement;
 		hljsThemeLink.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${codeTheme}.min.css`;
 	}
+
+	const logOut = () => {
+		localStorage.removeItem("username");
+		localStorage.removeItem("id");
+		localStorage.removeItem("role");
+		localStorage.removeItem("jwt");
+
+		location.reload();
+	}
 </script>
 
 
@@ -50,12 +52,26 @@
 		<RouterLink to="/login">Log In</RouterLink>
 	</nav>
 	
-	<nav>
-		<b>[Admin]</b>
+	<nav v-if="userRole != undefined">
+		<b>[<img :src="`/icons/user-role-${userRole}.gif`" :title="userRole" /> {{userName}}]</b>
 		|
-		<RouterLink to="/admin-users">Users</RouterLink>
+		<a href="#" @click.prevent="logOut">Log Out</a>
 		|
-		<RouterLink to="/admin-boards">Boards</RouterLink>
+		<span v-if="userRole == UserType.Admin">
+			<RouterLink to="/admin-users">Users</RouterLink>
+			|
+			<RouterLink to="/admin-boards">Boards</RouterLink>
+			|
+		</span>
+		<span v-if="userRole == UserType.Moderator">
+			<RouterLink to="/admin-users">Users</RouterLink>
+			|
+			<RouterLink to="/admin-boards">Boards</RouterLink>
+			|
+		</span>
+		<span v-if="userRole == UserType.Janitor">
+
+		</span>
 	</nav>
 
 	<main>	
@@ -67,10 +83,10 @@
 
 	<label>Theme:</label>
 	<select v-model="theme" @change="themeChanged">
-	  <option value="yotsuba">Yotsuba</option>
-	  <option value="yotsuba-b">Yotsuba B</option>
-	  <option value="futaba">Futaba</option>
-	  <option value="burichan">Burichan</option>
+		<option value="yotsuba">Yotsuba</option>
+		<option value="yotsuba-b">Yotsuba B</option>
+		<option value="futaba">Futaba</option>
+		<option value="burichan">Burichan</option>
 	</select>
 	
 	<span id="bottom"></span>

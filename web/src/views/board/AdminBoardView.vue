@@ -7,20 +7,32 @@
 	import { GetFileSizeByteFromString, GetFileSizeByteString } from '@/util/file.util';
 	import { MetaAPI } from '@/api/meta.api';
 	import BoardUpdate from '@/components/board/BoardUpdate.vue';
+	import { UserAPI, UserType } from '@/api/user.api';
+	import { useRouter } from 'vue-router';
+
+	const router = useRouter();
 
 	const boards = ref<BoardDTO[]>([]);
 	const allowedMimeTypes = ref<string[]>([]);
 	const boardEditShown = ref<Record<string, boolean>>({}); // board code => true/false
 	
 	onMounted(() => {
-		get_boards();
+		UserAPI.AuthorizeUser({role: UserType.Admin}).then(() => {
+			get_boards();
+			get_allowed_mime_types();
+		}).catch((err: AxiosError) => {
+			console.error(err);
+			router.push("/login");
+		});
+	});
 
+	const get_allowed_mime_types = () => {
 		MetaAPI.GetMimeTypes().then((res: AxiosResponse<ApiResponse<string[]>>) => {
 			allowedMimeTypes.value = res.data.data!;
 		}).catch((err) => {
 			console.error(err);
 		});
-	});
+	}
 	
 	const get_boards = () => {
 		BoardAPI.ListBoards().then((res: AxiosResponse<ApiResponse<BoardDTO[]>>) => {

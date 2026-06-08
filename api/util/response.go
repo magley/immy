@@ -33,6 +33,12 @@ func OK(c *gin.Context, data interface{}) {
 	})
 }
 
+func NoContent(c *gin.Context) {
+	c.JSON(http.StatusNoContent, Response{
+		Success: true,
+	})
+}
+
 func OKPaged(c *gin.Context, data interface{}, meta *Meta) {
 	c.JSON(http.StatusOK, Response{
 		Success: true,
@@ -60,5 +66,20 @@ func NotFound(c *gin.Context, what string, identifier interface{}) {
 			Code: "NOT_FOUND",
 			Message: fmt.Sprintf("Could not find %s by '%v'", what, identifier),
 		},
+	})
+}
+
+func Unauthorized(c *gin.Context, err error) {
+	errInfo := &ErrorInfo{
+		Code: "UNAUTHORIZED",
+	}
+
+	if err != nil {
+		errInfo.Message = err.Error()
+	}
+
+	c.JSON(http.StatusUnauthorized, Response{
+		Success: false,
+		Error:   errInfo,
 	})
 }

@@ -80,6 +80,11 @@ func (h *PostHandler) GetPostsByThread(c *gin.Context) {
 }
 
 func (h *PostHandler) UpdatePost(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeModerator})
+	if !ok {
+		return
+	}
+
 	postId, ok := util.ParamUintSafe(c, "id", "Post")
 	if !ok {
 		return

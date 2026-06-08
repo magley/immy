@@ -183,6 +183,11 @@ func (h *ThreadHandler) GetThreadsForHome(c *gin.Context) {
 }
 
 func (h *ThreadHandler) UpdateThread(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeModerator})
+	if !ok {
+		return
+	}
+
 	threadId, ok := util.ParamUintSafe(c, "id", "Thread")
 	if !ok {
 		return
@@ -206,6 +211,11 @@ func (h *ThreadHandler) UpdateThread(c *gin.Context) {
 }
 
 func (h *ThreadHandler) DeleteThread(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeModerator, model.UserTypeJanitor})
+	if !ok {
+		return
+	}
+
 	threadId, ok := util.ParamUintSafe(c, "id", "Thread")
 	if !ok {
 		return
@@ -222,6 +232,11 @@ func (h *ThreadHandler) DeleteThread(c *gin.Context) {
 }
 
 func (h *ThreadHandler) ArchiveThread(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeModerator, model.UserTypeJanitor})
+	if !ok {
+		return
+	}
+
 	threadId, ok := util.ParamUintSafe(c, "id", "Thread")
 	if !ok {
 		return

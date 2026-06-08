@@ -2,6 +2,7 @@ package util
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -49,7 +50,6 @@ func ParamIntSafe(c *gin.Context, paramName string, what string) (int, bool) {
 	return int(value), true
 }
 
-
 func QueryInt(c *gin.Context, paramName string) (int, error) {
 	valueStr := c.Query(paramName)
 	value, err := strconv.ParseInt(valueStr, 10, 64)
@@ -65,4 +65,50 @@ func QueryIntSafe(c *gin.Context, paramName string, what string) (int, bool) {
 	}
 
 	return int(value), true
+}
+
+func GetJwtToken(c *gin.Context) (string) {
+	authVal := c.GetHeader("Authorization")
+
+	if strings.HasPrefix(authVal, "Bearer ") {
+		return authVal[7:]
+	}
+
+	return ""
+}
+
+func GetJwt(c *gin.Context) (*JWTClaims, error) {
+	return ValidateJWT(GetJwtToken(c))
+}
+
+func RequireRole(c *gin.Context, role string) (*JWTClaims, bool) {
+	jwt, err := GetJwt(c)
+	if err != nil {
+		Unauthorized(c, err)
+		return jwt, false
+	}
+
+	err = jwt.RequireRole(role)
+	if err != nil {
+		Unauthorized(c, err)
+		return jwt, false
+	}
+
+	return jwt, true
+}
+
+func RequireRoleAny(c *gin.Context, roles []string) (*JWTClaims, bool) {
+	jwt, err := GetJwt(c)
+	if err != nil {
+		Unauthorized(c, err)
+		return jwt, false
+	}
+
+	err = jwt.RequireRoleAny(roles)
+	if err != nil {
+		Unauthorized(c, err)
+		return jwt, false
+	}
+
+	return jwt, true
 }

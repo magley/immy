@@ -1,10 +1,11 @@
 package service
 
 import (
+	"errors"
 	"fmt"
-	"immy-api/util"
-	"immy-api/repo"
 	"immy-api/model"
+	"immy-api/repo"
+	"immy-api/util"
 )
 
 type UserService struct {
@@ -67,4 +68,23 @@ func (s *UserService) LoginUser(dto model.LoginUserDTO) (*model.LoginResponseDTO
 		Type: user.Type,
 		JWT: jwt,
 	}, nil
+}
+
+func (s *UserService) AuthorizeUser(dto model.AuthorizationDTO, jwt *util.JWTClaims) error {
+	if dto.Role != nil {
+		if jwt.Role != *dto.Role {
+			return errors.New("Invalid role")
+		}
+	}
+
+	user, err := s.GetUser(jwt.Id)
+	if err != nil {
+		return err
+	}
+
+	if jwt.Role != string(user.Type) {
+		return errors.New("Invalid role")
+	}
+
+	return nil
 }

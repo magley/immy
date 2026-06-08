@@ -42,3 +42,7 @@ type LoginResponseDTO struct {
 	Type 		UserType 	`json:"type"`
 	JWT 		string		`json:"jwt"`
 }
+
+type AuthorizationDTO struct {
+	Role		*string		`json:"role"`
+}

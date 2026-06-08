@@ -1,4 +1,5 @@
 import { axiosInstance, type ApiResponse } from "@/api/http";
+import type { AxiosResponse } from "axios";
 
 export enum UserType {
     Admin = 'admin',
@@ -37,28 +38,36 @@ export interface LoginResponseDTO {
     jwt: string;
 }
 
+export interface AuthorzationDTO {
+    role: string | undefined;
+}
+
 export class UserAPI {
     static async ListUsers(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<UserDTO[]>>> {
-        return axiosInstance.get<ApiResponse<UserDTO[]>>(`/users/?offset=${offset}&limit=${limit}`);
+        return axiosInstance.get(`/users/?offset=${offset}&limit=${limit}`);
     }
 
     static async CreateUser(dto: CreateUserDTO): Promise<AxiosResponse<ApiResponse<UserDTO>>> {
-        return axiosInstance.post<ApiResponse<UserDTO>>(`/users/`, dto);
+        return axiosInstance.post(`/users/`, dto);
     }
 
     static async GetUser(userId: number): Promise<AxiosResponse<ApiResponse<UserDTO>>> {
-        return axiosInstance.get<ApiResponse<UserDTO>>(`/users/${userId}`);
+        return axiosInstance.get(`/users/${userId}`);
     }
 
     static async UpdateUser(userId: number, dto: UpdateUserDTO): Promise<AxiosResponse<ApiResponse<UserDTO>>> {
-        return axiosInstance.put<ApiResponse<UserDTO>>(`/users/${userId}`, dto);
+        return axiosInstance.put(`/users/${userId}`, dto);
     }
 
     static async DeleteUser(userId: number): Promise<AxiosResponse<ApiResponse<number>>> {
-        return axiosInstance.delete<ApiResponse<number>>(`/users/${userId}`);
+        return axiosInstance.delete(`/users/${userId}`);
     }
     
     static async LoginUser(dto: LoginUserDTO): Promise<AxiosResponse<ApiResponse<LoginResponseDTO>>> {
-        return axiosInstance.post<ApiResponse<number>>(`/users/login`, dto);
+        return axiosInstance.post(`/users/login`, dto);
+    }
+
+    static async AuthorizeUser(dto: AuthorzationDTO): Promise<AxiosResponse<ApiResponse<void>>> {
+        return axiosInstance.post(`/users/authorize`, dto);
     }
 }

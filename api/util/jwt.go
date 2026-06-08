@@ -1,8 +1,11 @@
 package util
 
 import (
-    "fmt"
-    "time"
+	"errors"
+	"fmt"
+	"slices"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -13,6 +16,20 @@ type JWTClaims struct {
     Id 			uint 			`json:"id"`
     Role 		string			`json:"role"`
     jwt.RegisteredClaims
+}
+
+func (auth JWTClaims) RequireRole(role string) error {
+    if auth.Role != role {
+        return errors.New("Unauthorized")
+    }
+    return nil
+}
+
+func (auth JWTClaims) RequireRoleAny(roles []string) error {
+    if slices.Index(roles, auth.Role) == -1 {
+        return errors.New("Unauthorized")
+    }
+    return nil
 }
 
 func CreateJWT(userId uint, username string, userRole string) (string, error) {
@@ -35,7 +52,7 @@ func CreateJWT(userId uint, username string, userRole string) (string, error) {
 func ValidateJWT(token string) (*JWTClaims, error) {
     var claims JWTClaims
 
-    tokn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (any, error) {
+    tokn, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (any, error) {
         return jwtKey, nil
     })
 

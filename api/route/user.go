@@ -14,5 +14,6 @@ func RegisterUserRoutes(h *handler.UserHandler, rg *gin.RouterGroup) {
     	users.PUT("/:id", h.UpdateUser)
     	users.DELETE("/:id", h.DeleteUser)
     	users.POST("/login", h.LoginUser)
+    	users.POST("/authorize", h.AuthorizeUser)
 	}
 }

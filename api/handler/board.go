@@ -28,6 +28,11 @@ func (h *BoardHandler) ListBoards(c *gin.Context) {
 }
 
 func (h *BoardHandler) CreateBoard(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin})
+	if !ok {
+		return
+	}
+
 	var dto model.CreateBoardDTO
 	err := c.ShouldBindJSON(&dto)
 	if err != nil {
@@ -75,6 +80,11 @@ func (h *BoardHandler) GetBoardById(c *gin.Context) {
 }
 
 func (h *BoardHandler) UpdateBoard(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin})
+	if !ok {
+		return
+	}
+
 	boardCode := c.Param("code")
 
 	var dto model.Board
@@ -95,6 +105,11 @@ func (h *BoardHandler) UpdateBoard(c *gin.Context) {
 }
 
 func (h *BoardHandler) DeleteBoard(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin})
+	if !ok {
+		return
+	}
+
 	boardCode := c.Param("code")
 		
 	err := h.BoardService.DeleteBoard(boardCode)

@@ -15,6 +15,11 @@ type UserHandler struct {
 }
 
 func (h *UserHandler) ListUsers(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeJanitor, model.UserTypeModerator})
+	if !ok {
+		return
+	}
+
 	offset, limit := util.GetOffsetLimit(c)
 	res, err := h.UserService.ListUsers(offset, limit)
 	
@@ -28,6 +33,11 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 }
 
 func (h* UserHandler) CreateUser(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin})
+	if !ok {
+		return
+	}
+
 	var dto model.CreateUserDTO
 	err := c.ShouldBindJSON(&dto)
 	if err != nil {
@@ -46,6 +56,11 @@ func (h* UserHandler) CreateUser(c *gin.Context) {
 }
 
 func (h *UserHandler) GetUser(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeJanitor, model.UserTypeModerator})
+	if !ok {
+		return
+	}
+
 	userId, ok := util.ParamUintSafe(c, "id", "User")
 	if !ok {
 		return
@@ -61,6 +76,11 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 }
 
 func (h *UserHandler) UpdateUser(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin})
+	if !ok {
+		return
+	}
+
 	userId, ok := util.ParamUintSafe(c, "id", "User")
 	if !ok {
 		return
@@ -83,6 +103,11 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 }
 
 func (h *UserHandler) DeleteUser(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin})
+	if !ok {
+		return
+	}
+
 	userId, ok := util.ParamUintSafe(c, "id", "User")
 	if !ok {
 		return
@@ -111,6 +136,31 @@ func (h *UserHandler) LoginUser(c *gin.Context) {
 		return
 	} else {
 		util.OK(c, result)
+		return
+	}
+}
+
+func (h *UserHandler) AuthorizeUser(c *gin.Context) {
+	var dto model.AuthorizationDTO
+	err := c.ShouldBindJSON(&dto)
+	if err != nil {
+		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
+		return
+	}
+
+	jwt, err := util.GetJwt(c)
+
+	if err != nil {
+		util.Fail(c, http.StatusUnauthorized, "INVALID JWT", err.Error())
+	}
+
+	err = h.UserService.AuthorizeUser(dto, jwt)
+
+	if err != nil {
+		util.Fail(c, http.StatusUnauthorized, "AUTHORIZATION_FAIL", err.Error())
+		return
+	} else {
+		util.NoContent(c)
 		return
 	}
 }
