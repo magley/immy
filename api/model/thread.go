@@ -11,6 +11,7 @@ type Thread struct {
 	Sticky		bool		`json:"sticky"`
 	Archived	bool		`json:"archived"`
 	ArchivedAt	time.Time	`json:"archived_at"`
+	AutoCycle   uint 		`json:"auto_cycle"`
 }
 
 type CreateThreadDTO struct {
@@ -24,6 +25,7 @@ type CreateThreadDTO struct {
 type UpdateThreadDTO struct {
 	Locked		*bool		`json:"locked"`
 	Sticky		*bool		`json:"sticky"`
+	AutoCycle	*uint		`json:"auto_cycle"`
 }
 
 type ThreadFullDTO struct {

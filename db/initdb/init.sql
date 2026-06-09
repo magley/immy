@@ -30,7 +30,8 @@ create table threads (
 	locked 		bool default false,
 	sticky 		bool default false,
 	archived 	bool default false,
-	archived_at timestamp default now()
+	archived_at timestamp default now(),
+	auto_cycle 	integer default 0
 );
 
 create table posts (

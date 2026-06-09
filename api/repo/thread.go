@@ -86,6 +86,7 @@ func (r *ThreadRepo) GetThreadByNum(boardId uint, num uint) (*model.Thread, erro
 func (r *ThreadRepo) UpdateThread(thread *model.Thread, dto model.UpdateThreadDTO) (*model.Thread, error) {
 	if dto.Locked != nil { thread.Locked = *dto.Locked }
 	if dto.Sticky != nil { thread.Sticky = *dto.Sticky }
+	if dto.AutoCycle != nil { thread.AutoCycle = *dto.AutoCycle }
 	
 	result := r.DB.Save(&thread)
 	return thread, result.Error

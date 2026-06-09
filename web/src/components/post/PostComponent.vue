@@ -41,6 +41,7 @@
 		'onToggleLocked',
 		'onArchive',
 		'onDelete',
+		'onChangeAutoCycle',
 	]);
 
 	const onClickPostNo = (post_num: number) => {
@@ -73,6 +74,9 @@
 	const onDelete = (thread: ThreadDTO) => {
 		emit('onDelete', thread);
 	}
+	const onChangeAutoCycle = (thread: ThreadDTO) => {
+		emit('onChangeAutoCycle', thread);
+	}
 
 	const isPostImage = (post: PostDTO) => {
 		return GetMimeTypeFromFilename(post.filename).startsWith('image/');
@@ -99,7 +103,9 @@
 	const canDeleteThread = () => {
 		return props.userRole == UserType.Moderator || props.userRole == UserType.Admin || props.userRole == UserType.Janitor;
 	}
-
+	const canChangeThreadAutoCycle = () => {
+		return props.userRole == UserType.Moderator || props.userRole == UserType.Admin;
+	}
 </script>
 
 <template>
@@ -119,6 +125,13 @@
 				<button v-if="!thread.archived && canLockThread()"    @click="onToggleLocked(thread)">Toggle Locked <img src="/icons/lock.png" /></button>
 				<button v-if="!thread.archived && canArchiveThread()" @click="onArchive(thread)">Archive <img src="/icons/archive.png" /></button>
 				<button v-if="!thread.archived && canDeleteThread()"  @click="onDelete(thread)">Delete <img src="/icons/delete.png" /></button>
+				<span v-if="!thread.archived && canChangeThreadAutoCycle()">
+					<label for=""><abbr title="Limit thread to this many posts.
+Older posts are deleted.
+A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
+					<input type="number" min="0" v-model="thread.auto_cycle" />
+					<button @click="onChangeAutoCycle(thread)">Set auto-cycle <img src="/icons/refresh.png" /></button>
+				</span>
 			</div>
 
 			<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
@@ -139,6 +152,7 @@
 				<img src="/icons/sticky.png" v-if="thread.sticky" title="Sticky"/>
 				<img src="/icons/lock.png" v-if="thread.locked" title="Locked"/>
 				<img src="/icons/archive.png" v-if="thread.archived" :title="`Archived at ${GetPostTimeReadable(thread.archived_at)}`"/>
+				<img src="/icons/refresh.png" v-if="thread.auto_cycle > 0" :title="`Auto-Cycle`"/>
 			</span>
 			<span class="dropdown">&#9654;</span>
 			<span class="backlink-container" v-if="backlinks">

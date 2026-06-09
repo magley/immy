@@ -3,6 +3,7 @@ package service
 import (
 	"immy-api/model"
 	"immy-api/repo"
+	"log"
 	"slices"
 )
 
@@ -290,4 +291,25 @@ func (s *ThreadService) ArchiveBumpedOffThreads(board *model.Board) (error) {
 	}
 
 	return nil
+}
+
+func (s *ThreadService) UpdateAutoCycleForThread(thread *model.Thread) error {
+	if thread.AutoCycle == 0 {
+		return nil
+	}
+
+	stats, err := s.GetThreadStats(thread)
+	if err != nil {
+		return err
+	}
+
+	N := (int(stats.PostCount) - 1) - int(thread.AutoCycle) // -1 because OP is not counted.
+
+	if N > 0 {
+		log.Println("deleting ", N, "....................")
+		err = s.PostService.DeleteFirstNPostsOfThread(thread, uint(N))
+		return err
+	} else {
+		return nil
+	}
 }

@@ -77,6 +77,10 @@ func (s *PostService) DeletePost(postId uint) (error) {
 	return s.PostRepo.DeletePost(post)
 }
 
+func (s *PostService) DeleteFirstNPostsOfThread(thread *model.Thread, N uint) (error) {
+	return s.PostRepo.DeleteFirstNPostsOfThread(thread.ID, thread.PostNum, N)
+}
+
 func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*model.Post, error) {
 	thread, err := s.ThreadService.GetThread(dto.ThreadID)
 	if err != nil {
@@ -192,6 +196,14 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 	}
 
 	post, err = s.PostRepo.CreatePost(post)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.ThreadService.UpdateAutoCycleForThread(thread)
+	if err != nil {
+		return nil, err
+	}
 
 	return post, err 	
 }

@@ -136,6 +136,7 @@
 		const dto: UpdateThreadDTO = {
 			sticky: !threadObj.sticky,
 			locked: threadObj.locked,
+			auto_cycle: threadObj.auto_cycle,
 		}
 		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
 			for (let i = 0; i < threads.value.length; i++) {
@@ -153,6 +154,7 @@
 		const dto: UpdateThreadDTO = {
 			sticky: threadObj.sticky,
 			locked: !threadObj.locked,
+			auto_cycle: threadObj.auto_cycle,
 		}
 		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
 			for (let i = 0; i < threads.value.length; i++) {
@@ -166,6 +168,23 @@
 		});
 	}
 
+	const onChangeAutoCycle = (threadObj: ThreadDTO) => {
+		const dto: UpdateThreadDTO = {
+			sticky: threadObj.sticky,
+			locked: threadObj.locked,
+			auto_cycle: threadObj.auto_cycle,
+		}
+		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
+			for (let i = 0; i < threads.value.length; i++) {
+				if (threads.value[i]!.thread.id == threadObj.id) {
+					threads.value[i]!.thread = res.data.data!;
+					break;
+				}
+			}
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
+	}
 
 	const deleteThread = (thread: ThreadDTO) => {
 		if (!board.value) {
@@ -317,6 +336,7 @@
 					@onToggleLocked="onToggleLocked"
 					@onArchive="archiveThread"
 					@onDelete="deleteThread"
+					@onChangeAutoCycle="onChangeAutoCycle"
 					/>
 					<div v-if="i == 0 && thread.posts.length < thread.stats.post_count">
 						<template v-if="thread.stats.image_count - thread.posts.filter((p) => p.filename).length > 0">

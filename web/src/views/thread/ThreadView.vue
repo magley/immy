@@ -262,6 +262,7 @@
 		const dto: UpdateThreadDTO = {
 			sticky: !threadObj.sticky,
 			locked: threadObj.locked,
+			auto_cycle: threadObj.auto_cycle,
 		}
 		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
 			thread.value = res.data.data!;
@@ -274,6 +275,20 @@
 		const dto: UpdateThreadDTO = {
 			sticky: threadObj.sticky,
 			locked: !threadObj.locked,
+			auto_cycle: threadObj.auto_cycle,
+		}
+		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
+			thread.value = res.data.data!;
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
+	}
+
+	const onChangeAutoCycle = (threadObj: ThreadDTO) => {
+		const dto: UpdateThreadDTO = {
+			sticky: threadObj.sticky,
+			locked: threadObj.locked,
+			auto_cycle: threadObj.auto_cycle,
 		}
 		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
 			thread.value = res.data.data!;
@@ -491,6 +506,7 @@
 			@onToggleLocked="onToggleLocked"
 			@onArchive="archiveThread"
 			@onDelete="deleteThread"
+			@onChangeAutoCycle="onChangeAutoCycle"
 			/>
 		</template>
 

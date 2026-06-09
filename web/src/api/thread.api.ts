@@ -11,6 +11,7 @@ export interface ThreadDTO {
     sticky: boolean;
     archived: boolean;
     archived_at: string;
+    auto_cycle: number;
 }
 
 export interface CreateThreadDTO {
@@ -24,6 +25,7 @@ export interface CreateThreadDTO {
 export interface UpdateThreadDTO {
     locked: boolean;
     sticky: boolean;
+    auto_cycle: number;
 }
 
 export interface ThreadFullDTO {
