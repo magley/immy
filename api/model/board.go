@@ -37,3 +37,10 @@ type CreateBoardDTO struct {
 	Description *string 	`json:"description"`
 	Config		BoardConfig		`json:"config" gorm:"embedded"`
 }
+
+type BoardStatisticsDTO struct {
+	ID 			uint 	`json:"id"`
+	Code 		string 	`json:"code"`
+	ThreadCount uint 	`json:"thread_count"`
+	PostCount 	uint 	`json:"post_count"`
+}

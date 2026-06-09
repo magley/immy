@@ -47,3 +47,7 @@ func (s *BoardService) DeleteBoard(boardCode string) (error) {
 	
 	return s.BoardRepo.DeleteBoard(board)
 }
+
+func (s *BoardService) GetStatistics() ([]model.BoardStatisticsDTO, error) {
+	return s.BoardRepo.GetStatistics()
+}

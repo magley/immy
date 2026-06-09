@@ -41,6 +41,13 @@ export interface UpdateBoardDTO {
     hidden: boolean | null;
 }
 
+export interface BoardStatisticsDTO {
+    id: number;
+    code: string;
+    thread_count: number;
+    post_count: number;
+}
+
 export class BoardAPI {
     static async ListBoards(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<BoardDTO[]>>> {
         return axiosInstance.get<ApiResponse<BoardDTO[]>>(`/boards/?offset=${offset}&limit=${limit}`);

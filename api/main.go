@@ -62,7 +62,7 @@ func main() {
 	threadHandler := &handler.ThreadHandler{ThreadService: threadService, BoardService: boardService, PostService: postService}
 	userHandler := &handler.UserHandler{UserService: userService}
 
-	metaHandler := &handler.MetaHandler{}
+	metaHandler := &handler.MetaHandler{BoardService: boardService}
 	
 	api := router.Group("/api")
 	{

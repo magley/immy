@@ -58,3 +58,19 @@ func (r *BoardRepo) DeleteBoard(board *model.Board) (error) {
 	result := r.DB.Delete(&board)
 	return result.Error
 }
+
+func (r *BoardRepo) GetStatistics() ([]model.BoardStatisticsDTO, error) {
+	sql := `
+		select boards.id, boards.code, count(distinct threads.id) thread_count, count(distinct posts.id) post_count
+		from boards
+		join threads on boards.id = threads.board_id
+		join posts on boards.id = posts.board_id
+		group by boards.id
+	;
+	`
+
+	var stats []model.BoardStatisticsDTO
+	result := r.DB.Raw(sql).Find(&stats)
+
+	return stats, result.Error
+}

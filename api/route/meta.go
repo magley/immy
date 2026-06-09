@@ -9,5 +9,6 @@ func RegisterMetaRoutes(h *handler.MetaHandler, rg *gin.RouterGroup) {
 	posts := rg.Group("/meta")
 	{
     	posts.GET("/mime", h.GetMimeTypes)
+    	posts.GET("/stats", h.GetStatistics)
 	}
 }

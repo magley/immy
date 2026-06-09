@@ -1,19 +1,36 @@
 <script setup lang="ts">
-	import { BoardAPI, type BoardDTO } from '@/api/board.api';
+	import { BoardAPI, type BoardDTO, type BoardStatisticsDTO } from '@/api/board.api';
+	import { MetaAPI } from '@/api/meta.api';
 	import type { AxiosError } from 'axios';
 	import { onMounted, ref } from 'vue';
 
-
 	const boards = ref<BoardDTO[]>([]);
+	const stats_raw = ref<BoardStatisticsDTO[]>([]);
+
+	const board_stats = ref<Record<string, BoardStatisticsDTO>>({});
 
 	onMounted(() => {
 		loadBoards();
+		loadStats();
 	});
 
 	const loadBoards = () => {
 		// TODO: No limit here...
 		BoardAPI.ListBoards(0, 1000).then((res) => {
 			boards.value = res.data.data!;
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
+	}
+
+	const loadStats = () => {
+		MetaAPI.GetStatistics().then((res) => {
+			stats_raw.value = res.data.data!;
+
+			board_stats.value = {};
+			for (let s of stats_raw.value) {
+				board_stats.value[s.code] = s;
+			}
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});
@@ -51,6 +68,12 @@
 					<td>
 						[<RouterLink :to="`/${board.code}/catalog`">Catalog</RouterLink>]
 					</td>
+					<td>
+						{{ board_stats[board.code]?.thread_count }} threads
+					</td>
+					<td>
+						{{ board_stats[board.code]?.post_count }} posts
+					</td>
 				</tr>
 			</table>
 		</div>
@@ -60,9 +83,18 @@
 		<div class="header">
 			<h2>Stats</h2>
 		</div>
-		<div class="body">
+		<div class="body flex">
+			<span>
+				<b>Total threads:</b>
+				{{ stats_raw.map((s) => s.thread_count).reduce((a, b) => a + b, 0) }}
+			</span>
 
-		</div>	</div>
+			<span>
+				<b>Total posts:</b>
+				{{ stats_raw.map((s) => s.post_count).reduce((a, b) => a + b, 0) }}
+			</span>
+		</div>
+	</div>
 </template>
 
 <style scoped>
@@ -111,7 +143,13 @@
 				}
 			}
 		}
+	}
 
+	.flex {
+		display: flex;
 
+		span {
+			flex: 1;
+		}
 	}
 </style>
