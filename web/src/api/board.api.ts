@@ -16,13 +16,18 @@ export interface BoardConfig {
     max_threads: number;
 }
 
+export interface BoardMeta {
+    post_count: number;
+    bytes_uploaded: number;
+}
+
 export interface BoardDTO {
     id: number;
     name: string;
     code: string;
     description: string;
     created_at: string;
-    post_count: number;
+    meta: BoardMeta;
     config: BoardConfig;
 }
 
@@ -46,6 +51,7 @@ export interface BoardStatisticsDTO {
     code: string;
     thread_count: number;
     post_count: number;
+    bytes_uploaded: number;
 }
 
 export class BoardAPI {

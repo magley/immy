@@ -47,7 +47,7 @@ func (r *BoardRepo) UpdateBoard(board *model.Board, dto model.Board) (*model.Boa
 	board.Name = dto.Name
 	board.Code = dto.Code
 	board.Description = dto.Description
-	board.PostCount = dto.PostCount
+	board.Meta = dto.Meta
 	board.Config = dto.Config
 
 	result := r.DB.Save(&board)
@@ -61,7 +61,7 @@ func (r *BoardRepo) DeleteBoard(board *model.Board) (error) {
 
 func (r *BoardRepo) GetStatistics() ([]model.BoardStatisticsDTO, error) {
 	sql := `
-		select boards.id, boards.code, count(distinct threads.id) thread_count, count(distinct posts.id) post_count
+		select boards.id, boards.bytes_uploaded, boards.code, count(distinct threads.id) thread_count, count(distinct posts.id) post_count
 		from boards
 		join threads on boards.id = threads.board_id
 		join posts on boards.id = posts.board_id

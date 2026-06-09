@@ -165,7 +165,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		ThreadID: thread.ID,
 		ThreadNum: thread.PostNum,
 		BoardID: board.ID,
-		Num: board.PostCount,
+		Num: board.Meta.PostCount,
 		Name: postName,
 		Tripcode: postTripcode,
 		IPv4: requestIP,
@@ -179,6 +179,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		MD5: "",
 		Html: "",
 	}
+
 	if (dto.Filename != nil && dto.Filebytes != nil) {
 		post.SrcFilename = *dto.Filename
 		post.Filename = util.GetPostImageFilename(board.Code, post.SrcFilename)
@@ -189,6 +190,12 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		if err != nil {
 			return nil, err
 		}
+
+		board, err = s.BoardService.IncrementBytesUploaded(board, imgData.SizeImageBytes)
+		if err != nil {
+			return nil, err
+		}
+
 		post.MD5 = md5
 		post.Filesize = imgData.SizeImageBytes
 		post.ImgWidth = uint(imgData.ImageWidth)
@@ -209,13 +216,13 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 }
 
 func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requestIP string, thread *model.Thread, board *model.Board) (*model.Post, error) {
+	if board.Config.Locked {
+		return nil, errors.New("Board locked. You may not create threads at this time.")
+	}
+
 	board, err := s.BoardService.IncrementBoardPostCount(board)
 	if err != nil {
 		return nil, err
-	}
-
-	if board.Config.Locked {
-		return nil, errors.New("Board locked. You may not create threads at this time.")
 	}
 
 	threadStats, err := s.ThreadService.GetThreadStats(thread)
@@ -250,7 +257,7 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 			}
 		}
 	}
-	
+
 	dto.Name = strings.Trim(dto.Name, " \t")
 	dto.Content = strings.Trim(dto.Content, " \t")
 	dto.Options = strings.Trim(dto.Options, " \t")
@@ -265,9 +272,9 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 
 	post := &model.Post{
 		ThreadID: thread.ID,
-		ThreadNum: board.PostCount,
+		ThreadNum: board.Meta.PostCount,
 		BoardID: board.ID,
-		Num: board.PostCount,
+		Num: board.Meta.PostCount,
 		Name: postName,
 		Tripcode: postTripcode,
 		IPv4: requestIP,
@@ -288,6 +295,11 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 	post.Filesize = imgData.SizeImageBytes
 	post.ImgWidth = uint(imgData.ImageWidth)
 	post.ImgHeight = uint(imgData.ImageHeight)
+
+	board, err = s.BoardService.IncrementBytesUploaded(board, imgData.SizeImageBytes)
+	if err != nil {
+		return nil, err
+	}
 
 	post, err = s.PostRepo.CreatePost(post)
 

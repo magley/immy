@@ -1,6 +1,7 @@
 <script setup lang="ts">
 	import { BoardAPI, type BoardDTO, type BoardStatisticsDTO } from '@/api/board.api';
 	import { MetaAPI } from '@/api/meta.api';
+import { GetFileSizeByteString } from '@/util/file.util';
 	import type { AxiosError } from 'axios';
 	import { onMounted, ref } from 'vue';
 
@@ -92,6 +93,11 @@
 			<span>
 				<b>Total posts:</b>
 				{{ stats_raw.map((s) => s.post_count).reduce((a, b) => a + b, 0) }}
+			</span>
+
+			<span>
+				<b>Total uploaded data:</b>
+				{{ GetFileSizeByteString(stats_raw.map((s) => s.bytes_uploaded).reduce((a, b) => a + b, 0)) }}
 			</span>
 		</div>
 	</div>

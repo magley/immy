@@ -35,7 +35,12 @@ func (s *BoardService) UpdateBoard(boardCode string, dto model.Board) (*model.Bo
 }
 
 func (s *BoardService) IncrementBoardPostCount(board *model.Board) (*model.Board, error) {
-	board.PostCount += 1
+	board.Meta.PostCount += 1
+	return s.BoardRepo.UpdateBoard(board, *board)
+}
+
+func (s *BoardService) IncrementBytesUploaded(board *model.Board, bytes uint) (*model.Board, error) {
+	board.Meta.BytesUploaded += bytes
 	return s.BoardRepo.UpdateBoard(board, *board)
 }
 

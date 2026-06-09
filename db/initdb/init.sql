@@ -6,7 +6,6 @@ create table boards (
 	code 		varchar(16) unique not null,
 	description varchar(255),
 	created_at 	timestamp default now(),
-	post_count 	integer,
 	-- ==================================== --
 	locked 				bool 		default false,
 	hidden 				bool 		default false,
@@ -20,6 +19,9 @@ create table boards (
 	code_enabled		bool		default false,
 	math_enabled		bool		default false,
 	max_threads			integer		default 100,
+	-- ==================================== --
+	post_count 		integer default 0,
+	bytes_uploaded 	integer default 0
 );
 
 create table threads (

@@ -12,8 +12,8 @@ type Board struct {
 	Code  		string 			`json:"code"`
 	Description *string 		`json:"description"`
 	CreatedAt	time.Time		`json:"created_at"`
-	PostCount	uint 			`json:"post_count"`
 	Config		BoardConfig		`json:"config" gorm:"embedded"`
+	Meta		BoardMeta		`json:"meta" gorm:"embedded"`
 }
 
 type BoardConfig struct {
@@ -31,6 +31,11 @@ type BoardConfig struct {
 	MaxThreads  uint			`json:"max_threads"`
 }
 
+type BoardMeta struct {
+	PostCount		uint 		`json:"post_count"`
+	BytesUploaded	uint 		`json:"bytes_uploaded"`
+}
+
 type CreateBoardDTO struct {
 	Name 		string 		`json:"name" binding:"required"`
 	Code  		string 		`json:"code" binding:"required"`
@@ -39,8 +44,9 @@ type CreateBoardDTO struct {
 }
 
 type BoardStatisticsDTO struct {
-	ID 			uint 	`json:"id"`
-	Code 		string 	`json:"code"`
-	ThreadCount uint 	`json:"thread_count"`
-	PostCount 	uint 	`json:"post_count"`
+	ID 				uint 	`json:"id"`
+	Code 			string 	`json:"code"`
+	ThreadCount 	uint 	`json:"thread_count"`
+	PostCount 		uint 	`json:"post_count"`
+	BytesUploaded 	uint	`json:"bytes_uploaded"`
 }
