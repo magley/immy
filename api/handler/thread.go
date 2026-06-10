@@ -2,6 +2,7 @@ package handler
 
 import (
 	"immy-api/util"
+	"log"
 	"math"
 	"net/http"
 
@@ -15,6 +16,7 @@ type ThreadHandler struct {
 	ThreadService 	*service.ThreadService
 	BoardService 	*service.BoardService
 	PostService 	*service.PostService
+	UserService *service.UserService
 }
 
 func (h *ThreadHandler) ListThreads(c *gin.Context) {
@@ -51,8 +53,24 @@ func (h *ThreadHandler) CreateThread(c *gin.Context) {
 		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
 		return
 	}
+
+	jwt, err := util.GetJwt(c)
+	if err != nil {
+		util.Fail(c, http.StatusBadRequest, "FAILED_OPTIONAL_AUtHORIZATION", err.Error())
+		return
+	}
+	var user *model.User
+	if jwt != nil {
+		user, err = h.UserService.GetUser(jwt.Id)
+
+		// Silently fail, assume user doesn't exist.
+		if err != nil {
+			log.Print("Cloud not get user: ", jwt.Id, ": ", err.Error())
+			user = nil
+		}
+	}
 	
-	res, err := h.ThreadService.CreateThread(dto, c.ClientIP())
+	res, err := h.ThreadService.CreateThread(dto, c.ClientIP(), user)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
 		return
@@ -183,7 +201,7 @@ func (h *ThreadHandler) GetThreadsForHome(c *gin.Context) {
 }
 
 func (h *ThreadHandler) UpdateThread(c *gin.Context) {
-	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeModerator})
+	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin, model.UserRoleModerator})
 	if !ok {
 		return
 	}
@@ -211,7 +229,7 @@ func (h *ThreadHandler) UpdateThread(c *gin.Context) {
 }
 
 func (h *ThreadHandler) DeleteThread(c *gin.Context) {
-	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeModerator, model.UserTypeJanitor})
+	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin, model.UserRoleModerator, model.UserRoleJanitor})
 	if !ok {
 		return
 	}
@@ -232,7 +250,7 @@ func (h *ThreadHandler) DeleteThread(c *gin.Context) {
 }
 
 func (h *ThreadHandler) ArchiveThread(c *gin.Context) {
-	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeModerator, model.UserTypeJanitor})
+	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin, model.UserRoleModerator, model.UserRoleJanitor})
 	if !ok {
 		return
 	}

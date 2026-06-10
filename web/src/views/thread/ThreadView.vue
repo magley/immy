@@ -17,7 +17,7 @@
 	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
 	import { GetTabTitleForThread } from '@/util/tab.util';
 	import { useTextSelection, useDraggable } from '@vueuse/core';
-	import { UserType } from '@/api/user.api';
+	import { UserRole } from '@/api/user.api';
 	const route = useRoute();
 	const router = useRouter();
 
@@ -33,7 +33,7 @@
 	/** `post.num` of the post that should be highlighted */
 	const highlightedPost = ref<number | undefined>(undefined);
 	/** `post.user_id` which should be highlighted */
-	const highlightedUserIDs = ref<Record<string, boolean>>({});
+	const highlightedPublicIDs = ref<Record<string, boolean>>({});
 	/** `post.num` => list of post numbers that link to this post */
 	const backLinks = ref<Record<number, number[]>>({});
 	/** `post.id` => information about the image attached to the post */
@@ -70,7 +70,7 @@
 	const peekMouseX = ref<number>(0);
 	const peekMouseY = ref<number>(0);
 
-	const userType = ref<UserType | undefined>(undefined);
+	const userRole = ref<UserRole | undefined>(undefined);
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
@@ -78,7 +78,7 @@
 		autoTimerCountdown();
 		window.addEventListener('mousemove', updatePosition);
 
-		userType.value = (localStorage.getItem("role") ?? undefined) as UserType;
+		userRole.value = (localStorage.getItem("role") ?? undefined) as UserRole;
 	});
 
 	onUnmounted(() => {
@@ -152,7 +152,7 @@
 			if (board.value!.config.ids_enabled) {
 				userIdCount.value = {};
 				for (let p of posts.value) {
-					userIdCount.value[p.user_id!] = (userIdCount.value[p.user_id!] ?? 0) + 1;
+					userIdCount.value[p.public_id!] = (userIdCount.value[p.public_id!] ?? 0) + 1;
 				}
 			}
 
@@ -231,8 +231,8 @@
 		console.log(highlightedPost.value);
 	}
 
-	const onClickUserId = (userId: string) => {
-		highlightedUserIDs.value[userId] = !(highlightedUserIDs.value[userId] ?? false);
+	const onClickPublicId = (userId: string) => {
+		highlightedPublicIDs.value[userId] = !(highlightedPublicIDs.value[userId] ?? false);
 	}
 
 	const onClickPostImage = (postId: number) => {
@@ -415,7 +415,7 @@
 		:backlinks="[]"
 		:image_data="undefined"
 		:post_tokens="peekPost.tokens"
-		:user_id_count="undefined"
+		:public_id_count="undefined"
 		/>
 	</template>
 
@@ -485,21 +485,21 @@
 		<template v-if="thread">
 			<PostComponent
 			v-for="post, i of posts"
-			:userRole="userType"
+			:userRole="userRole"
 			:board="board"
 			:thread="thread"
 			:post="post"
-			:is_highlighted="highlightedPost == post.num || (highlightedUserIDs[post.user_id ?? ''] ?? false)"
+			:is_highlighted="highlightedPost == post.num || (highlightedPublicIDs[post.public_id ?? ''] ?? false)"
 			:is_op_post="thread.post_num == post.num"
 			:is_last_seen="lastSeenPostBeforeUpdate == post.id && i != posts.length - 1"
 			:backlinks="backLinks[post.num] ?? []"
 			:image_data="imageData[post.id]"
 			:post_tokens="postTokens[post.id] ?? []"
-			:user_id_count="userIdCount"
+			:public_id_count="userIdCount"
 			@onClickPostNo="onClickPostNo"
 			@onClickPostNumber="onClickPostNumber"
 			@onClickPostImage="onClickPostImage"
-			@onClickUserId="onClickUserId"
+			@onClickPublicId="onClickPublicId"
 			@onPostLinkHover="onPostLinkHover"
 			@onPostLinkUnhover="onPostLinkUnhover"
 			@onToggleSticky="onToggleSticky"

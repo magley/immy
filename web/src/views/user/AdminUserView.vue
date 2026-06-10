@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	import { ref, onMounted } from 'vue';
-	import { UserAPI, type UserDTO, type CreateUserDTO, type UpdateUserDTO, UserType} from "@/api/user.api.ts";
+	import { UserAPI, type UserDTO, type CreateUserDTO, type UpdateUserDTO, UserRole} from "@/api/user.api.ts";
 	import type { ApiResponse } from '@/api/http';
 	import type { AxiosResponse, AxiosError } from 'axios';
 	import { useRouter } from 'vue-router';
@@ -10,14 +10,14 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 
 	const users = ref<UserDTO[]>([]);
 	const createUserDTO = ref<CreateUserDTO>({
-		type: UserType.Janitor,
+		type: UserRole.Janitor,
 		username: '',
 		password: ''
 	});
 	const createUserError = ref<string>("");
 	
 	onMounted(() => {
-		UserAPI.AuthorizeUser({role: UserType.Admin}).then(() => {
+		UserAPI.AuthorizeUser({role: UserRole.Admin}).then(() => {
 			get_users();
 		}).catch((err: AxiosError) => {
 			console.error(err);
@@ -85,9 +85,9 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 		<br/>
 		<select v-model="createUserDTO.type">
 			<option disabled value="">Please select one</option>
-			<option>{{UserType.Admin}}</option>
-			<option>{{UserType.Moderator}}</option>
-			<option>{{UserType.Janitor}}</option>
+			<option>{{UserRole.Admin}}</option>
+			<option>{{UserRole.Moderator}}</option>
+			<option>{{UserRole.Janitor}}</option>
 		</select>
 		<br/>
 		<button type=submit>Create user</button>
@@ -115,9 +115,9 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 				<td>
 					<select v-model="user.type">
 						<option disabled value="">Please select one</option>
-						<option>{{UserType.Admin}}</option>
-						<option>{{UserType.Moderator}}</option>
-						<option>{{UserType.Janitor}}</option>
+						<option>{{UserRole.Admin}}</option>
+						<option>{{UserRole.Moderator}}</option>
+						<option>{{UserRole.Janitor}}</option>
 					</select>
 				</td>
 				<td>

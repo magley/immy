@@ -11,9 +11,11 @@ type Post struct {
 	ThreadID	uint		`json:"thread_id"`
 	ThreadNum	uint		`json:"thread_num"` // Redundant
 	BoardID		uint 		`json:"board_id"`   // Redundant
+	UserID		*uint	     //`json:"user_id"`
+	UserRole	*UserRole	`json:"user_role"`  // Redundant
 	Num			uint 		`json:"num"`
 	Name 		string 		`json:"name"`
-	UserID		*string		`json:"user_id"`
+	PublicID	*string		`json:"public_id"`
 	Tripcode 	string 		`json:"tripcode"`
 	IPv4 		string		`json:"ipv4"`
 	CreatedAt	time.Time	`json:"created_at"`

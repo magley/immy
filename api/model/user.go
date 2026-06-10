@@ -4,31 +4,31 @@ import (
 	"time"
 )
 
-type UserType string
+type UserRole string
 
 const (
-	UserTypeAdmin = "admin"
-	UserTypeModerator = "moderator"
-	UserTypeJanitor = "janitor"
+	UserRoleAdmin = "admin"
+	UserRoleModerator = "moderator"
+	UserRoleJanitor = "janitor"
 )
 
 type User struct {
 	ID 			uint 		`json:"id"`
 	Username 	string		`json:"username"`
 	Password 	string		`json:"password"`
-	Type 		UserType 	`json:"type"`
+	Role 		UserRole 	`json:"role"`
 	CreatedAt	time.Time	`json:"created_at"`
 }
 
 type CreateUserDTO struct {
 	Username 	string 		`json:"username"`
 	Password 	string 		`json:"password"`
-	Type 		UserType   	`json:"type"`
+	Role 		UserRole   	`json:"role"`
 }
 
 type UpdateUserDTO struct {
 	Username 	*string 	`json:"username"`
-	Type 		*UserType   `json:"type"`
+	Role 		*UserRole   `json:"role"`
 }
 
 type LoginUserDTO struct {
@@ -39,7 +39,7 @@ type LoginUserDTO struct {
 type LoginResponseDTO struct {
 	ID 			uint 		`json:"id"`
 	Username 	string		`json:"username"`
-	Type 		UserType 	`json:"type"`
+	Role 		UserRole 	`json:"role"`
 	JWT 		string		`json:"jwt"`
 }
 

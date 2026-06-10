@@ -1,7 +1,7 @@
 import { axiosInstance, type ApiResponse } from "@/api/http";
 import type { AxiosResponse } from "axios";
 
-export enum UserType {
+export enum UserRole {
     Admin = 'admin',
     Moderator = 'moderator',
     Janitor = 'janitor',
@@ -11,19 +11,19 @@ export interface UserDTO {
     id: number;
     username: string;
     password: string;
-    type: UserType;
+    role: UserRole;
     created_at: string;
 }
 
 export interface CreateUserDTO {
     username: string;
     password: string;
-    type: UserType;
+    role: UserRole;
 }
 
 export interface UpdateUserDTO {
     username: string | null;
-    type: UserType | null;
+    role: UserRole | null;
 }
 
 export interface LoginUserDTO {
@@ -34,7 +34,7 @@ export interface LoginUserDTO {
 export interface LoginResponseDTO {
     id: number;
     username: string;
-    type: UserType;
+    role: UserRole;
     jwt: string;
 }
 

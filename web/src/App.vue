@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	import { ref, onMounted } from 'vue';
-	import { UserType } from './api/user.api';
+	import { UserRole } from './api/user.api';
 
 	const userRole = ref<string | undefined>(undefined);
 	const userName = ref<string | undefined>(undefined);
@@ -57,19 +57,19 @@
 		|
 		<a href="#" @click.prevent="logOut">Log Out</a>
 		|
-		<span v-if="userRole == UserType.Admin">
+		<span v-if="userRole == UserRole.Admin">
 			<RouterLink to="/admin-users">Users</RouterLink>
 			|
 			<RouterLink to="/admin-boards">Boards</RouterLink>
 			|
 		</span>
-		<span v-if="userRole == UserType.Moderator">
+		<span v-if="userRole == UserRole.Moderator">
 			<RouterLink to="/admin-users">Users</RouterLink>
 			|
 			<RouterLink to="/admin-boards">Boards</RouterLink>
 			|
 		</span>
-		<span v-if="userRole == UserType.Janitor">
+		<span v-if="userRole == UserRole.Janitor">
 
 		</span>
 	</nav>

@@ -15,7 +15,7 @@ type UserHandler struct {
 }
 
 func (h *UserHandler) ListUsers(c *gin.Context) {
-	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeJanitor, model.UserTypeModerator})
+	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin, model.UserRoleJanitor, model.UserRoleModerator})
 	if !ok {
 		return
 	}
@@ -33,7 +33,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 }
 
 func (h* UserHandler) CreateUser(c *gin.Context) {
-	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin})
+	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin})
 	if !ok {
 		return
 	}
@@ -56,7 +56,7 @@ func (h* UserHandler) CreateUser(c *gin.Context) {
 }
 
 func (h *UserHandler) GetUser(c *gin.Context) {
-	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeJanitor, model.UserTypeModerator})
+	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin, model.UserRoleJanitor, model.UserRoleModerator})
 	if !ok {
 		return
 	}
@@ -76,7 +76,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 }
 
 func (h *UserHandler) UpdateUser(c *gin.Context) {
-	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin})
+	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin})
 	if !ok {
 		return
 	}
@@ -103,7 +103,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 }
 
 func (h *UserHandler) DeleteUser(c *gin.Context) {
-	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin})
+	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin})
 	if !ok {
 		return
 	}

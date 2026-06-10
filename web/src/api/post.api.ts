@@ -1,5 +1,6 @@
 import { axiosInstance, type ApiResponse } from "@/api/http";
 import type { AxiosResponse } from "axios";
+import type { UserRole } from "./user.api";
 
 export interface PostDTO {
     id: number;
@@ -10,7 +11,9 @@ export interface PostDTO {
     name: string;
     tripcode: string;
     ipv4: string;
-    user_id: string | undefined;
+    // user_id: number | undefined;
+    user_role: UserRole | undefined;
+    public_id: string | undefined;
     created_at: string;
     deleted_at: string;
     sage: boolean;

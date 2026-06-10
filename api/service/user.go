@@ -57,7 +57,7 @@ func (s *UserService) LoginUser(dto model.LoginUserDTO) (*model.LoginResponseDTO
 		return nil, fmt.Errorf("Unauthorized")
 	}
 	
-	jwt, err := util.CreateJWT(user.ID, user.Username, string(user.Type))
+	jwt, err := util.CreateJWT(user.ID, user.Username, string(user.Role))
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (s *UserService) LoginUser(dto model.LoginUserDTO) (*model.LoginResponseDTO
 	return &model.LoginResponseDTO{
 		ID: user.ID,
 		Username: user.Username,
-		Type: user.Type,
+		Role: user.Role,
 		JWT: jwt,
 	}, nil
 }
@@ -82,7 +82,7 @@ func (s *UserService) AuthorizeUser(dto model.AuthorizationDTO, jwt *util.JWTCla
 		return err
 	}
 
-	if jwt.Role != string(user.Type) {
+	if jwt.Role != string(user.Role) {
 		return errors.New("Invalid role")
 	}
 

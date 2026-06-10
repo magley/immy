@@ -53,7 +53,7 @@ func (s *ThreadService) GetThreadCountPerBoard(boardCode string) (int64, error) 
 	return s.ThreadRepo.GetThreadCountPerBoard(board.ID)
 }
 
-func (s *ThreadService) CreateThread(dto model.CreateThreadDTO, requestIP string) (*model.Thread, error) {
+func (s *ThreadService) CreateThread(dto model.CreateThreadDTO, requestIP string, user *model.User) (*model.Thread, error) {
 	board, err := s.BoardService.GetBoardByCode(dto.BoardCode)
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (s *ThreadService) CreateThread(dto model.CreateThreadDTO, requestIP string
 		return nil, err
 	}
 
-	post, err := s.PostService.CreatePostForThread(dto.Post, requestIP, thread, board)
+	post, err := s.PostService.CreatePostForThread(dto.Post, requestIP, thread, board, user)
 	if err != nil {
 		err = s.DeleteThread(thread.ID)
 		return nil, err

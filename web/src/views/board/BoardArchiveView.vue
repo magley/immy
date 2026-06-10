@@ -104,7 +104,7 @@
 		:backlinks="[]"
 		:image_data="undefined"
 		:post_tokens="peekPost.tokens"
-		:user_id_count="undefined"
+		:public_id_count="undefined"
 		/>
 	</template>
 

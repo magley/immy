@@ -58,8 +58,8 @@ func main() {
 	postService.ThreadService = threadService
 	
 	boardHandler := &handler.BoardHandler{BoardService: boardService}
-	postHandler := &handler.PostHandler{PostService: postService}
-	threadHandler := &handler.ThreadHandler{ThreadService: threadService, BoardService: boardService, PostService: postService}
+	postHandler := &handler.PostHandler{PostService: postService, UserService: userService}
+	threadHandler := &handler.ThreadHandler{ThreadService: threadService, BoardService: boardService, PostService: postService, UserService: userService}
 	userHandler := &handler.UserHandler{UserService: userService}
 
 	metaHandler := &handler.MetaHandler{BoardService: boardService}

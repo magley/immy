@@ -2,6 +2,7 @@ package handler
 
 import (
 	util "immy-api/util"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,7 @@ import (
 
 type PostHandler struct {
 	PostService *service.PostService
+	UserService *service.UserService
 }
 
 
@@ -35,8 +37,24 @@ func (h *PostHandler) CreatePost(c *gin.Context) {
 		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
 		return
 	}
+
+	jwt, err := util.GetJwt(c)
+	if err != nil {
+		util.Fail(c, http.StatusBadRequest, "FAILED_OPTIONAL_AUtHORIZATION", err.Error())
+		return
+	}
+	var user *model.User
+	if jwt != nil {
+		user, err = h.UserService.GetUser(jwt.Id)
+
+		// Silently fail, assume user doesn't exist.
+		if err != nil {
+			log.Print("Cloud not get user: ", jwt.Id, ": ", err.Error())
+			user = nil
+		}
+	}
 	
-	res, err := h.PostService.CreatePost(dto, c.ClientIP())
+	res, err := h.PostService.CreatePost(dto, c.ClientIP(), user)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
 		return
@@ -80,7 +98,7 @@ func (h *PostHandler) GetPostsByThread(c *gin.Context) {
 }
 
 func (h *PostHandler) UpdatePost(c *gin.Context) {
-	_, ok := util.RequireRoleAny(c, []string{model.UserTypeAdmin, model.UserTypeModerator})
+	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin, model.UserRoleModerator})
 	if !ok {
 		return
 	}

@@ -81,7 +81,7 @@ func (s *PostService) DeleteFirstNPostsOfThread(thread *model.Thread, N uint) (e
 	return s.PostRepo.DeleteFirstNPostsOfThread(thread.ID, thread.PostNum, N)
 }
 
-func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*model.Post, error) {
+func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user *model.User) (*model.Post, error) {
 	thread, err := s.ThreadService.GetThread(dto.ThreadID)
 	if err != nil {
 		return nil, err
@@ -155,11 +155,16 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 	
 	postName, postTripcode := s.createTripcode(dto.Name)
 
-	var userId *string
+	var publicID *string
 	if board.Config.IDsEnabled {
-		userIdS := util.CreateUserID(requestIP, thread.ID)
-		userId = &userIdS
+		publicIDstr := util.CreateUserID(requestIP, thread.ID)
+		publicID = &publicIDstr
 	}
+
+	var userId *uint
+	var userRole *model.UserRole
+	if user != nil { userId = &user.ID }
+	if user != nil { userRole = &user.Role }
 
 	post := &model.Post{
 		ThreadID: thread.ID,
@@ -170,6 +175,8 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 		Tripcode: postTripcode,
 		IPv4: requestIP,
 		UserID: userId,
+		UserRole: userRole,
+		PublicID: publicID,
 		Sage: sage,
 		Content: dto.Content,
 		SrcFilename: "",
@@ -215,7 +222,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string) (*mo
 	return post, err 	
 }
 
-func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requestIP string, thread *model.Thread, board *model.Board) (*model.Post, error) {
+func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requestIP string, thread *model.Thread, board *model.Board, user *model.User) (*model.Post, error) {
 	if board.Config.Locked {
 		return nil, errors.New("Board locked. You may not create threads at this time.")
 	}
@@ -264,11 +271,16 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 	
 	postName, postTripcode := s.createTripcode(dto.Name)
 	
-	var userId *string
+	var publicID *string
 	if board.Config.IDsEnabled {
-		userIdS := util.CreateUserID(requestIP, thread.ID)
-		userId = &userIdS
+		publicIDstr := util.CreateUserID(requestIP, thread.ID)
+		publicID = &publicIDstr
 	}
+
+	var userId *uint
+	var userRole *model.UserRole
+	if user != nil { userId = &user.ID }
+	if user != nil { userRole = &user.Role }
 
 	post := &model.Post{
 		ThreadID: thread.ID,
@@ -279,6 +291,8 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		Tripcode: postTripcode,
 		IPv4: requestIP,
 		UserID: userId,
+		UserRole: userRole,
+		PublicID: publicID,
 		Sage: sage,
 		Content: dto.Content,
 		SrcFilename: dto.Filename,

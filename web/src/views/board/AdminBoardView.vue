@@ -7,7 +7,7 @@
 	import { GetFileSizeByteFromString, GetFileSizeByteString } from '@/util/file.util';
 	import { MetaAPI } from '@/api/meta.api';
 	import BoardUpdate from '@/components/board/BoardUpdate.vue';
-	import { UserAPI, UserType } from '@/api/user.api';
+	import { UserAPI, UserRole } from '@/api/user.api';
 	import { useRouter } from 'vue-router';
 	import BoardListNav from '@/components/board/BoardListNav.vue';
 
@@ -18,7 +18,7 @@
 	const boardEditShown = ref<Record<string, boolean>>({}); // board code => true/false
 	
 	onMounted(() => {
-		UserAPI.AuthorizeUser({role: UserType.Admin}).then(() => {
+		UserAPI.AuthorizeUser({role: UserRole.Admin}).then(() => {
 			get_boards();
 			get_allowed_mime_types();
 		}).catch((err: AxiosError) => {

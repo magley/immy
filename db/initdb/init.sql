@@ -45,7 +45,9 @@ create table posts (
 	board_id    integer references boards(id),  -- Redundant field to avoid joins
 	num 		integer,
 	ipv4 		varchar(16),
-	user_id		varchar(7),
+	user_id		integer references users(id) on delete cascade,
+	user_role	varchar default null,			-- Redundant field to avoid joins
+	public_id	varchar(7),
 	name 		varchar(128) default 'Anonymous',
 	tripcode 	varchar(128),
 	created_at 	timestamp default now(),
@@ -61,7 +63,7 @@ create table posts (
 	html 		varchar
 );
 
-create type user_type as enum (
+create type user_role as enum (
 	'admin',
 	'moderator',
 	'janitor'
@@ -71,7 +73,7 @@ create table users (
 	id 			serial primary key,
 	username 	varchar(32) unique not null,
 	password 	varchar(255) not null,
-	type 		user_type not null,
+	role 		user_role not null,
 	created_at 	timestamp default now()
 );
 

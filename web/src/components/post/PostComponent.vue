@@ -3,13 +3,13 @@
 	import { CdnAPI } from '@/api/cdn.api';
 	import type { PostDTO } from '@/api/post.api';
 	import type { ThreadDTO } from '@/api/thread.api';
-	import { UserType } from '@/api/user.api';
+	import { UserRole } from '@/api/user.api';
 	import { GetPostTimeReadable, type PostImageData, type PostLinkToken, type PostToken } from '@/model/post/post.model';
 	import { GetFileSizeByteString, GetMimeTypeFromFilename } from '@/util/file.util';
-	import { GetUserIdColorBackground, GetUserIdColorForeground } from '@/util/various.util';
+	import { GetPublicIdColorBackground, GetPublicIdColorForeground } from '@/util/various.util';
 
 	interface PostComponentProps {
-		userRole: UserType | undefined;
+		userRole: UserRole | undefined;
 
 		board: BoardDTO;
 		thread: ThreadDTO;
@@ -26,7 +26,7 @@
 		/** Dictionary that maps user IDs to the number of posts made by that
 		  * ID in the current thread. Optional, if it's not specified then
 		  * this info won't be available inside the post. */
-		user_id_count: Record<string, number> | undefined;
+		public_id_count: Record<string, number> | undefined;
 	}
 
 	const props = defineProps<PostComponentProps>()
@@ -34,7 +34,7 @@
 		'onClickPostNo',
 		'onClickPostNumber',
 		'onClickPostImage',
-		'onClickUserId',
+		'onClickPublicId',
 		'onPostLinkHover',
 		'onPostLinkUnhover',
 		'onToggleSticky',
@@ -53,8 +53,8 @@
 	const onClickPostImage = (post_id: number) => {
 		emit('onClickPostImage', post_id);
 	}
-	const onClickUserId = (user_id: string) => {
-		emit('onClickUserId', user_id);
+	const onClickPublicId = (user_id: string) => {
+		emit('onClickPublicId', user_id);
 	}
 	const onPostLinkHover = (postLink: any) => {
 		emit('onPostLinkHover', postLink);
@@ -92,19 +92,19 @@
 	}
 
 	const canStickyThread = () => {
-		return props.userRole == UserType.Moderator || props.userRole == UserType.Admin;
+		return props.userRole == UserRole.Moderator || props.userRole == UserRole.Admin;
 	}
 	const canLockThread = () => {
-		return props.userRole == UserType.Moderator || props.userRole == UserType.Admin;
+		return props.userRole == UserRole.Moderator || props.userRole == UserRole.Admin;
 	}
 	const canArchiveThread = () => {
-		return props.userRole == UserType.Moderator || props.userRole == UserType.Admin || props.userRole == UserType.Janitor;
+		return props.userRole == UserRole.Moderator || props.userRole == UserRole.Admin || props.userRole == UserRole.Janitor;
 	}
 	const canDeleteThread = () => {
-		return props.userRole == UserType.Moderator || props.userRole == UserType.Admin || props.userRole == UserType.Janitor;
+		return props.userRole == UserRole.Moderator || props.userRole == UserRole.Admin || props.userRole == UserRole.Janitor;
 	}
 	const canChangeThreadAutoCycle = () => {
-		return props.userRole == UserType.Moderator || props.userRole == UserType.Admin;
+		return props.userRole == UserRole.Moderator || props.userRole == UserRole.Admin;
 	}
 </script>
 
@@ -138,12 +138,12 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 			<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
 			<span class="tripcode" v-if="post.tripcode">{{ post.tripcode }}</span>
 			<span
-				v-if="board.config.ids_enabled && post.user_id"
-				class="userid"
-				:style="{backgroundColor: GetUserIdColorBackground(post.user_id), color: GetUserIdColorForeground(post.user_id)}"
-				@click="onClickUserId(post.user_id)">
-				ID:{{post.user_id}}
-				<template v-if="user_id_count"> ({{user_id_count[post.user_id]}}) </template>
+				v-if="board.config.ids_enabled && post.public_id"
+				class="publicId"
+				:style="{backgroundColor: GetPublicIdColorBackground(post.public_id), color: GetPublicIdColorForeground(post.public_id)}"
+				@click="onClickPublicId(post.public_id)">
+				ID:{{post.public_id}}
+				<template v-if="public_id_count"> ({{public_id_count[post.public_id]}}) </template>
 			</span>
 			<span class="date">{{ GetPostTimeReadable(post.created_at) }}</span>
 			<span class="postno"><a @click.prevent="onClickPostNo(post.num)" href="#" class="postNumLink">No.</a></span>
@@ -298,7 +298,7 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 					font-weight: bolder;
 				}
 
-				.userid {
+				.publicId {
 					font-size: smaller;
 					padding: 2px;
 					border-radius: 10px;

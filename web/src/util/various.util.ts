@@ -31,7 +31,7 @@ export const StripSlashes = (str: string) => {
 	return str;
 }
 
-export const GetUserIdColorBackground = (user_id: string): string => {
+export const GetPublicIdColorBackground = (user_id: string): string => {
 	var hash = 0;
 	if (user_id.length === 0) {
 		return "#FFFFFF";
@@ -50,8 +50,8 @@ export const GetUserIdColorBackground = (user_id: string): string => {
 	return color;
 }
 
-export const GetUserIdColorForeground = (user_id: string): string => {
-	const bgIsLIght: boolean = IsHexColorLight(GetUserIdColorBackground(user_id));
+export const GetPublicIdColorForeground = (user_id: string): string => {
+	const bgIsLIght: boolean = IsHexColorLight(GetPublicIdColorBackground(user_id));
 
 	if (bgIsLIght) {
 		return "#000000";

@@ -12,7 +12,7 @@
 	import { GetPostPeek, type PostPeekBundle } from "@/model/post/post.peek";
 	import { GetTabTitleForBoard } from "@/util/tab.util";
 	import CreatePostForm from "@/components/post/CreatePostForm.vue";
-	import type { UserType } from "@/api/user.api";
+	import type { UserRole } from "@/api/user.api";
 	
 	const board = ref<BoardDTO | undefined>(undefined);
 
@@ -28,7 +28,7 @@
 	const pages = ref<number[]>([]);
 
 	/** `post.user_id` which should be highlighted */
-	const highlightedUserIDs = ref<Record<string, boolean>>({});
+	const highlightedPublicIDs = ref<Record<string, boolean>>({});
 	/** `post.id` => information about the image attached to the post */
 	const imageData = ref<Record<number, PostImageData>>({});
 	/** `post.id` => list of tokens that make up the post's content */
@@ -49,7 +49,7 @@
 	const peekMouseX = ref<number>(0);
 	const peekMouseY = ref<number>(0);
 
-	const userType = ref<UserType | undefined>(undefined);
+	const userRole = ref<UserRole | undefined>(undefined);
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
@@ -58,7 +58,7 @@
 		loadBoard(board_code);
 		window.addEventListener('mousemove', updatePosition);
 
-		userType.value = (localStorage.getItem("role") ?? undefined) as UserType;
+		userRole.value = (localStorage.getItem("role") ?? undefined) as UserRole;
 	});
 
 	onUnmounted(() => {
@@ -124,8 +124,8 @@
 		router.push(`${board.value!.code}/thread/${thread.thread.post_num}#p${post_num}`);
 	}
 
-	const onClickUserId = (userId: string) => {
-		highlightedUserIDs.value[userId] = !(highlightedUserIDs.value[userId] ?? false);
+	const onClickPublicId = (publicId: string) => {
+		highlightedPublicIDs.value[publicId] = !(highlightedPublicIDs.value[publicId] ?? false);
 	}
 
 	const onClickPostImage = (postId: number, thread: ThreadForHomeDTO) => {
@@ -275,7 +275,7 @@
 		:backlinks="[]"
 		:image_data="undefined"
 		:post_tokens="peekPost.tokens"
-		:user_id_count="undefined"
+		:public_id_count="undefined"
 		/>
 	</template>
 
@@ -315,21 +315,21 @@
 			<div v-for="thread in threads">
 				<template v-for="post, i of thread.posts">
 					<PostComponent
-					:userRole="userType"
+					:userRole="userRole"
 					:board="board"
 					:thread="thread.thread"
 					:post="post"
-					:is_highlighted="(highlightedUserIDs[post.user_id ?? ''] ?? false)"
+					:is_highlighted="(highlightedPublicIDs[post.public_id ?? ''] ?? false)"
 					:is_op_post="i == 0"
 					:is_last_seen="false"
 					:backlinks="[]"
 					:image_data="imageData[post.id]"
 					:post_tokens="postTokens[post.id] ?? []"
-					:user_id_count="undefined"
+					:public_id_count="undefined"
 					@onClickPostNo="(n: number) => onClickPostNo(n, thread)"
 					@onClickPostNumber="(n: number) => onClickPostNumber(n, thread)"
 					@onClickPostImage="(n: number) => onClickPostImage(n, thread)"
-					@onClickUserId="onClickUserId"
+					@onClickPublicId="onClickPublicId"
 					@onPostLinkHover="onPostLinkHover"
 					@onPostLinkUnhover="onPostLinkUnhover"
 					@onToggleSticky="onToggleSticky"

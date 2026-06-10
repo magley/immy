@@ -26,7 +26,7 @@ func (r *UserRepo) CreateUser(dto model.CreateUserDTO) (*model.User, error) {
 	user := model.User{
 		Username: dto.Username,
 		Password: hashedPassword,
-		Type: dto.Type,
+		Role: dto.Role,
 	}
 	
 	result := r.DB.Create(&user)
@@ -41,7 +41,7 @@ func (r *UserRepo) GetUser(userId uint) (*model.User, error) {
 
 func (r *UserRepo) UpdateUser(user *model.User, dto model.UpdateUserDTO) (*model.User, error) {
 	if dto.Username != nil { user.Username = *dto.Username }
-	if dto.Type != nil { user.Type = *dto.Type }
+	if dto.Role != nil { user.Role = *dto.Role }
 	
 	result := r.DB.Save(&user)
 	return user, result.Error

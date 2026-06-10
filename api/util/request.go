@@ -78,7 +78,11 @@ func GetJwtToken(c *gin.Context) (string) {
 }
 
 func GetJwt(c *gin.Context) (*JWTClaims, error) {
-	return ValidateJWT(GetJwtToken(c))
+	token := GetJwtToken(c)
+	if token == "" {
+		return nil, nil
+	}
+	return ValidateJWT(token)
 }
 
 func RequireRole(c *gin.Context, role string) (*JWTClaims, bool) {
