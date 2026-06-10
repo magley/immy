@@ -16,16 +16,25 @@ export enum ThreadSortModeInCatalog {
 	UserCount = 'userCount',
 }
 
-export const SortThreadsForCatalog = (threads: ThreadForCatalogDTO[], sortBy: ThreadSortModeInCatalog) => {
-	const sortKeepSticky = (arr: ThreadForCatalogDTO[], sortFunc: (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => number): ThreadForCatalogDTO[] => {
+export const SortThreadsForCatalog = (threads: ThreadForCatalogDTO[], sortBy: ThreadSortModeInCatalog, board_code: string, pinnedCanonicalForm: string[]) => {
+	const sortKeepStickyAndPin = (arr: ThreadForCatalogDTO[], sortFunc: (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => number): ThreadForCatalogDTO[] => {
 		arr = arr.sort((a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => {
-			if (a.thread.sticky && !b.thread.sticky) {
-				return -1;
+			let valA = 0;
+			let valB = 0;
+
+			if (a.thread.sticky) valA += 5;
+			if (pinnedCanonicalForm.indexOf(ThreadToPinForm(board_code, a.thread.post_num)) != -1) valA += 2;
+
+			if (b.thread.sticky) valB += 5;
+			if (pinnedCanonicalForm.indexOf(ThreadToPinForm(board_code, b.thread.post_num)) != -1) valB += 2;
+
+			if (valA == 0 && valB == 0) {
+				return sortFunc(a, b);
 			}
-			if (!a.thread.sticky && b.thread.sticky) {
-				return 1;
-			}
-			return sortFunc(a, b);
+
+			if (valA > valB) return -1;
+			if (valB > valA) return 1;
+			return 0;
 		});
 		return arr;
 	}
@@ -37,23 +46,32 @@ export const SortThreadsForCatalog = (threads: ThreadForCatalogDTO[], sortBy: Th
 				const dateB = new Date(b.stats.last_bump);
 				return -(dateA.getTime() - dateB.getTime());
 			}
-			threads = sortKeepSticky(threads, cmpLastBump);
+			threads = sortKeepStickyAndPin(threads, cmpLastBump);
 			break;
 		case ThreadSortModeInCatalog.LastReply:
-			threads = sortKeepSticky(threads, (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.last_post.id - b.last_post.id));
+			threads = sortKeepStickyAndPin(threads, (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.last_post.id - b.last_post.id));
 			break;
 		case ThreadSortModeInCatalog.CreationDate:
-			threads = sortKeepSticky(threads, (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.thread.id - b.thread.id));
+			threads = sortKeepStickyAndPin(threads, (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.thread.id - b.thread.id));
 			break;
 		case ThreadSortModeInCatalog.ReplyCount:
-			threads = sortKeepSticky(threads, (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.post_count - b.stats.post_count));
+			threads = sortKeepStickyAndPin(threads, (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.post_count - b.stats.post_count));
 			break;
 		case ThreadSortModeInCatalog.ImageCount:
-			threads = sortKeepSticky(threads, (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.image_count - b.stats.image_count));
+			threads = sortKeepStickyAndPin(threads, (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.image_count - b.stats.image_count));
 			break;
 		case ThreadSortModeInCatalog.UserCount:
-			threads = sortKeepSticky(threads, (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.user_count - b.stats.user_count));
+			threads = sortKeepStickyAndPin(threads, (a: ThreadForCatalogDTO, b: ThreadForCatalogDTO) => -(a.stats.user_count - b.stats.user_count));
 			break;
 	}
 
+}
+
+export const ThreadToPinForm = (board: string, thread_num: number) => {
+	return `${board}/${thread_num}`;
+}
+
+export const ThreadFromPinForm = (s: string): [string, number] => {
+	const parts = s.split("/");
+	return [parts[0]!, +parts[1]!];
 }

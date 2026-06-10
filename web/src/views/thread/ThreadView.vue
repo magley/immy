@@ -182,7 +182,9 @@
 	const determinePage = () => {
 		ThreadAPI.GetThreadsForCatalog(board.value!.code).then((res: AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>) => {
 			let threads: ThreadForCatalogDTO[] = res.data.data!;
-			SortThreadsForCatalog(threads, ThreadSortModeInCatalog.BumpOrder);
+			let pinnedThreads = (localStorage.getItem("pinned-threads") ?? "").split(",");
+
+			SortThreadsForCatalog(threads, ThreadSortModeInCatalog.BumpOrder, board.value!.code, pinnedThreads);
 
 			const index = threads.findIndex((t) => t.thread.id == thread.value!.id);
 

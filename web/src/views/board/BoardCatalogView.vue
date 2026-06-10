@@ -7,7 +7,7 @@
 	import type { ApiResponse } from '@/api/http';
 	import { CdnAPI } from '@/api/cdn.api';
 	import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
-	import { SortThreadsForCatalog, ThreadSortModeInCatalog } from '@/model/thread/thread.model';
+	import { SortThreadsForCatalog, ThreadFromPinForm, ThreadSortModeInCatalog, ThreadToPinForm } from '@/model/thread/thread.model';
 	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetTabTitleForBoard } from '@/util/tab.util';
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
@@ -21,6 +21,8 @@
 	const sortBy = ref<ThreadSortModeInCatalog>(ThreadSortModeInCatalog.BumpOrder);
 	const imageSize = ref<number>(100);
 	const showComment = ref<boolean>(true);
+
+	const pinnedThreadIDs = ref<string[]>([]);
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
@@ -40,6 +42,7 @@
 	const loadThreads = () => {
 		ThreadAPI.GetThreadsForCatalog(board.value!.code).then((res: AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>) => {
 			threads.value = res.data.data!;
+			loadPinnedThreads();
 			onSortChanged(sortBy.value);
 		}).catch((err: AxiosError) => {
 			console.error(err);
@@ -48,7 +51,7 @@
 
 	const onSortChanged = (sortCol: ThreadSortModeInCatalog) => {
 		sortBy.value = sortCol;
-		SortThreadsForCatalog(threads.value, sortBy.value);
+		SortThreadsForCatalog(threads.value, sortBy.value, board.value!.code, pinnedThreadIDs.value);
 	}
 
 	const onImageSizeChanged = (imageSizePctg: number) => {
@@ -65,6 +68,56 @@
 		} else {
 			return { width: (160 * imageSize.value / 100) + 'px', };
 		}
+	}
+
+	const pinThread = (thread_num: number) => {
+		if (board.value) {
+			pinnedThreadIDs.value.push(ThreadToPinForm(board.value.code, thread_num));
+			pinnedThreadIDs.value = pinnedThreadIDs.value.filter((v,i,a)=>a.indexOf(v)==i); // Make unique.
+
+			localStorage.setItem("pinned-threads", pinnedThreadIDs.value.join(","));
+
+			onSortChanged(sortBy.value);
+		}
+	}
+
+	const unpinThread = (thread_num: number) => {
+		if (board.value) {
+			const threadCanonical = ThreadToPinForm(board.value.code, thread_num);
+			pinnedThreadIDs.value = pinnedThreadIDs.value.filter((s) => s != threadCanonical);
+			localStorage.setItem("pinned-threads", pinnedThreadIDs.value.join(","));
+
+			onSortChanged(sortBy.value);
+		}
+	}
+
+	const togglePin = (thread: ThreadForCatalogDTO) => {
+		if (isPinned(thread)) {
+			unpinThread(thread.thread.post_num);
+		} else {
+			pinThread(thread.thread.post_num);
+		}
+	}
+
+	const loadPinnedThreads = () => {
+		let canonicalForms = (localStorage.getItem("pinned-threads") ?? "").split(",");
+
+		// Remove any canonical forms of this thread which aren't loaded yet.
+		canonicalForms = canonicalForms.filter(
+			(s: string) => {
+				const [board_code, thread_num] = ThreadFromPinForm(s);
+				if (board_code != board.value!.code) { return true; }
+				return threads.value!.findIndex((t: ThreadForCatalogDTO) => {t.thread.post_num == thread_num}) != -1;
+			}
+		);
+
+		pinnedThreadIDs.value = canonicalForms;
+		localStorage.setItem("pinned-threads", pinnedThreadIDs.value.join(","));
+	}
+
+	const isPinned = (thread: ThreadForCatalogDTO): boolean => {
+		if (board.value == undefined) return false;
+		return pinnedThreadIDs.value.indexOf(ThreadToPinForm(board.value.code, thread.post.num)) != -1;
 	}
 </script>
 
@@ -112,6 +165,7 @@
 					<img
 					:src="CdnAPI.GetPostImageThumbnailURI(thread.post)"
 					:style="getDynamicImageStyle(thread)"
+					:class="{pinned: isPinned(thread)}"
 					>
 				</RouterLink>
 				<br />
@@ -131,6 +185,8 @@
 					<template v-if="thread.thread.subject"><span class="subject">{{thread.thread.subject}}</span>: </template>
 					<span class="content">{{ thread.post?.content }}</span>
 				</span>
+
+				<button @click="togglePin(thread)">Toggle pin</button>
 			</span>
 		</div>
 
@@ -185,6 +241,14 @@
 				max-height: 140px;     <---  Programatically computed */
 				object-fit: contain;
 				box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+				&.pinned {
+					border: 4px dashed var(--background-color-accent);
+				}
+
+				&.pinned:hover {
+					border: 4px dashed var(--banner-title-color);
+				}
 			}
 
 			.stats {
