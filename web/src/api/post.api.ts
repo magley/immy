@@ -17,6 +17,7 @@ export interface PostDTO {
     created_at: string;
     deleted_at: string;
     sage: boolean;
+    capcode: boolean;
     content: string;
     filename: string;
     filesize: number;

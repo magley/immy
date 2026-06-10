@@ -53,7 +53,9 @@
 	</nav>
 	
 	<nav v-if="userRole != undefined">
-		<b>[<img :src="`/icons/user-role-${userRole}.gif`" :title="userRole" /> {{userName}}]</b>
+		<b><img :src="`/icons/user-role-${userRole}.gif`" :title="userRole" class="icon" />
+			{{userName}}
+			<span class="capcode" :class="userRole" >## {{ userRole }}</span></b>
 		|
 		<a href="#" @click.prevent="logOut">Log Out</a>
 		|

@@ -49,6 +49,7 @@
 			options: '',
 			thread_id: 0
 		};
+		clearSelectedFile();
 	}
 
 	const AppendText = (text: string) => {

@@ -136,6 +136,10 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 
 			<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
 			<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
+			<span class="capcode" :class="post.user_role"  v-if="post.capcode">
+				## {{ post.user_role }}
+				<img :src="`/icons/user-role-${post.user_role}.gif`" class="icon" :title="post.user_role" />
+			</span>
 			<span class="tripcode" v-if="post.tripcode">{{ post.tripcode }}</span>
 			<span
 				v-if="board.config.ids_enabled && post.public_id"

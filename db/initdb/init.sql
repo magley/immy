@@ -53,6 +53,7 @@ create table posts (
 	created_at 	timestamp default now(),
 	deleted_at	timestamp default null,
 	sage 		bool default false,
+	capcode 	bool default false,
 	content		varchar,
 	filename 	varchar,
 	filesize	integer,

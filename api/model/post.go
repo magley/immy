@@ -21,6 +21,7 @@ type Post struct {
 	CreatedAt	time.Time	`json:"created_at"`
 	DeletedAt	gorm.DeletedAt `json:"deleted_at"`
 	Sage 		bool		`json:"sage"`
+	Capcode 	bool		`json:"capcode"`
 	Content 	string		`json:"content"`
 	Filename 	string 		`json:"filename"`
 	Filesize 	uint 		`json:"filesize"`

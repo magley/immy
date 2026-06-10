@@ -29,7 +29,7 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 	const onSuccess = (dto: LoginResponseDTO) => {
 		localStorage.setItem("username", dto.username);
 		localStorage.setItem("id", `${dto.id}`);
-		localStorage.setItem("role", dto.type);
+		localStorage.setItem("role", dto.role);
 		localStorage.setItem("jwt", dto.jwt);
 		location.reload();
 	}

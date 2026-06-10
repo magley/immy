@@ -8,6 +8,7 @@ import (
 	"immy-api/repo"
 	"immy-api/util"
 	"net/http"
+	"slices"
 	"strings"
 
 	"gorm.io/gorm"
@@ -114,10 +115,12 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user
 		return nil, err
 	}
 
-	sage := s.isSage(dto.Options)
+	sage := s.hasOption(dto.Options, "sage")
 	if threadStats.PostCount >= board.Config.BumpLimit {
 		sage = true
 	}
+
+	capcode := s.hasOption(dto.Options, "capcode") && user != nil
 
 	md5 := ""
 	if (dto.Filebytes != nil) {
@@ -178,6 +181,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user
 		UserRole: userRole,
 		PublicID: publicID,
 		Sage: sage,
+		Capcode: capcode,
 		Content: dto.Content,
 		SrcFilename: "",
 		Filename: "",
@@ -242,10 +246,12 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		return nil, err
 	}
 
-	sage := s.isSage(dto.Options)
+	sage := s.hasOption(dto.Options, "sage")
 	if threadStats.PostCount >= board.Config.BumpLimit {
 		sage = true
 	}
+
+	capcode := s.hasOption(dto.Options, "capcode") && user != nil
 
 	md5 := ""
 	{
@@ -294,6 +300,7 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		UserRole: userRole,
 		PublicID: publicID,
 		Sage: sage,
+		Capcode: capcode,
 		Content: dto.Content,
 		SrcFilename: dto.Filename,
 		Filename: util.GetPostImageFilename(board.Code, dto.Filename),
@@ -371,10 +378,10 @@ func (s *PostService) createTripcode(fullName string) (string, string) {
 	return parts[0], util.CreateTripcode(parts[1], secure)
 }
 
-func (s *PostService) isSage(options string) bool {
-	return options == "sage"
+func (s *PostService) hasOption(options string, option string) bool {
+	parts := strings.Split(options, " ")
+	return slices.Index(parts, option) != -1
 }
-
 // splitCustom splits a string into two parts: the username and the tripcode password.
 // The two are separated by a '#'. If they are separated by two '#', then the tripcode
 // is meant to be secure, and the second return value is true. Otherwise, the tripcode

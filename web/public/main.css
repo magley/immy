@@ -164,3 +164,23 @@ hr {
     }
   }
 }
+
+.capcode {
+  font-weight: bolder;
+
+  &.admin {
+    color: red;
+  }
+
+  &.moderator {
+    color: blue;
+  }
+
+  &.janitor {
+    color: green;
+  }
+
+  .icon {
+    vertical-align: center;
+  }
+}
