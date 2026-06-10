@@ -154,6 +154,9 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 				<img src="/icons/archive.png" v-if="thread.archived" :title="`Archived at ${GetPostTimeReadable(thread.archived_at)}`"/>
 				<img src="/icons/refresh.png" v-if="thread.auto_cycle > 0" :title="`Auto-Cycle`"/>
 			</span>
+			<span v-if="post.deleted_at != null">
+				<img src="/icons/trash.png" :title="`Deleted at ${GetPostTimeReadable(post.deleted_at)}`"/>
+			</span>
 			<span class="dropdown">&#9654;</span>
 			<span class="backlink-container" v-if="backlinks">
 				<a

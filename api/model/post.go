@@ -2,6 +2,8 @@ package model
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Post struct {
@@ -15,6 +17,7 @@ type Post struct {
 	Tripcode 	string 		`json:"tripcode"`
 	IPv4 		string		`json:"ipv4"`
 	CreatedAt	time.Time	`json:"created_at"`
+	DeletedAt	gorm.DeletedAt `json:"deleted_at"`
 	Sage 		bool		`json:"sage"`
 	Content 	string		`json:"content"`
 	Filename 	string 		`json:"filename"`

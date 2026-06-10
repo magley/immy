@@ -69,7 +69,7 @@ func (h *PostHandler) GetPostsByThread(c *gin.Context) {
 		return
 	} 
 	
-	res, err := h.PostService.GetPostsByThread(threadId)
+	res, err := h.PostService.GetPostsByThread(threadId, false)
 	if err != nil {
 		util.NotFound(c, "Posts of thread", threadId)
 		return

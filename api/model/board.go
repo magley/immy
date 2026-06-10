@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
 type Board struct {
@@ -12,6 +13,7 @@ type Board struct {
 	Code  		string 			`json:"code"`
 	Description *string 		`json:"description"`
 	CreatedAt	time.Time		`json:"created_at"`
+	DeletedAt	gorm.DeletedAt `json:"deleted_at"`
 	Config		BoardConfig		`json:"config" gorm:"embedded"`
 	Meta		BoardMeta		`json:"meta" gorm:"embedded"`
 }

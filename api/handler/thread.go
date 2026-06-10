@@ -83,7 +83,7 @@ func (h *ThreadHandler) GetFullThread(c *gin.Context) {
 	if !ok {
 		return
 	}
-	
+
 	res, err := h.ThreadService.GetFullThread(threadId)
 	if err != nil {
 		util.NotFound(c, "Thread", threadId)
@@ -117,7 +117,7 @@ func (h *ThreadHandler) GetFullThreadByNum(c *gin.Context) {
 	if !ok {
 		return
 	}
-	
+
 	res, err := h.ThreadService.GetFullThreadByNum(boardCode, threadNum)
 	if err != nil {
 		util.NotFound(c, "Thread", threadNum)

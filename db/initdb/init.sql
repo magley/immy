@@ -6,6 +6,7 @@ create table boards (
 	code 		varchar(16) unique not null,
 	description varchar(255),
 	created_at 	timestamp default now(),
+	deleted_at	timestamp default null,
 	-- ==================================== --
 	locked 				bool 		default false,
 	hidden 				bool 		default false,
@@ -25,7 +26,8 @@ create table boards (
 );
 
 create table threads (
-	id  		serial primary key,			
+	id  		serial primary key,
+	deleted_at	timestamp default null,
 	board_id 	integer references boards(id),
 	post_num 	integer,  -- Redundant field to simplify search and avoid joins.
 	subject		varchar(128),
@@ -47,6 +49,7 @@ create table posts (
 	name 		varchar(128) default 'Anonymous',
 	tripcode 	varchar(128),
 	created_at 	timestamp default now(),
+	deleted_at	timestamp default null,
 	sage 		bool default false,
 	content		varchar,
 	filename 	varchar,

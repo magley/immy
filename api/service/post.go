@@ -37,14 +37,14 @@ func (s *PostService) GetPostByNum(boardCode string, postNum uint) (*model.Post,
 	return s.PostRepo.GetPostByNum(board.ID, postNum)
 }
 
-func (s *PostService) GetPostsByThread(threadId uint) ([]model.Post, error) {
+func (s *PostService) GetPostsByThread(threadId uint, includeDeleted bool) ([]model.Post, error) {
 	// Because thread ID is a redundant field in the posts table,
 	// we should check explicitly if the thread exists anyway.
 	thread, err := s.ThreadService.GetThread(threadId)
 	if err != nil {
 		return nil, err
 	}
-	return s.PostRepo.GetPostsByThread(thread.ID)
+	return s.PostRepo.GetPostsByThread(thread.ID, includeDeleted)
 }
 
 // GetNPostsByThread returns the first `n` posts in the thread. If `n` is negative,

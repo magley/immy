@@ -12,6 +12,7 @@ export interface PostDTO {
     ipv4: string;
     user_id: string | undefined;
     created_at: string;
+    deleted_at: string;
     sage: boolean;
     content: string;
     filename: string;

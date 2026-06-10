@@ -1,9 +1,14 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Thread struct {
 	ID 			uint 		`json:"id"`
+	DeletedAt	gorm.DeletedAt `json:"deleted_at"`
 	BoardID		uint		`json:"board_id"`
 	PostNum		uint  		`json:"post_num"`
 	Subject 	string		`json:"subject"`

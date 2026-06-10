@@ -114,7 +114,7 @@ func (s *ThreadService) DeleteThread(threadId uint) error {
 }
 
 func (s *ThreadService) GetFullThreadFrom(thread *model.Thread) (*model.ThreadFullDTO, error) {
-	posts, err := s.PostService.GetPostsByThread(thread.ID)
+	posts, err := s.PostService.GetPostsByThread(thread.ID, thread.Archived)
 	if err != nil {
 		return nil, err
 	}

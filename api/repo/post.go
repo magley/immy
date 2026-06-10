@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	model "immy-api/model"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -28,10 +29,15 @@ func (r *PostRepo) GetPost(postId uint) (*model.Post, error) {
 	return &post, result.Error
 }
 
-func (r *PostRepo) GetPostsByThread(threadId uint) ([]model.Post, error) {
+func (r *PostRepo) GetPostsByThread(threadId uint, includeDeleted bool) ([]model.Post, error) {
 	var posts []model.Post
 
-	result := r.DB.Where("thread_id = ?", threadId).Find(&posts)
+	r_DB := r.DB
+	if includeDeleted {
+		r_DB = r_DB.Unscoped()
+	}
+
+	result := r_DB.Where("thread_id = ?", threadId).Find(&posts)
 	return posts, result.Error
 }
 
@@ -110,28 +116,18 @@ func (r *PostRepo) DeletePost(post *model.Post) error {
 func (r *PostRepo) DeleteFirstNPostsOfThread(threadId, opPostNum, N uint) error {
 	ctx := context.Background()
 
-	// PostgreSQL doesn't support LIMIT in bulk deletes.
+	// PostgreSQL doesn't support LIMIT in bulk deletes/updates.
 	// https://www.postgresql.org/docs/current/sql-delete.html#:~:text=While%20there%20is%20no%20LIMIT%20clause%20for%20DELETE%2C
 	sql := `
-	    DELETE FROM posts
+	    UPDATE posts SET deleted_at=?
 	    WHERE id IN (
 	        SELECT id FROM posts
-	        WHERE thread_id = ? AND num != ?
+	        WHERE thread_id = ? AND num != ? AND deleted_at IS NULL
 	        ORDER BY id
 	        LIMIT ?
 	    )
 	`
 
-	result := r.DB.WithContext(ctx).Exec(sql, threadId, opPostNum, N)
+	result := r.DB.WithContext(ctx).Exec(sql, time.Now(), threadId, opPostNum, N)
 	return result.Error
-
-	// ctx := context.Background()
-	// result := r.DB.
-	// 	WithContext(ctx).
-	// 	Where("thread_id = ?", threadId).
-	// 	Where("num != ?", opPostNum). // Don't delete the OP post.
-	// 	Order("id").
-	// 	Limit(int(N)).
-	// 	Delete(&model.Post{})
-	// return result.Error
 }

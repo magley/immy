@@ -4,6 +4,7 @@ import type { AxiosResponse } from "axios";
 
 export interface ThreadDTO {
     id: number;
+    deleted_at: string;
     board_id: number;
     post_num: number;
     subject: string;

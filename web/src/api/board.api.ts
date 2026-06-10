@@ -27,6 +27,7 @@ export interface BoardDTO {
     code: string;
     description: string;
     created_at: string;
+    deleted_at: string;
     meta: BoardMeta;
     config: BoardConfig;
 }
