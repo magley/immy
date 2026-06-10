@@ -4,13 +4,13 @@
 	import type { ApiResponse } from '@/api/http';
 	import type { AxiosResponse, AxiosError } from 'axios';
 	import { useRouter } from 'vue-router';
-import BoardListNav from '@/components/board/BoardListNav.vue';
+	import BoardListNav from '@/components/board/BoardListNav.vue';
 
 	const router = useRouter();
 
 	const users = ref<UserDTO[]>([]);
 	const createUserDTO = ref<CreateUserDTO>({
-		type: UserRole.Janitor,
+		role: UserRole.Janitor,
 		username: '',
 		password: ''
 	});
@@ -49,7 +49,7 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 		
 		const user: UserDTO = users.value[idx]!;
 		const updateDto: UpdateUserDTO = {
-			type: user.type,
+			role: user.role,
 			username: null
 		}
 		
@@ -83,7 +83,7 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 		<br/>
 		<input type=password placeholder="Password" required v-model="createUserDTO.password"/>
 		<br/>
-		<select v-model="createUserDTO.type">
+		<select v-model="createUserDTO.role">
 			<option disabled value="">Please select one</option>
 			<option>{{UserRole.Admin}}</option>
 			<option>{{UserRole.Moderator}}</option>
@@ -111,9 +111,9 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 			</tr>
 			<tr v-for="user, i in users">
 				<td>{{user.id}}</td>
-				<td><img :src="`/icons/user-role-${user.type}.gif`" :title="user.type" /> {{user.username}}</td>
+				<td><img :src="`/icons/user-role-${user.role}.gif`" :title="user.role" /> {{user.username}}</td>
 				<td>
-					<select v-model="user.type">
+					<select v-model="user.role">
 						<option disabled value="">Please select one</option>
 						<option>{{UserRole.Admin}}</option>
 						<option>{{UserRole.Moderator}}</option>
