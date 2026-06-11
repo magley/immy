@@ -110,7 +110,14 @@
 			(s: string) => {
 				const [board_code, thread_num] = ThreadFromPinForm(s);
 				if (board_code != board.value!.code) { return true; }
-				return threads.value!.findIndex((t: ThreadForCatalogDTO) => {t.thread.post_num == thread_num}) != -1;
+				let shouldStay = false;
+				for (let t of threads.value ?? []) {
+					if (t.thread.post_num == thread_num) {
+						shouldStay = true;
+						break;
+					}
+				}
+				return shouldStay;
 			}
 		);
 
