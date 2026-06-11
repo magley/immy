@@ -23,10 +23,10 @@ export const SortThreadsForCatalog = (threads: ThreadForCatalogDTO[], sortBy: Th
 			let valB = 0;
 
 			if (a.thread.sticky) valA += 5;
-			if (pinnedCanonicalForm.indexOf(ThreadToPinForm(board_code, a.thread.post_num)) != -1) valA += 2;
+			if (pinnedCanonicalForm.indexOf(ThreadToCanonicalForm(board_code, a.thread.post_num)) != -1) valA += 2;
 
 			if (b.thread.sticky) valB += 5;
-			if (pinnedCanonicalForm.indexOf(ThreadToPinForm(board_code, b.thread.post_num)) != -1) valB += 2;
+			if (pinnedCanonicalForm.indexOf(ThreadToCanonicalForm(board_code, b.thread.post_num)) != -1) valB += 2;
 
 			if (valA == 0 && valB == 0) {
 				return sortFunc(a, b);
@@ -67,11 +67,11 @@ export const SortThreadsForCatalog = (threads: ThreadForCatalogDTO[], sortBy: Th
 
 }
 
-export const ThreadToPinForm = (board: string, thread_num: number) => {
+export const ThreadToCanonicalForm = (board: string, thread_num: number) => {
 	return `${board}/${thread_num}`;
 }
 
-export const ThreadFromPinForm = (s: string): [string, number] => {
+export const ThreadFromCanonicalForm = (s: string): [string, number] => {
 	const parts = s.split("/");
 	return [parts[0]!, +parts[1]!];
 }

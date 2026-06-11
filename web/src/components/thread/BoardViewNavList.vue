@@ -9,10 +9,13 @@
 		sortBy: ThreadSortModeInCatalog;
 		imageSize: number;
 		showComment: boolean;
+
+		hiddenThreads: string[];
+		showingHidden: boolean;
 	}
 
 	const props = defineProps<BoardNavProps>();
-	const emit = defineEmits(['sortChanged', 'imageSizeChanged', 'showCommentChanged']);
+	const emit = defineEmits(['sortChanged', 'imageSizeChanged', 'showCommentChanged', 'onToggleHiddenThreads']);
 
 	const onSortFieldChange = (ev: Event) => {
 		emit('sortChanged', (ev.target as HTMLSelectElement).value as ThreadSortModeInCatalog);
@@ -22,6 +25,9 @@
 	}
 	const onShowCommentChange = (ev: Event) => {
 		emit('showCommentChanged', (ev.target as HTMLInputElement).checked);
+	}
+	const onToggleHiddenThreads = () => {
+		emit('onToggleHiddenThreads');
 	}
 </script>
 
@@ -34,6 +40,11 @@
 			[<a class="link" :href="`#${props.jump_to_id}`">{{ props.jump_to_label }}</a>]
 		</template>
 		[<RouterLink class="link" :to="`/${props.board_code}/catalog`">Refresh</RouterLink>]
+
+		<template v-if="hiddenThreads && hiddenThreads.length > 0">
+			- Hidden threads: <b>{{hiddenThreads.length}}</b>
+			[<a href="#" @click.prevent="onToggleHiddenThreads"><template v-if="showingHidden">Back</template><template v-else>Show</template></a>]
+		</template>
 	</span>
 	<span class ="right">
 		<span class="setting">
@@ -73,5 +84,11 @@
 		.setting {
 			margin-left: 1em;
 		}
+	}
+
+	input[type=range] {
+		margin: 0;
+		height: 1em;
+		width: 9em;
 	}
 </style>

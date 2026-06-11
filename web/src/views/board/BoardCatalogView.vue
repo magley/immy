@@ -7,7 +7,7 @@
 	import type { ApiResponse } from '@/api/http';
 	import { CdnAPI } from '@/api/cdn.api';
 	import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
-	import { SortThreadsForCatalog, ThreadFromPinForm, ThreadSortModeInCatalog, ThreadToPinForm } from '@/model/thread/thread.model';
+	import { SortThreadsForCatalog, ThreadSortModeInCatalog, ThreadToCanonicalForm, ThreadFromCanonicalForm } from '@/model/thread/thread.model';
 	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetTabTitleForBoard } from '@/util/tab.util';
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
@@ -22,10 +22,6 @@
 	const sortBy = ref<ThreadSortModeInCatalog>(ThreadSortModeInCatalog.BumpOrder);
 	const imageSize = ref<number>(100);
 	const showComment = ref<boolean>(true);
-
-	const pinnedThreadIDs = ref<string[]>([]);
-
-	const modalMenuThread = ref<ThreadForCatalogDTO | undefined>(undefined);
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
@@ -46,6 +42,7 @@
 		ThreadAPI.GetThreadsForCatalog(board.value!.code).then((res: AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>) => {
 			threads.value = res.data.data!;
 			loadPinnedThreads();
+			loadHiddenThreads();
 			onSortChanged(sortBy.value);
 		}).catch((err: AxiosError) => {
 			console.error(err);
@@ -73,9 +70,15 @@
 		}
 	}
 
+	// ----------------------------------------------------------------------------------------
+	// Pinned threads
+	// ----------------------------------------------------------------------------------------
+
+	const pinnedThreadIDs = ref<string[]>([]);
+
 	const pinThread = (thread_num: number) => {
 		if (board.value) {
-			pinnedThreadIDs.value.push(ThreadToPinForm(board.value.code, thread_num));
+			pinnedThreadIDs.value.push(ThreadToCanonicalForm(board.value.code, thread_num));
 			pinnedThreadIDs.value = pinnedThreadIDs.value.filter((v,i,a)=>a.indexOf(v)==i); // Make unique.
 
 			localStorage.setItem("pinned-threads", pinnedThreadIDs.value.join(","));
@@ -86,7 +89,7 @@
 
 	const unpinThread = (thread_num: number) => {
 		if (board.value) {
-			const threadCanonical = ThreadToPinForm(board.value.code, thread_num);
+			const threadCanonical = ThreadToCanonicalForm(board.value.code, thread_num);
 			pinnedThreadIDs.value = pinnedThreadIDs.value.filter((s) => s != threadCanonical);
 			localStorage.setItem("pinned-threads", pinnedThreadIDs.value.join(","));
 
@@ -108,7 +111,8 @@
 		// Remove any canonical forms of this thread which aren't loaded yet.
 		canonicalForms = canonicalForms.filter(
 			(s: string) => {
-				const [board_code, thread_num] = ThreadFromPinForm(s);
+				if (s == "") return false;
+				const [board_code, thread_num] = ThreadFromCanonicalForm(s);
 				if (board_code != board.value!.code) { return true; }
 				let shouldStay = false;
 				for (let t of threads.value ?? []) {
@@ -127,21 +131,108 @@
 
 	const isPinned = (thread: ThreadForCatalogDTO): boolean => {
 		if (board.value == undefined) return false;
-		return pinnedThreadIDs.value.indexOf(ThreadToPinForm(board.value.code, thread.post.num)) != -1;
+		return pinnedThreadIDs.value.indexOf(ThreadToCanonicalForm(board.value.code, thread.post.num)) != -1;
 	}
 
+	// ----------------------------------------------------------------------------------------
+	// Hidden threads
+	// ----------------------------------------------------------------------------------------
+
+	// Canonical form for each thread
+	const hiddenThreads = ref<string[]>([]);
+	const isShowingHiddenOnly = ref<boolean>(false);
+
+	const hideThread = (thread: ThreadForCatalogDTO) => {
+		if (board.value) {
+			hiddenThreads.value.push(ThreadToCanonicalForm(board.value.code, thread.thread.post_num));
+			hiddenThreads.value = hiddenThreads.value.filter((v,i,a)=>a.indexOf(v)==i); // Make unique.
+
+			localStorage.setItem("hidden-threads", hiddenThreads.value.join(","));
+
+			onSortChanged(sortBy.value);
+		}
+	}
+
+	const unhideThread = (thread: ThreadForCatalogDTO) => {
+		if (board.value) {
+			const threadCanonical = ThreadToCanonicalForm(board.value.code, thread.thread.post_num);
+			hiddenThreads.value = hiddenThreads.value.filter((s) => s != threadCanonical);
+			localStorage.setItem("hidden-threads", hiddenThreads.value.join(","));
+
+			onSortChanged(sortBy.value);
+
+			if (hiddenThreads.value.length == 0 && isShowingHiddenOnly.value) {
+				isShowingHiddenOnly.value = false;
+			}
+		}
+	}
+
+	const toggleHiddenThread = (thread: ThreadForCatalogDTO) => {
+		if (isHidden(thread)) {
+			unhideThread(thread);
+		} else {
+			hideThread(thread);
+		}
+	}
+
+	const isHidden = (thread: ThreadForCatalogDTO): boolean => {
+		if (board.value == undefined) return false;
+		return hiddenThreads.value.indexOf(ThreadToCanonicalForm(board.value.code, thread.post.num)) != -1;
+	}
+
+	const loadHiddenThreads = () => {
+		let canonicalForms = (localStorage.getItem("hidden-threads") ?? "").split(",");
+
+
+		// Remove any canonical forms of this thread which aren't loaded yet.
+		canonicalForms = canonicalForms.filter(
+			(s: string) => {
+				if (s == "") return false;
+				const [board_code, thread_num] = ThreadFromCanonicalForm(s);
+				if (board_code != board.value!.code) { return true; }
+				let shouldStay = false;
+				for (let t of threads.value ?? []) {
+					if (t.thread.post_num == thread_num) {
+						shouldStay = true;
+						break;
+					}
+				}
+				return shouldStay;
+			}
+		);
+
+		hiddenThreads.value = canonicalForms;
+		localStorage.setItem("hidden-threads", hiddenThreads.value.join(","));
+	}
+
+	const onToggleHiddenThreads = () => {
+		isShowingHiddenOnly.value = !isShowingHiddenOnly.value;
+	}
+
+	// ----------------------------------------------------------------------------------------
+	// Modal menu
+	// ----------------------------------------------------------------------------------------
+
+	const modalMenuThread = ref<ThreadForCatalogDTO | undefined>(undefined);
 	const modalMenu = useTemplateRef("modal-menu");
 
 	const onClickMenuArrow = async (thread: ThreadForCatalogDTO) => {
-		modalMenuThread.value = thread;
+		if (modalMenuThread.value == thread) {
+			closeModalMenu();
+		} else {
+			modalMenuThread.value = thread;
+		}
 
 		await nextTick();
 
-		const arrow = document.getElementById(`thread-arrow-${thread.thread.post_num}`)!;
-		const rect = arrow.getBoundingClientRect();
 
-		modalMenu.value!.style.top = `${rect.top + 16}px`;
-		modalMenu.value!.style.left = `${rect.left}px`;
+		if (modalMenu.value) {
+			const arrow = document.getElementById(`thread-arrow-${thread.thread.post_num}`)!;
+			const rect = arrow.getBoundingClientRect();
+
+			modalMenu.value!.style.top = `${rect.top + 16}px`;
+			modalMenu.value!.style.left = `${rect.left}px`;
+		}
 	}
 
 	const closeModalMenu = () => {
@@ -149,13 +240,15 @@
 	}
 
 	onClickOutside(modalMenu, event => {
-		closeModalMenu();
+		// Delay because it conflicts with onClickMenuArrow.
+		setTimeout(() => closeModalMenu(), 0.1);
 	});
 </script>
 
 <template>
 	<BoardListNav :isCatalog=true />
 
+	<!-- Modal menu -->
 	<table class="modal-menu" ref="modal-menu" id="modal-menu" v-if="modalMenuThread">
 		<tbody>
 			<tr>
@@ -166,14 +259,17 @@
 			<tr>
 				<td>
 					<a href="#" @click.prevent="togglePin(modalMenuThread); closeModalMenu()">
-						<template v-if="isPinned(modalMenuThread)">Unpin Thread</template>
-						<template v-else>Pin Thread</template>
+						<template v-if="isPinned(modalMenuThread)"><img src="/icons/unpin.png" /> Unpin Thread</template>
+						<template v-else><img src="/icons/pin.png" /> Pin Thread</template>
 					</a>
 				</td>
 			</tr>
 			<tr>
 				<td>
-					<a href="#" @click.prevent="">Hide Thread</a>
+					<a href="#" @click.prevent="toggleHiddenThread(modalMenuThread); closeModalMenu()">
+						<template v-if="isHidden(modalMenuThread)"><img src="/icons/visible.png" /> Unhide Thread</template>
+						<template v-else><img src="/icons/invisible.png" /> Hide Thread</template>
+					</a>
 				</td>
 			</tr>
 		</tbody>
@@ -208,41 +304,57 @@
 		:sort-by="sortBy"
 		:image-size="imageSize"
 		:show-comment="showComment"
+		:hidden-threads="hiddenThreads"
+		:showing-hidden="isShowingHiddenOnly"
 		@sort-changed="onSortChanged"
 		@image-size-changed="onImageSizeChanged"
 		@show-comment-changed="onShowCommentChanged"
+		@onToggleHiddenThreads="onToggleHiddenThreads"
 		/>
 
 		<hr />
 		<div class="catalog-grid" :style="{ gridTemplateColumns: `repeat(auto-fit, minmax(${160 * imageSize / 100}px, 1fr))`}">
-			<span v-for="thread in threads" class="catalog-post">
-				<RouterLink :to="`/${board.code}/thread/${thread.thread.post_num}`">
-					<img
-					:src="CdnAPI.GetPostImageThumbnailURI(thread.post)"
-					:style="getDynamicImageStyle(thread)"
-					:class="{pinned: isPinned(thread)}"
-					>
-				</RouterLink>
-				<br />
+			<template v-for="thread in threads" >
+				<span v-if='isShowingHiddenOnly == isHidden(thread)' class="catalog-post">
+					<div class="image-container">
+						<RouterLink :to="`/${board.code}/thread/${thread.thread.post_num}`">
+							<img
+								:src="CdnAPI.GetPostImageThumbnailURI(thread.post)"
+								:style="getDynamicImageStyle(thread)"
+								:class="{pinned: isPinned(thread)}"
+								>
+						</RouterLink>
+						<div class="inside-image">
+							<img src="/icons/sticky.png" v-if="thread.thread.sticky" title="Sticky"/>
+							<img src="/icons/lock.png" v-if="thread.thread.locked" title="Locked"/>
+							<a v-if="isPinned(thread)" href="#" @click.prevent="unpinThread(thread.thread.post_num)">
+								<img src="/icons/pin.png" title="Pinned - click to unpin" />
+							</a>
+							<a v-if="isHidden(thread)" href="#" @click.prevent="unhideThread(thread)">
+								<img src="/icons/visible.png" title="Hidden - click to unhide" />
+							</a>
+						</div>
+					</div>
 
-				<span class="stats">
-					<img src="/icons/sticky.png" v-if="thread.thread.sticky" title="Sticky"/>
-					<img src="/icons/lock.png" v-if="thread.thread.locked" title="Locked"/>
-					<abbr title="Number of replies">R</abbr>: <strong>{{ thread.stats.post_count }}</strong>
-					/
-					<abbr title="Number of images">I</abbr>: <strong>{{ thread.stats.image_count }}</strong>
-					/
-					<abbr title="Number of users">U</abbr>: <strong>{{ thread.stats.user_count }}</strong>
-					/
-					<a href="#" class="no-underline" :id="`thread-arrow-${thread.thread.post_num}`" @click.prevent="onClickMenuArrow(thread)">▶</a>
-				</span>
-				<br />
+					<br />
 
-				<span class="body" v-if="showComment">
-					<template v-if="thread.thread.subject"><span class="subject">{{thread.thread.subject}}</span>: </template>
-					<span class="content">{{ thread.post?.content }}</span>
+					<span class="stats">
+						<abbr title="Number of replies">R</abbr>: <strong>{{ thread.stats.post_count }}</strong>
+						/
+						<abbr title="Number of images">I</abbr>: <strong>{{ thread.stats.image_count }}</strong>
+						/
+						<abbr title="Number of users">U</abbr>: <strong>{{ thread.stats.user_count }}</strong>
+						/
+						<a href="#" class="no-underline" :id="`thread-arrow-${thread.thread.post_num}`" @click.prevent="onClickMenuArrow(thread)">▶</a>
+					</span>
+					<br />
+
+					<span class="body" v-if="showComment">
+						<template v-if="thread.thread.subject"><span class="subject">{{thread.thread.subject}}</span>: </template>
+						<span class="content">{{ thread.post?.content }}</span>
+					</span>
 				</span>
-			</span>
+			</template>
 		</div>
 
 		<hr />
@@ -253,9 +365,12 @@
 		:sort-by="sortBy"
 		:image-size="imageSize"
 		:show-comment="showComment"
+		:hidden-threads="hiddenThreads"
+		:showing-hidden="isShowingHiddenOnly"
 		@sort-changed="onSortChanged"
 		@image-size-changed="onImageSizeChanged"
 		@show-comment-changed="onShowCommentChanged"
+		@onToggleHiddenThreads="onToggleHiddenThreads"
 		/>
 	</template>
 
@@ -312,18 +427,30 @@
 			border: 1px solid black;*/
 			padding: 5px;
 
-			img {
-			/*	max-width: 160px;      <---  Programatically computed
-				max-height: 140px;     <---  Programatically computed */
-				object-fit: contain;
-				box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 
-				&.pinned {
-					border: 4px dashed var(--background-color-accent);
+			.image-container {
+				position: relative;
+
+				img {
+				/*	max-width: 160px;      <---  Programatically computed
+					max-height: 140px;     <---  Programatically computed */
+					object-fit: contain;
+					box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+					&.pinned {
+						border: 4px dashed var(--background-color-accent);
+					}
+
+					&.pinned:hover {
+						border: 4px dashed var(--banner-title-color);
+					}
 				}
 
-				&.pinned:hover {
-					border: 4px dashed var(--banner-title-color);
+				.inside-image {
+					position: absolute;
+					top: 0px;
+					left: 0px;
+					z-index: 1000;
 				}
 			}
 
