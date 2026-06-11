@@ -120,7 +120,7 @@
 
 		<div class="post-header">
 			<!-- Thread management by staff user -->
-			<div v-if="userRole != undefined && post.num == post.thread_num">
+			<div v-if="userRole != undefined && post.num == post.thread_num" class="admin-tools">
 				<button v-if="!thread.archived && canStickyThread()"  @click="onToggleSticky(thread)">Toggle Sticky <img src="/icons/sticky.png" /></button>
 				<button v-if="!thread.archived && canLockThread()"    @click="onToggleLocked(thread)">Toggle Locked <img src="/icons/lock.png" /></button>
 				<button v-if="!thread.archived && canArchiveThread()" @click="onArchive(thread)">Archive <img src="/icons/archive.png" /></button>
@@ -129,7 +129,7 @@
 					<label for=""><abbr title="Limit thread to this many posts.
 Older posts are deleted.
 A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
-					<input type="number" min="0" v-model="thread.auto_cycle" />
+					<input type="number" min="0" class="auto-cycle-input" v-model="thread.auto_cycle" />
 					<button @click="onChangeAutoCycle(thread)">Set auto-cycle <img src="/icons/refresh.png" /></button>
 				</span>
 			</div>
@@ -274,6 +274,21 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 			.post-header {
 				span {
 					margin-right: 0.25em;
+				}
+
+				.admin-tools {
+					margin: 1em;
+					padding: 0.5em;
+					background-color: var(--background-color-darker);
+					border: 1px solid var(--highlighted-post-border-color);
+
+					>* {
+						margin-right: 5px;
+					}
+
+					.auto-cycle-input {
+						max-width: 4em;
+					}
 				}
 
 				.backlink-container {

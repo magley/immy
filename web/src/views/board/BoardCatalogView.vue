@@ -70,6 +70,21 @@
 		}
 	}
 
+	const onClickThreadImage = (e: MouseEvent, thread: ThreadForCatalogDTO) => {
+		if (e.shiftKey) {
+			toggleHiddenThread(thread);
+		}
+		else if (e.altKey) {
+			togglePin(thread);
+		}
+		else {
+			if (board.value) {
+				const destination = `/${board.value.code}/thread/${thread.thread.post_num}`;
+				router.push(destination);
+			}
+		}
+	}
+
 	// ----------------------------------------------------------------------------------------
 	// Pinned threads
 	// ----------------------------------------------------------------------------------------
@@ -317,13 +332,13 @@
 			<template v-for="thread in threads" >
 				<span v-if='isShowingHiddenOnly == isHidden(thread)' class="catalog-post">
 					<div class="image-container">
-						<RouterLink :to="`/${board.code}/thread/${thread.thread.post_num}`">
+						<a href="#" @click.prevent="(e) => onClickThreadImage(e, thread)">
 							<img
 								:src="CdnAPI.GetPostImageThumbnailURI(thread.post)"
 								:style="getDynamicImageStyle(thread)"
 								:class="{pinned: isPinned(thread)}"
 								>
-						</RouterLink>
+						</a>
 						<div class="inside-image">
 							<img src="/icons/sticky.png" v-if="thread.thread.sticky" title="Sticky"/>
 							<img src="/icons/lock.png" v-if="thread.thread.locked" title="Locked"/>
