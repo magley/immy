@@ -86,6 +86,10 @@ a {
     background-size: 16px;
     padding-right: 16px;
   }
+
+  &.no-underline {
+    text-decoration: none;
+  }
 }
 
 a:hover {

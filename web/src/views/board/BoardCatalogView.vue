@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { ref, onMounted } from 'vue';
+	import { ref, onMounted, useTemplateRef, nextTick } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
 	import { ThreadAPI, type ThreadFullDTO, type ThreadForCatalogDTO, type ThreadDTO } from '@/api/thread.api';
@@ -11,6 +11,7 @@
 	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetTabTitleForBoard } from '@/util/tab.util';
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
+	import { onClickOutside } from '@vueuse/core'
 
 	const board = ref<BoardDTO | undefined>(undefined);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
@@ -23,6 +24,8 @@
 	const showComment = ref<boolean>(true);
 
 	const pinnedThreadIDs = ref<string[]>([]);
+
+	const modalMenuThread = ref<ThreadForCatalogDTO | undefined>(undefined);
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
@@ -119,10 +122,55 @@
 		if (board.value == undefined) return false;
 		return pinnedThreadIDs.value.indexOf(ThreadToPinForm(board.value.code, thread.post.num)) != -1;
 	}
+
+	const modalMenu = useTemplateRef("modal-menu");
+
+	const onClickMenuArrow = async (thread: ThreadForCatalogDTO) => {
+		modalMenuThread.value = thread;
+
+		await nextTick();
+
+		const arrow = document.getElementById(`thread-arrow-${thread.thread.post_num}`)!;
+		const rect = arrow.getBoundingClientRect();
+
+		modalMenu.value!.style.top = `${rect.top + 16}px`;
+		modalMenu.value!.style.left = `${rect.left}px`;
+	}
+
+	const closeModalMenu = () => {
+		modalMenuThread.value = undefined;
+	}
+
+	onClickOutside(modalMenu, event => {
+		closeModalMenu();
+	});
 </script>
 
 <template>
 	<BoardListNav :isCatalog=true />
+
+	<table class="modal-menu" ref="modal-menu" id="modal-menu" v-if="modalMenuThread">
+		<tbody>
+			<tr>
+				<td>
+					<a href="#" @click.prevent="">Report Thread</a>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="#" @click.prevent="togglePin(modalMenuThread); closeModalMenu()">
+						<template v-if="isPinned(modalMenuThread)">Unpin Thread</template>
+						<template v-else>Pin Thread</template>
+					</a>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="#" @click.prevent="">Hide Thread</a>
+				</td>
+			</tr>
+		</tbody>
+	</table>
 
 	<template v-if="board">
 		<div id="title">
@@ -136,12 +184,12 @@
 
 		<div v-if="!board.config.locked">
 			<CreatePostForm
-				id="create-thread"
-				:thread="undefined"
-				:board="board"
-				:max_size_bytes="board.config.max_file_size"
-				:mime_types_allowed="board.config.mime_types_allowed"
-				@postCreated="loadThreads()"
+			id="create-thread"
+			:thread="undefined"
+			:board="board"
+			:max_size_bytes="board.config.max_file_size"
+			:mime_types_allowed="board.config.mime_types_allowed"
+			@postCreated="loadThreads()"
 			/>
 			<hr />
 		</div>
@@ -178,6 +226,8 @@
 					<abbr title="Number of images">I</abbr>: <strong>{{ thread.stats.image_count }}</strong>
 					/
 					<abbr title="Number of users">U</abbr>: <strong>{{ thread.stats.user_count }}</strong>
+					/
+					<a href="#" class="no-underline" :id="`thread-arrow-${thread.thread.post_num}`" @click.prevent="onClickMenuArrow(thread)">▶</a>
 				</span>
 				<br />
 
@@ -185,8 +235,6 @@
 					<template v-if="thread.thread.subject"><span class="subject">{{thread.thread.subject}}</span>: </template>
 					<span class="content">{{ thread.post?.content }}</span>
 				</span>
-
-				<button @click="togglePin(thread)">Toggle pin</button>
 			</span>
 		</div>
 
@@ -208,6 +256,27 @@
 </template>
 
 <style scoped>
+	.modal-menu {
+		z-index: 10;
+		position: absolute;
+		border: 1px solid var(--post-border-color);
+		background-color: var(--post-background-color);
+
+		td {
+			border-bottom: 1px solid var(--background-color-accent);
+			padding: 0.2em;
+		}
+
+		td:hover {
+			background-color: var(--background-color);
+		}
+
+		a {
+			text-decoration: none;
+			display: block;
+		}
+	}
+
 	#create-thread {
 		display: block;
 		text-align: center;
