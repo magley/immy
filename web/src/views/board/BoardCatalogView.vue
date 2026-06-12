@@ -12,6 +12,7 @@
 	import { GetTabTitleForBoard } from '@/util/tab.util';
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
 	import { onClickOutside } from '@vueuse/core'
+	import BoardBanner from '@/components/board/BoardBanner.vue';
 
 	const board = ref<BoardDTO | undefined>(undefined);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
@@ -138,7 +139,7 @@
 				}
 				return shouldStay;
 			}
-		);
+			);
 
 		pinnedThreadIDs.value = canonicalForms;
 		localStorage.setItem("pinned-threads", pinnedThreadIDs.value.join(","));
@@ -214,7 +215,7 @@
 				}
 				return shouldStay;
 			}
-		);
+			);
 
 		hiddenThreads.value = canonicalForms;
 		localStorage.setItem("hidden-threads", hiddenThreads.value.join(","));
@@ -291,12 +292,7 @@
 	</table>
 
 	<template v-if="board">
-		<div id="title">
-			<h1>/{{board.code}}/ - {{board.name}}
-				<img v-if="board.config.locked" src="/icons/lock.png" title="Board locked for further posts" class="icon" />
-			</h1>
-			<small>{{board.description}}</small>
-		</div>
+		<BoardBanner :board="board" />
 
 		<hr />
 
@@ -334,10 +330,10 @@
 					<div class="image-container">
 						<a href="#" @click.prevent="(e) => onClickThreadImage(e, thread)">
 							<img
-								:src="CdnAPI.GetPostImageThumbnailURI(thread.post)"
-								:style="getDynamicImageStyle(thread)"
-								:class="{pinned: isPinned(thread)}"
-								>
+							:src="CdnAPI.GetPostImageThumbnailURI(thread.post)"
+							:style="getDynamicImageStyle(thread)"
+							:class="{pinned: isPinned(thread)}"
+							>
 						</a>
 						<div class="inside-image">
 							<img src="/icons/sticky.png" v-if="thread.thread.sticky" title="Sticky"/>

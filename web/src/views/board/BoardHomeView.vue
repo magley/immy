@@ -13,6 +13,7 @@
 	import { GetTabTitleForBoard } from "@/util/tab.util";
 	import CreatePostForm from "@/components/post/CreatePostForm.vue";
 	import type { UserRole } from "@/api/user.api";
+	import BoardBanner from "@/components/board/BoardBanner.vue";
 	
 	const board = ref<BoardDTO | undefined>(undefined);
 
@@ -280,22 +281,18 @@
 	</template>
 
 	<template v-if="board">
-		<div id="title">
-			<h1>/{{board.code}}/ - {{board.name}}
-				<img v-if="board.config.locked" src="/icons/lock.png" title="Board locked for further posts" class="icon" />
-			</h1>
-			<small>{{board.description}}</small>
-		</div>
+		<BoardBanner :board="board" />
+
 		<hr />
 
 		<div v-if="!board.config.locked">
 			<CreatePostForm
-				id="create-thread"
-				:thread="undefined"
-				:board="board"
-				:max_size_bytes="board.config.max_file_size"
-				:mime_types_allowed="board.config.mime_types_allowed"
-				@postCreated="loadThreads()"
+			id="create-thread"
+			:thread="undefined"
+			:board="board"
+			:max_size_bytes="board.config.max_file_size"
+			:mime_types_allowed="board.config.mime_types_allowed"
+			@postCreated="loadThreads()"
 			/>
 			<hr />
 		</div>

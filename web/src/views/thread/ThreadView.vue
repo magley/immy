@@ -18,6 +18,7 @@
 	import { GetTabTitleForThread } from '@/util/tab.util';
 	import { useTextSelection, useDraggable } from '@vueuse/core';
 	import { UserRole } from '@/api/user.api';
+	import BoardBanner from '@/components/board/BoardBanner.vue';
 	const route = useRoute();
 	const router = useRouter();
 
@@ -422,25 +423,20 @@
 	</template>
 
 	<template v-if="board && thread">
-		<div id="title">
-			<h1>/{{board.code}}/ - {{board.name}}
-				<img v-if="board.config.locked" src="/icons/lock.png" title="Board locked for further posts" class="icon" />
-			</h1>
-			<small>{{board.description}}</small>
-		</div>
+		<BoardBanner :board="board" />
 
 		<!-- Static reply box -->
 		<div v-if="canReply()">
 			<hr />
 			<CreatePostForm
-				v-if="!board.config.locked"
-				id="static-reply-box"
-				:board="board"
-				:thread="thread"
-				:max_size_bytes="board.config.max_file_size"
-				:mime_types_allowed="board.config.mime_types_allowed"
-				@postCreated="onPostCreated()"
-				/>
+			v-if="!board.config.locked"
+			id="static-reply-box"
+			:board="board"
+			:thread="thread"
+			:max_size_bytes="board.config.max_file_size"
+			:mime_types_allowed="board.config.mime_types_allowed"
+			@postCreated="onPostCreated()"
+			/>
 		</div>
 		<div v-else>
 			<p class="red">
