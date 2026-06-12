@@ -13,6 +13,7 @@
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
 	import { onClickOutside } from '@vueuse/core'
 	import BoardBanner from '@/components/board/BoardBanner.vue';
+import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
 
 	const board = ref<BoardDTO | undefined>(undefined);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
@@ -305,6 +306,9 @@
 			:mime_types_allowed="board.config.mime_types_allowed"
 			@postCreated="loadThreads()"
 			/>
+
+			<RandomBoardImageBanner />
+
 			<hr />
 		</div>
 

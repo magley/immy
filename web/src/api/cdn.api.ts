@@ -41,6 +41,14 @@ export class CdnAPI {
 		});
 	}
 
+	static async GetBoardBanners(): Promise<string[]> {
+		return axiosInstanceCDN.get("banners/board").then((res) => {
+			return (res.data! as unknown as any[]).map((r: any) => r.name!);
+		}).catch((err) => {
+			throw err;
+		});
+	}
+
 	static GetTitleBanner = (fname: string[]): string | undefined => {
 		if (fname.length == 0) {
 			return undefined;
@@ -48,5 +56,14 @@ export class CdnAPI {
 		const i = Math.floor(Math.random() * fname.length);
 		console.log(fname, i);
 		return this.GetBannersURI("title/" + fname[i]!);
+	}
+
+	static GetBoardBanner = (fname: string[]): string | undefined => {
+		if (fname.length == 0) {
+			return undefined;
+		}
+		const i = Math.floor(Math.random() * fname.length);
+		console.log(fname, i);
+		return this.GetBannersURI("board/" + fname[i]!);
 	}
 }

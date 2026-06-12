@@ -19,6 +19,7 @@
 	import { useTextSelection, useDraggable } from '@vueuse/core';
 	import { UserRole } from '@/api/user.api';
 	import BoardBanner from '@/components/board/BoardBanner.vue';
+import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
 	const route = useRoute();
 	const router = useRouter();
 
@@ -448,6 +449,8 @@
 				You my not reply at this time.
 			</p>
 		</div>
+
+		<RandomBoardImageBanner />
 
 		<!-- Floating reply box -->
 		<div :style="{display: floatingReplyBoxVisible ? 'block' : 'none'}">
