@@ -1,15 +1,23 @@
 <script setup lang="ts">
 	import { ref, onMounted } from 'vue';
 	import { UserRole } from './api/user.api';
+	import { CdnAPI } from './api/cdn.api';
 
 	const userRole = ref<string | undefined>(undefined);
 	const userName = ref<string | undefined>(undefined);
 	const theme = ref<string>("yotsuba");
+	const titleBanners = ref<string[]>([]);
+	const titleBanner = ref<string | undefined>(undefined);
 
 	onMounted(() => {
 		userRole.value = localStorage.getItem("role") ?? undefined;
 		userName.value = localStorage.getItem("username") ?? undefined;
 		setTheme(localStorage.getItem("theme") ?? "yotsuba");
+
+		CdnAPI.GetTitleBanners().then((res: string[]) => {
+			titleBanners.value = res
+			titleBanner.value = CdnAPI.GetTitleBanner(titleBanners.value);
+		});
 	});
 
 	const themeChanged = () => {
@@ -51,6 +59,7 @@
 		|
 		<RouterLink to="/login">Log In</RouterLink>
 	</nav>
+
 	
 	<nav v-if="userRole != undefined">
 		<b><img :src="`/icons/user-role-${userRole}.gif`" :title="userRole" class="icon" />
@@ -76,6 +85,10 @@
 		</span>
 	</nav>
 
+	<a href="/" v-if="titleBanner" class="title-banner">
+		<img :src="titleBanner" />
+	</a>
+
 	<main>	
 		<!-- The key is so the page resets when the route changes. Don't use
 		fullPath because then the '#abc' anchor will cause a reset as
@@ -93,3 +106,6 @@
 	
 	<span id="bottom"></span>
 </template>
+
+<style scoped>
+</style>

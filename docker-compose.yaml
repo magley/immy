@@ -44,3 +44,4 @@ services:
       - "80:80"
     volumes:
       - ./files:/usr/share/nginx/html/files/
+      - ./cdn/public/:/usr/share/nginx/html/public/

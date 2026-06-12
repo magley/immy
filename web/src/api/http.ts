@@ -28,6 +28,11 @@ export const axiosInstance = axios.create({
     baseURL: ENV.API,
 });
 
+export const axiosInstanceCDN = axios.create({
+    baseURL: ENV.CDN,
+});
+
+
 axiosInstance.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("jwt");
