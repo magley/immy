@@ -247,8 +247,8 @@ import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vu
 			const arrow = document.getElementById(`thread-arrow-${thread.thread.post_num}`)!;
 			const rect = arrow.getBoundingClientRect();
 
-			modalMenu.value!.style.top = `${rect.top + 16}px`;
-			modalMenu.value!.style.left = `${rect.left}px`;
+			modalMenu.value!.style.top = `${rect.top + window.scrollY + 20}px`;
+			modalMenu.value!.style.left = `${rect.left + window.scrollX}px`;
 		}
 	}
 
