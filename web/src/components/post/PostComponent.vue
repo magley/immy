@@ -120,12 +120,12 @@
 
 		<div class="post-header">
 			<!-- Thread management by staff user -->
-			<div v-if="userRole != undefined && post.num == post.thread_num" class="admin-tools">
-				<button v-if="!thread.archived && canStickyThread()"  @click="onToggleSticky(thread)">Toggle Sticky <img src="/icons/sticky.png" /></button>
-				<button v-if="!thread.archived && canLockThread()"    @click="onToggleLocked(thread)">Toggle Locked <img src="/icons/lock.png" /></button>
-				<button v-if="!thread.archived && canArchiveThread()" @click="onArchive(thread)">Archive <img src="/icons/archive.png" /></button>
-				<button v-if="!thread.archived && canDeleteThread()"  @click="onDelete(thread)">Delete <img src="/icons/delete.png" /></button>
-				<span v-if="!thread.archived && canChangeThreadAutoCycle()">
+			<div v-if="userRole != undefined && post.num == post.thread_num && !thread.archived" class="admin-tools">
+				<button v-if="canStickyThread()"  @click="onToggleSticky(thread)">Toggle Sticky <img src="/icons/sticky.png" /></button>
+				<button v-if="canLockThread()"    @click="onToggleLocked(thread)">Toggle Locked <img src="/icons/lock.png" /></button>
+				<button v-if="canArchiveThread()" @click="onArchive(thread)">Archive <img src="/icons/archive.png" /></button>
+				<button v-if="canDeleteThread()"  @click="onDelete(thread)">Delete <img src="/icons/delete.png" /></button>
+				<span v-if="canChangeThreadAutoCycle()">
 					<label for=""><abbr title="Limit thread to this many posts.
 Older posts are deleted.
 A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>

@@ -374,9 +374,11 @@ import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vu
 		<hr />
 
 		<!-- Navigation and search #2 -->
-		[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
-		[<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>]
-		[<a class="link" :href="`#top`">Top</a>]
+		<div>
+			[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
+			[<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>]
+			[<a class="link" :href="`#top`">Top</a>]
+		</div>
 	</template>
 
 	<BoardListNav :isCatalog=false />
