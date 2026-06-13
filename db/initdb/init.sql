@@ -20,6 +20,8 @@ create table boards (
 	code_enabled		bool		default false,
 	math_enabled		bool		default false,
 	max_threads			integer		default 100,
+	allow_spoilers		bool		default false,
+	spoiler_image		varchar		default null,
 	-- ==================================== --
 	post_count 		integer default 0,
 	bytes_uploaded 	integer default 0
@@ -61,6 +63,7 @@ create table posts (
 	img_height	integer,
 	md5 		varchar,						-- Stored as base64
 	src_filename varchar,
+	spoiler		bool default false,
 	html 		varchar
 );
 

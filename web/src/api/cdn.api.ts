@@ -9,7 +9,11 @@ export class CdnAPI {
 	}
 
 	static GetBannersURI(fname: string): string {
-		return `${ENV.CDN}/banners/${fname}`;
+		return `${ENV.CDN}/public/banners/${fname}`;
+	}
+
+	static GetSpoilerURI(fname: string): string {
+		return `${ENV.CDN}/public/spoiler/${fname}`;
 	}
 
 	static GetPostImageURI(post: PostDTO): string | undefined {
@@ -28,25 +32,11 @@ export class CdnAPI {
 	}
 
 	static async GetTitleBanners(): Promise<string[]> {
-		return axiosInstanceCDN.get("banners/title").then((res) => {
-			/*
-			[
-				{ "name":"b_01.png", "type":"file", "mtime":"Fri, 12 Jun 2026 12:40:59 GMT", "size":11688 },
-				{ "name":"g_01.gif", "type":"file", "mtime":"Fri, 12 Jun 2026 12:44:04 GMT", "size":12846 }
-			]
-			*/
-			return (res.data! as unknown as any[]).map((r: any) => r.name!);
-		}).catch((err) => {
-			throw err;
-		});
+		return this.GetFilesIn("public/banners/title");
 	}
 
 	static async GetBoardBanners(): Promise<string[]> {
-		return axiosInstanceCDN.get("banners/board").then((res) => {
-			return (res.data! as unknown as any[]).map((r: any) => r.name!);
-		}).catch((err) => {
-			throw err;
-		});
+		return this.GetFilesIn("public/banners/board");
 	}
 
 	static GetTitleBanner = (fname: string[]): string | undefined => {
@@ -65,5 +55,19 @@ export class CdnAPI {
 		const i = Math.floor(Math.random() * fname.length);
 		console.log(fname, i);
 		return this.GetBannersURI("board/" + fname[i]!);
+	}
+
+	static GetFilesIn = (folder: string) => {
+		return axiosInstanceCDN.get(folder).then((res) => {
+			/*
+			[
+				{ "name":"b_01.png", "type":"file", "mtime":"Fri, 12 Jun 2026 12:40:59 GMT", "size":11688 },
+				{ "name":"g_01.gif", "type":"file", "mtime":"Fri, 12 Jun 2026 12:44:04 GMT", "size":12846 }
+			]
+			*/
+			return (res.data! as unknown as any[]).map((r: any) => r.name!);
+		}).catch((err) => {
+			throw err;
+		});
 	}
 }

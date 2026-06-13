@@ -6,6 +6,7 @@
 	import { GetElipsisString, IsAlphaNumeric, StripSlashes } from '@/util/various.util';
 	import { GetFileSizeByteFromString, GetFileSizeByteString } from '@/util/file.util';
 	import { MetaAPI } from '@/api/meta.api';
+	import { CdnAPI } from '@/api/cdn.api';
 
 	interface Props {
 		currentBoardValue: BoardDTO | undefined;
@@ -14,6 +15,8 @@
 
 	const props = defineProps<Props>();
 	const emits = defineEmits(['created']);
+
+	const spoiler_images = ref<string[]>([]);
 
 	const boardDTO = ref<BoardDTO>({
 		name: '',
@@ -31,11 +34,17 @@
 			ids_enabled: false,
 			code_enabled: false,
 			math_enabled: false,
-			max_threads: 100
+			max_threads: 100,
+			allow_spoilers: false,
+			spoiler_image: "",
 		},
 		id: 0,
 		created_at: '',
-		post_count: 0
+		deleted_at: '',
+		meta: {
+			post_count: 0,
+			bytes_uploaded: 0
+		}
 	});
 
 	const addMimeTypeInputVal = ref<string>("");
@@ -47,6 +56,15 @@
 			boardDTO.value = Object.assign(boardDTO.value, props.currentBoardValue);
 		}
 		setMimePreset("image+video");
+
+		CdnAPI.GetFilesIn("public/spoiler/").then((res) => {
+			spoiler_images.value = res.sort();
+			if (boardDTO.value && spoiler_images.value?.length > 0) {
+				if (boardDTO.value.config.spoiler_image == "") {
+					boardDTO.value.config.spoiler_image = spoiler_images.value[0]!;
+				}
+			}
+		});
 	});
 
 	const isFormForNewBoard = () => props.currentBoardValue == undefined;
@@ -200,6 +218,22 @@
 			<button type="button" @click="setMimePreset('image')">Image only</button>
 			<button type="button" @click="setMimePreset('video')">Video only</button>
 		</span><br/>
+
+		<label for="spoilers-enabled">Spoilers enabled: </label>
+		<input id="spoilers-enabled" type=checkbox v-model="boardDTO.config.allow_spoilers" /><br/>
+
+		<div v-if="boardDTO.config.allow_spoilers">
+			<label for="spoiler-image">Spoilers image: </label>
+
+			<div>
+				<div v-for="fname of spoiler_images">
+					<input type="radio" :id="`spoiler-${fname}`" :value="fname" v-model="boardDTO.config.spoiler_image" />
+					<label :for="`spoiler-${fname}`">
+						<img :src="CdnAPI.GetSpoilerURI(fname)" />
+					</label>
+				</div>
+			</div>
+		</div>
 
 		<label for="locked">Locked: </label>
 		<input id="locked" type=checkbox v-model="boardDTO.config.locked" /><br/>

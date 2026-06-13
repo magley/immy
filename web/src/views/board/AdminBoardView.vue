@@ -112,6 +112,7 @@
 				<th>Max Threads</th>
 				<th>Bump Limit</th>
 				<th>Image Limit</th>
+				<th>Spoilers</th>
 				<th>Flags</th>
 				<th>IDs</th>
 				<th>Math</th>
@@ -135,6 +136,7 @@
 					<td>{{board.config.max_threads}}</td>
 					<td>{{board.config.bump_limit}}</td>
 					<td>{{board.config.image_limit}}</td>
+					<td>{{board.config.allow_spoilers}}</td>
 					<td>{{board.config.flags_enabled}}</td>
 					<td>{{board.config.ids_enabled}}</td>
 					<td>{{board.config.math_enabled}}</td>

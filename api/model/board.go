@@ -31,6 +31,8 @@ type BoardConfig struct {
 	CodeEnabled bool 			`json:"code_enabled"`
 	MathEnabled bool			`json:"math_enabled"`
 	MaxThreads  uint			`json:"max_threads"`
+	AllowSpoilers bool			`json:"allow_spoilers"`
+	SpoilerImage string			`json:"spoiler_image"`
 }
 
 type BoardMeta struct {

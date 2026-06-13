@@ -14,6 +14,8 @@ export interface BoardConfig {
     code_enabled: boolean;
     math_enabled: boolean;
     max_threads: number;
+    allow_spoilers: boolean;
+    spoiler_image: string;
 }
 
 export interface BoardMeta {
