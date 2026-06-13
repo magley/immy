@@ -17,6 +17,8 @@
   --greentext-color: #789922;
   --redtext-color: red;
   --hr-color: #d0d0ff;
+  --spoiler-background-color: black;
+  --spoiler-text-color: white;
 
   --font: sans-serif;
   --font-size: 1em;
@@ -187,4 +189,14 @@ hr {
   .icon {
     vertical-align: center;
   }
+}
+
+
+.spoiler-text {
+  background-color: var(--spoiler-background-color) !important;
+  color: var(--spoiler-background-color) !important;
+}
+
+.spoiler-text:hover {
+  color: var(--spoiler-text-color) !important;
 }

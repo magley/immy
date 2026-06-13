@@ -1,10 +1,8 @@
 import type { BoardDTO } from "@/api/board.api";
-import { CdnAPI } from "@/api/cdn.api";
 import type { ApiResponse } from "@/api/http";
 import { type PostDTO, PostAPI } from "@/api/post.api";
 import type { ThreadDTO } from "@/api/thread.api";
 import type { AxiosResponse, AxiosError } from "axios";
-import { isWhiteSpaceLike, isWhiteSpaceSingleLine } from "typescript";
 
 export const GetPostTimeReadable = (dateStr: string) => {
 	var date: Date = new Date(dateStr);
@@ -70,7 +68,7 @@ export type PostSemanticToken = {
 	kind: "semantic";
 	text: string;
 
-	type: "math" | "code";
+	type: "math" | "code" | "spoiler";
 }
 
 export type PostToken = PostTextToken | PostLinkToken | PostSemanticToken;
@@ -211,10 +209,10 @@ const ParseNonSemanticToken = (text: string): PostToken[] => {
 	return tokens2;
 }
 
-const ParsePostTokens = (text: string, allowMath: boolean, allowCode: boolean): PostToken[] => {
+const ParsePostTokens = (text: string, allowMath: boolean, allowCode: boolean, allowSpoiler: boolean): PostToken[] => {
 	type SemanticBlock = {
 		text: string;
-		kind: "text" | "math" | "code";
+		kind: "text" | "math" | "code" | "spoiler";
 	};
 
 	// Split text into semantic blocks.
@@ -232,6 +230,13 @@ const ParsePostTokens = (text: string, allowMath: boolean, allowCode: boolean): 
 			});
 			t = t.substring(t.length - 6);
 		}
+		else if (t.endsWith("[spoiler]")) {
+			semanticBlocks.push({
+				text: t.substring(0, t.length - 9),
+				kind: "text"
+			});
+			t = t.substring(t.length - 9);
+		}
 
 		// Math block
 		if (allowMath && t.startsWith("[math]") && t.endsWith("[/math]")) {
@@ -246,6 +251,14 @@ const ParsePostTokens = (text: string, allowMath: boolean, allowCode: boolean): 
 			semanticBlocks.push({
 				text: t.substring(6, t.length - 7),
 				kind: "code"
+			});
+			t = "";
+		}
+		// Spoiler block
+		else if (allowSpoiler && t.startsWith("[spoiler]") && t.endsWith("[/spoiler]")) {
+			semanticBlocks.push({
+				text: t.substring(9, t.length - 10),
+				kind: "spoiler"
 			});
 			t = "";
 		}
@@ -268,6 +281,12 @@ const ParsePostTokens = (text: string, allowMath: boolean, allowCode: boolean): 
 				kind: "semantic",
 				text: semanticBlock.text.trim(),
 				type: "code",
+			});
+		} else if (semanticBlock.kind == "spoiler") {
+			res.push({
+				kind: "semantic",
+				text: semanticBlock.text.trim(),
+				type: "spoiler",
 			});
 		}
 	}
@@ -312,7 +331,7 @@ export const ProcessPost = async (post: PostDTO,
 		};
 	}
 
-	result.tokens = ParsePostTokens(post.content, board.config.math_enabled, board.config.code_enabled);
+	result.tokens = ParsePostTokens(post.content, board.config.math_enabled, board.config.code_enabled, board.config.allow_spoilers);
 	for (let tok of result.tokens) {
 		if (tok.kind == 'link') {
 			// Before the proper routes are attributed to each link, add a

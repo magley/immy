@@ -40,6 +40,7 @@
 	const subject = ref<string>('');
 	const textArea = useTemplateRef('text-area');
 
+	const spoilerExpanded = ref<boolean>(false);
 	const mathExpanded = ref<boolean>(false);
 	const codeExpanded = ref<boolean>(false);
 
@@ -160,12 +161,15 @@
 	}
 
 	const clearSelectedFile = () => {
-		const fileInput: HTMLFormElement = document.getElementById("reply-file-upload") as HTMLFormElement;
+		const fileInput: HTMLFormElement = document.getElementById(`reply-file-upload-${id}`) as HTMLFormElement;
 		fileInput.value = null;
 		fileBytes.value = null;
 		fileName.value = null;
 	}
 
+	const toggleHelpSpoiler = () => {
+		spoilerExpanded.value = !spoilerExpanded.value;
+	}
 	const toggleHelpMath = () => {
 		mathExpanded.value = !mathExpanded.value;
 	}
@@ -182,13 +186,29 @@
 		<input type="file" :accept="mime_types_allowed.join(', ')" @change="onFileSelected" :id="`reply-file-upload-${id}`"><br/>
 		<template v-if="fileError"><span class="error">{{fileError}}</span></template>
 
-		<label :for="`create-post-spoiler-${id}`">Spoiler:</label>
-		<input v-if="board.config.allow_spoilers" :id="`create-post-spoiler-${id}`" type=checkbox v-model="replyDTO.spoiler"/>
-		<br/>
+		<div v-if="board.config.allow_spoilers" >
+			<label :for="`create-post-spoiler-${id}`">
+				Spoiler:
+			</label>
+			<input :id="`create-post-spoiler-${id}`" type=checkbox v-model="replyDTO.spoiler"/>
+		</div>
 
 		<br/>
 
 		<div class="help-container">
+			<div v-if="board.config.spoiler_image">
+				Spoilers are enabled <a @click.prevent="toggleHelpSpoiler">[Help]</a>
+				<div v-if="spoilerExpanded" class="help-explanation">
+					Wrap hidden text with <tt>[spoiler] [/spoiler]</tt> tags:
+<pre>
+Darth Vader is [spoiler]Luke's father[/spoiler]
+</pre>
+					This will render:
+					<p>
+					Darth Vader is <span class="spoiler-text">Luke's father</span>
+					</p>
+				</div>
+			</div>
 			<div v-if="board.config.math_enabled">
 				<vue-latex expression="\LaTeX" /> is supported <a @click.prevent="toggleHelpMath">[Help]</a>
 				<div v-if="mathExpanded" class="help-explanation">

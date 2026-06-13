@@ -241,6 +241,9 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 						<template v-else-if="token.type == 'code'">
 							<highlightjs autodetect :code="token.text" />
 						</template>
+						<template v-else-if="token.type == 'spoiler'">
+							<span class="spoiler-text">{{ token.text }}</span>
+						</template>
 					</span>
 				</span>
 			</span>
