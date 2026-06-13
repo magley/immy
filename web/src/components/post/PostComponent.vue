@@ -377,8 +377,8 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 
 							&.spoiler {
 								display: inline;
-								width: 150px !important;
-								height: 150px !important;
+								width: 160px !important;
+								height: 160px !important;
 								vertical-align: top;
 							}
 

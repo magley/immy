@@ -128,31 +128,33 @@
 		</div>
 
 		<table>
-			<tr>
-				<th class="w10">No.</th>
-				<th class="w40">Excerpt</th>
-				<th>Posts</th>
-				<th>Images</th>
-				<th>Users</th>
-				<th class="w10">Created At</th>
-				<th class="w10">Archived At</th>
-			</tr>
-			<tr v-for="thread of threads">
-				<td>
-					<RouterLink
-						:to="`/${board.code}/thread/${thread.post.num}`"
-						@pointerenter="onPostLinkHover(`>>${thread.post.num}`)"
-						@pointerleave="onPostLinkUnhover(`>>${thread.post.num}`)">
-						&gt;&gt;{{ thread.post.num }}
-					</RouterLink>
-				</td>
-				<td>{{ thread.post.content }}</td>
-				<td>{{ thread.stats.post_count }}</td>
-				<td>{{ thread.stats.image_count }}</td>
-				<td>{{ thread.stats.user_count }}</td>
-				<td>{{ GetPostTimeReadable(thread.post.created_at) }}</td>
-				<td>{{ GetPostTimeReadable(thread.stats.last_bump) }}</td>
-			</tr>
+			<tbody>
+				<tr>
+					<th class="w10">No.</th>
+					<th class="w40">Excerpt</th>
+					<th>Posts</th>
+					<th>Images</th>
+					<th>Users</th>
+					<th class="w10">Created At</th>
+					<th class="w10">Archived At</th>
+				</tr>
+				<tr v-for="thread of threads">
+					<td>
+						<RouterLink
+							:to="`/${board.code}/thread/${thread.post.num}`"
+							@pointerenter="onPostLinkHover(`>>${thread.post.num}`)"
+							@pointerleave="onPostLinkUnhover(`>>${thread.post.num}`)">
+							&gt;&gt;{{ thread.post.num }}
+						</RouterLink>
+					</td>
+					<td>{{ thread.post.content }}</td>
+					<td>{{ thread.stats.post_count }}</td>
+					<td>{{ thread.stats.image_count }}</td>
+					<td>{{ thread.stats.user_count }}</td>
+					<td>{{ GetPostTimeReadable(thread.post.created_at) }}</td>
+					<td>{{ GetPostTimeReadable(thread.stats.last_bump) }}</td>
+				</tr>
+			</tbody>
 		</table>
 
 		<hr />

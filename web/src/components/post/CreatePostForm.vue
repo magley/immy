@@ -6,7 +6,10 @@
 	import { FileToBase64, GetFileFromEvent } from '@/util/file.util';
 	import { type BoardDTO } from '@/api/board.api';
 	import { ThreadAPI, type CreateThreadDTO, type ThreadDTO } from '@/api/thread.api';
-	
+	import { useId } from 'vue';
+
+	const id = useId();
+
 	export interface CreatePostProps {
 		/** If `thread` is undefined, then it's assumed that this
 		  * post is being created as part of a new thread. */
@@ -175,12 +178,12 @@
 	<form @submit.prevent="onSubmitReply">
 		<input type=text placeholder="Name" v-model="replyDTO.name"/><br/>
 		<input type=text placeholder="Options" v-model="replyDTO.options"/><br/>
-		<textarea cols=30 rows=10 id="reply-area" placeholder="Text..." ref='text-area' v-model="replyDTO.content"/><br/>
-		<input type="file" :accept="mime_types_allowed.join(', ')" @change="onFileSelected" id="reply-file-upload"><br/>
+		<textarea cols=30 rows=10 :id="`reply-area-${id}`" placeholder="Text..." ref='text-area' v-model="replyDTO.content"/><br/>
+		<input type="file" :accept="mime_types_allowed.join(', ')" @change="onFileSelected" :id="`reply-file-upload-${id}`"><br/>
 		<template v-if="fileError"><span class="error">{{fileError}}</span></template>
 
-		<label for="create-post-spoiler">Spoiler:</label>
-		<input v-if="board.config.allow_spoilers" id="create-post-spoiler" type=checkbox v-model="replyDTO.spoiler"/>
+		<label :for="`create-post-spoiler-${id}`">Spoiler:</label>
+		<input v-if="board.config.allow_spoilers" :id="`create-post-spoiler-${id}`" type=checkbox v-model="replyDTO.spoiler"/>
 		<br/>
 
 		<br/>

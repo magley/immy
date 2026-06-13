@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { ref, onMounted } from 'vue';
+	import { ref, onMounted, useId } from 'vue';
 	import { BoardAPI, type BoardDTO, type UpdateBoardDTO, type CreateBoardDTO } from "@/api/board.api.ts";
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
@@ -7,6 +7,8 @@
 	import { GetFileSizeByteFromString, GetFileSizeByteString } from '@/util/file.util';
 	import { MetaAPI } from '@/api/meta.api';
 	import { CdnAPI } from '@/api/cdn.api';
+
+	const id = useId();
 
 	interface Props {
 		currentBoardValue: BoardDTO | undefined;
@@ -179,20 +181,20 @@
 
 <template>
 	<form @submit.prevent="onSubmit">
-		<label for="code"><abbr title="Shorthand name for the board, used in URLs and when cross-referencing">Code</abbr>: </label>
-		<input id="code" type=text placeholder="/a/, /b/, ..." required v-model="boardDTO.code"/><br/>
+		<label :for="`code-${id}`"><abbr title="Shorthand name for the board, used in URLs and when cross-referencing">Code</abbr>: </label>
+		<input :id="`code-${id}`" type=text placeholder="/a/, /b/, ..." required v-model="boardDTO.code"/><br/>
 
-		<label for="name">Name: </label>
-		<input id="name" type=text placeholder="('Anime and Manga')" required v-model="boardDTO.name"/><br/>
+		<label :for="`name-${id}`">Name: </label>
+		<input :id="`name-${id}`" type=text placeholder="('Anime and Manga')" required v-model="boardDTO.name"/><br/>
 
-		<label for="description">Description: </label>
-		<textarea id="description" placeholder="Description" v-model="boardDTO.description"/><br/>
+		<label :for="`description-${id}`">Description: </label>
+		<textarea :id="`description-${id}`" placeholder="Description" v-model="boardDTO.description"/><br/>
 
-		<label for="max-file-size">Max file size: </label>
-		<input id="max-file-size" type=text placeholder="2 MB, 256KB, 1048576" required v-model="maxFileSizeInputVal"/><br/>
+		<label :for="`max-file-size-${id}`">Max file size: </label>
+		<input :id="`max-file-size-${id}`" type=text placeholder="2 MB, 256KB, 1048576" required v-model="maxFileSizeInputVal"/><br/>
 
-		<label for="reply-files-allowed">Replies can post files: </label>
-		<input id="reply-files-allowed" type=checkbox v-model="boardDTO.config.reply_files_allowed" /><br/>
+		<label :for="`reply-files-allowed-${id}`">Replies can post files: </label>
+		<input :id="`reply-files-allowed-${id}`" type=checkbox v-model="boardDTO.config.reply_files_allowed" /><br/>
 
 		<span class="input-group">
 			<label>Allowed MIME types for files: </label>
@@ -204,8 +206,8 @@
 			</ul>
 
 			<button type="button" @click="onClickAddMimeType">+</button>
-			<input id="allowed-mime-types" v-model="addMimeTypeInputVal" list="allowed-mime-types-datalist" placeholder="image/png (autocomplete)" />
-			<datalist id="allowed-mime-types-datalist">
+			<input :id="`allowed-mime-types-${id}`" v-model="addMimeTypeInputVal" list="allowed-mime-types-datalist" placeholder="image/png (autocomplete)" />
+			<datalist :id="`allowed-mime-types-datalist-${id}`">
 				<option
 					v-for="mime of allowedMimeTypes.filter(x => !boardDTO.config.mime_types_allowed.includes(x))"
 					:value="mime" />
@@ -219,48 +221,53 @@
 			<button type="button" @click="setMimePreset('video')">Video only</button>
 		</span><br/>
 
-		<label for="spoilers-enabled">Spoilers enabled: </label>
-		<input id="spoilers-enabled" type=checkbox v-model="boardDTO.config.allow_spoilers" /><br/>
+		<label :for="`spoilers-enabled-${id}`">Spoilers enabled: </label>
+		<input :id="`spoilers-enabled-${id}`" type=checkbox v-model="boardDTO.config.allow_spoilers" /><br/>
 
 		<div v-if="boardDTO.config.allow_spoilers">
-			<label for="spoiler-image">Spoilers image: </label>
+			<label :for="`spoiler-image-${id}`">Spoilers image: </label>
 
-			<div>
-				<div v-for="fname of spoiler_images">
-					<input type="radio" :id="`spoiler-${fname}`" :value="fname" v-model="boardDTO.config.spoiler_image" />
-					<label :for="`spoiler-${fname}`">
+			<div class="image-select-container">
+				<span v-for="fname of spoiler_images" class="image" :class="{selected: boardDTO.config.spoiler_image == fname}">
+					<input type="radio" :id="`spoiler-${fname}-${id}`" :value="fname" v-model="boardDTO.config.spoiler_image" />
+					<label :for="`spoiler-${fname}-${id}`">
 						<img :src="CdnAPI.GetSpoilerURI(fname)" />
+						<br/>
+
+						<span class="label">
+							{{ fname }}
+						</span>
 					</label>
-				</div>
+				</span>
 			</div>
 		</div>
 
-		<label for="locked">Locked: </label>
-		<input id="locked" type=checkbox v-model="boardDTO.config.locked" /><br/>
+		<label :for="`locked-${id}`">Locked: </label>
+		<input :id="`locked-${id}`" type=checkbox v-model="boardDTO.config.locked" /><br/>
 
-		<label for="hidden">Hidden: </label>
-		<input id="hidden" type=checkbox v-model="boardDTO.config.hidden" /><br/>
+		<label :for="`hidden-${id}`">Hidden: </label>
+		<input :id="`hidden-${id}`" type=checkbox v-model="boardDTO.config.hidden" /><br/>
 
-		<label for="max-threads">Maximum threads: </label>
-		<input id="max-threads" type=number :min="1" :max="1000" v-model="boardDTO.config.max_threads" /><br/>
+		<label :for="`max-threads-${id}`">Maximum threads: </label>
+		<input :id="`max-threads-${id}`" type=number :min="1" :max="1000" v-model="boardDTO.config.max_threads" /><br/>
 
-		<label for="bump-limit">Bump limit: </label>
-		<input id="bump-limit" type=number :min="1" :max="1000" v-model="boardDTO.config.bump_limit" /><br/>
+		<label :for="`bump-limit-${id}`">Bump limit: </label>
+		<input :id="`bump-limit-${id}`" type=number :min="1" :max="1000" v-model="boardDTO.config.bump_limit" /><br/>
 
-		<label for="image-limit">Image limit: </label>
-		<input id="image-limit" type=number :min="1" :max="1000" v-model="boardDTO.config.image_limit" /><br/>
+		<label :for="`image-limit-${id}`">Image limit: </label>
+		<input :id="`image-limit-${id}`" type=number :min="1" :max="1000" v-model="boardDTO.config.image_limit" /><br/>
 
-		<label for="flags-enabled">Flags enabled: </label>
-		<input id="flags-enabled" type=checkbox v-model="boardDTO.config.flags_enabled" /><br/>
+		<label :for="`flags-enabled-${id}`">Flags enabled: </label>
+		<input :id="`flags-enabled-${id}`" type=checkbox v-model="boardDTO.config.flags_enabled" /><br/>
 
-		<label for="ids-enabled">IDs enabled: </label>
-		<input id="ids-enabled" type=checkbox v-model="boardDTO.config.ids_enabled" /><br/>
+		<label :for="`ids-enabled-${id}`">IDs enabled: </label>
+		<input :id="`ids-enabled-${id}`" type=checkbox v-model="boardDTO.config.ids_enabled" /><br/>
 
-		<label for="math-enabled">Math typesetting enabled: </label>
-		<input id="math-enabled" type=checkbox v-model="boardDTO.config.math_enabled" /><br/>
+		<label :for="`math-enabled-${id}`">Math typesetting enabled: </label>
+		<input :id="`math-enabled-${id}`" type=checkbox v-model="boardDTO.config.math_enabled" /><br/>
 
-		<label for="code-enabled">Code blocks enabled: </label>
-		<input id="code-enabled" type=checkbox v-model="boardDTO.config.code_enabled" /><br/>
+		<label :for="`code-enabled-${id}`">Code blocks enabled: </label>
+		<input :id="`code-enabled-${id}`" type=checkbox v-model="boardDTO.config.code_enabled" /><br/>
 
 		<br/>
 		<button type=submit>
@@ -285,5 +292,27 @@
 		padding: 0.5em;
 		display: inline-block;
 		margin: 2px 0px;
+	}
+
+	.image-select-container {
+		display: flex;
+		flex-wrap: wrap;
+
+		.image {
+			/* 33% => 3 items per row */
+			flex: 0 0 33%;
+
+			margin: 0.25em 0;
+			padding: 0.25em 0;
+			border: 1px solid var(--background-color-accent);
+
+			&.selected {
+				background-color: var(--background-color-accent);
+
+				.label {
+					font-weight: bold;
+				}
+			}
+		}
 	}
 </style>
