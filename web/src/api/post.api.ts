@@ -26,6 +26,7 @@ export interface PostDTO {
     /** Base64 of MD5 hash. */
     md5: string;
     src_filename: string;
+    spoiler: boolean;
     html: string;
 }
 
@@ -35,6 +36,7 @@ export interface CreatePostForThreadDTO {
     filename: string;
     filebytes: string;
     options: string;
+    spoiler: boolean;
 }
 
 export interface CreatePostDTO {
@@ -43,6 +45,7 @@ export interface CreatePostDTO {
     filename: string | null;
     filebytes: string | null;
     options: string;
+    spoiler: boolean;
     
     thread_id: number;
 }

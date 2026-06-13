@@ -25,7 +25,8 @@
 		filename: null,
 		filebytes: null,
 		options: '',
-		thread_id: 0
+		thread_id: 0,
+		spoiler: false,
 	});
 	const replyError = ref<string | undefined>(undefined);
 	
@@ -47,7 +48,8 @@
 			filename: null,
 			filebytes: null,
 			options: '',
-			thread_id: 0
+			thread_id: 0,
+			spoiler: false,
 		};
 		clearSelectedFile();
 	}
@@ -111,7 +113,8 @@
 			content: replyDTO.value.content,
 			filename: replyDTO.value.filename,
 			filebytes: replyDTO.value.filebytes,
-			options: replyDTO.value.options
+			options: replyDTO.value.options,
+			spoiler: replyDTO.value.spoiler,
 		};
 		const createThreadDTO: CreateThreadDTO = {
 			board_code: props.board.code,
@@ -175,6 +178,10 @@
 		<textarea cols=30 rows=10 id="reply-area" placeholder="Text..." ref='text-area' v-model="replyDTO.content"/><br/>
 		<input type="file" :accept="mime_types_allowed.join(', ')" @change="onFileSelected" id="reply-file-upload"><br/>
 		<template v-if="fileError"><span class="error">{{fileError}}</span></template>
+
+		<label for="create-post-spoiler">Spoiler:</label>
+		<input v-if="board.config.allow_spoilers" id="create-post-spoiler" type=checkbox v-model="replyDTO.spoiler"/>
+		<br/>
 
 		<br/>
 

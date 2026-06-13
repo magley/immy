@@ -103,6 +103,9 @@ func (r *PostRepo) UpdatePost(post *model.Post, dto model.UpdatePostDTO) (*model
 	if dto.Html != nil {
 		post.Html = *dto.Html
 	}
+	if dto.Spoiler != nil {
+		post.Spoiler = *dto.Spoiler
+	}
 
 	result := r.DB.Save(&post)
 	return post, result.Error

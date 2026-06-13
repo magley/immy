@@ -183,11 +183,25 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 				</div>
 
 				<a :href="CdnAPI.GetPostImageURI(post)" target="_blank" @click.prevent class="post-file-link">
-					<!-- Thumbnail or real image. -->
-					<img v-if="!image_data?.expanded"
-					:src="CdnAPI.GetPostImageThumbnailURI(post)"
-					@click="onClickPostImage(post.id)"
-					class="post-image-thumb" />
+					<!-- Thumbnail -->
+
+					<template v-if="!image_data?.expanded">
+						<!-- Spoiler -->
+						<img v-if="board.config.allow_spoilers && post.spoiler"
+							@click="onClickPostImage(post.id)"
+							class="post-image-thumb spoiler"
+							:src="CdnAPI.GetSpoilerURI(board.config.spoiler_image)"
+						>
+						<!-- Regular thumbnail -->
+						<img v-else
+							@click="onClickPostImage(post.id)"
+							class="post-image-thumb"
+							:src="CdnAPI.GetPostImageThumbnailURI(post)"
+						>
+					</template>
+
+					<!-- Real image/video -->
+
 					<template v-else>
 						<img v-if="isPostImage(post)"
 							:src="CdnAPI.GetPostImageURI(post)"
@@ -358,6 +372,13 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 								display: inline;
 								max-width: 40%;
 								max-height: 40%;
+								vertical-align: top;
+							}
+
+							&.spoiler {
+								display: inline;
+								width: 150px !important;
+								height: 150px !important;
 								vertical-align: top;
 							}
 

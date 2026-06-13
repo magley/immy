@@ -188,6 +188,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user
 		ImgWidth: 0,
 		ImgHeight: 0,
 		MD5: "",
+		Spoiler: dto.Spoiler,
 		Html: "",
 	}
 
@@ -305,6 +306,7 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		SrcFilename: dto.Filename,
 		Filename: util.GetPostImageFilename(board.Code, dto.Filename),
 		MD5: md5,
+		Spoiler: dto.Spoiler,
 		Html: "",
 	}
 	

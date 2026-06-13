@@ -29,6 +29,7 @@ type Post struct {
 	ImgHeight	uint		`json:"img_height"`
 	MD5			string		`json:"md5"`        // Base64 of file
 	SrcFilename string 		`json:"src_filename"`
+	Spoiler 	bool 		`json:"spoiler"`
 	Html		string 		`json:"html"`
 }
 
@@ -38,6 +39,7 @@ type CreatePostForThreadDTO struct {
 	Filename 	string 		`json:"filename" binding:"required"`
 	Filebytes 	string    	`json:"filebytes" binding:"required"`
 	Options 	string		`json:"options"`
+	Spoiler		bool		`json:"spoiler"`
 }
 
 type CreatePostDTO struct {
@@ -46,6 +48,7 @@ type CreatePostDTO struct {
 	Filename 	*string 	`json:"filename"`
 	Filebytes 	*string    	`json:"filebytes"`
 	Options 	string		`json:"options"`
+	Spoiler		bool		`json:"spoiler"`
 	
 	ThreadID	uint 		`json:"thread_id"`
 }
@@ -57,4 +60,5 @@ type UpdatePostDTO struct {
 	Content 	*string		`json:"content"`
 	Filename 	*string 	`json:"filename"`
 	Html		*string 	`json:"html"`
+	Spoiler		*bool		`json:"spoiler"`
 }
