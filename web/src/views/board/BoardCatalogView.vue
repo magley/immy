@@ -333,10 +333,24 @@ import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vu
 				<span v-if='isShowingHiddenOnly == isHidden(thread)' class="catalog-post">
 					<div class="image-container">
 						<a href="#" @click.prevent="(e) => onClickThreadImage(e, thread)">
-							<img
+<!-- 							<img
 							:src="CdnAPI.GetPostImageThumbnailURI(thread.post)"
 							:style="getDynamicImageStyle(thread)"
 							:class="{pinned: isPinned(thread)}"
+							>
+ -->
+							<!-- Spoiler -->
+							<img v-if="board.config.allow_spoilers && thread.post.spoiler"
+								:class="{pinned: isPinned(thread)}"
+								class="spoiler"
+								:style="getDynamicImageStyle(thread)"
+								:src="CdnAPI.GetSpoilerURI(board.config.spoiler_image)"
+							>
+							<!-- Regular thumbnail -->
+							<img v-else
+								:class="{pinned: isPinned(thread)}"
+								:style="getDynamicImageStyle(thread)"
+								:src="CdnAPI.GetPostImageThumbnailURI(thread.post)"
 							>
 						</a>
 						<div class="inside-image">
@@ -458,6 +472,11 @@ import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vu
 
 					&.pinned:hover {
 						border: 4px dashed var(--banner-title-color);
+					}
+
+					&.spoiler {
+						width: 160px !important;
+						height: 160px !important;
 					}
 				}
 
