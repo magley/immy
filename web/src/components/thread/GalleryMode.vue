@@ -3,15 +3,19 @@
 	import { CdnAPI } from '@/api/cdn.api';
 	import type { PostDTO } from '@/api/post.api';
 	import type { ThreadDTO } from '@/api/thread.api';
-import { GetMimeTypeFromFilename } from '@/util/file.util';
-import { clamp } from '@vueuse/core';
+	import { GetMimeTypeFromFilename } from '@/util/file.util';
+	import { clamp } from '@vueuse/core';
 	import { onMounted, onUnmounted, ref } from 'vue';
+	import { useRoute, useRouter } from 'vue-router';
 
 	interface GalleryModeProps {
 		board: BoardDTO;
 		thread: ThreadDTO;
 		posts: PostDTO[];
 	}
+
+	const router = useRouter();
+	const route = useRoute();
 
 	const open = ref<boolean>(false);
 
@@ -85,6 +89,8 @@ import { clamp } from '@vueuse/core';
 		} else if (e.key == ".") {
 			volume.value += 0.05;
 			volume.value = clamp(volume.value, 0, 1);
+		} else if (e.key == "j") {
+			jumpToPost(currentPost.value);
 		}
 	}
 
@@ -95,6 +101,16 @@ import { clamp } from '@vueuse/core';
 	}
 	const isPostVideo = (post: PostDTO) => {
 		return GetMimeTypeFromFilename(post.filename).startsWith('video/');
+	}
+
+	const jumpToPost = (post: PostDTO | undefined) => {
+		if (!post) return;
+		// TODO: This should not be done here, instead let the parent know using
+		// an emitted event, and let the parent determine what needs to be done.
+		router.replace({'hash': `#p${post.num}`});
+		setTimeout(() => {
+			document.getElementById(route.hash.substring(1))?.scrollIntoView();
+		}, 100);
 	}
 
 </script>
@@ -116,9 +132,11 @@ import { clamp } from '@vueuse/core';
 			<button @click="prevImage" title="Left Arrow Key" :disabled="currentPostIndex == 0">
 				<img src="/icons/back.png" /> Back
 			</button>
+			<span>{{ currentPostIndex + 1}}/{{ imageCount() }}</span>
 			<button @click="nextImage" title="Right Arrow Key" :disabled="currentPostIndex == imageCount() - 1">
 				<img src="/icons/forward.png" /> Next
 			</button>
+			<button @click="jumpToPost(currentPost)" title="J"><img src="/icons/trackback.png" /> Jump to</button>
 			<button @click="exitGalleryMode" title="Escape" >
 				<img src="/icons/cancel.png" /> Exit
 			</button>
@@ -148,7 +166,7 @@ import { clamp } from '@vueuse/core';
 
 <style scoped>
 	#gallery-pane {
-		position: absolute;
+		position: fixed;
 		top: 0;
 		left: 0;
 		width: 100vw;

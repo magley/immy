@@ -236,7 +236,6 @@
 	const onClickPostNo = (postNum: number) => {
 		router.replace({'hash': `#p${postNum}`});
 		highlightedPost.value = postNum;
-		console.log(highlightedPost.value);
 	}
 
 	const onClickPublicId = (userId: string) => {
