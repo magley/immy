@@ -19,7 +19,9 @@
 	import { useTextSelection, useDraggable } from '@vueuse/core';
 	import { UserRole } from '@/api/user.api';
 	import BoardBanner from '@/components/board/BoardBanner.vue';
-import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
+	import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
+	import GalleryMode from '@/components/thread/GalleryMode.vue';
+
 	const route = useRoute();
 	const router = useRouter();
 
@@ -73,6 +75,8 @@ import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vu
 	const peekMouseY = ref<number>(0);
 
 	const userRole = ref<UserRole | undefined>(undefined);
+
+	const galleryMode = useTemplateRef("galleryMode");
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
@@ -398,10 +402,18 @@ import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vu
 	const canReply = (): boolean => {
 		return !thread.value!.locked && !thread.value!.archived && !board.value!.config.locked;
 	}
+
+	const openGalleryMode = () => {
+		galleryMode.value!.OpenGalleryMode();
+	}
 </script>
 
 <template>
 	<BoardListNav :isCatalog=false />
+
+	<template v-if="board && thread">
+		<GalleryMode ref="galleryMode" :board="board" :thread="thread" :posts="posts" />
+	</template>
 
 	<!-- Peek post -->
 	<template v-if="peekPostVisible && peekPost">
@@ -481,7 +493,8 @@ import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vu
 		:locked="thread!.locked"
 		:showCenterElements="false"
 		@updateClicked="reloadThread"
-		@autoTimerToggled="onAutoTimerToggled" />
+		@autoTimerToggled="onAutoTimerToggled"
+		@openedGalleryMode="openGalleryMode" />
 
 		<template v-if="thread">
 			<PostComponent
@@ -524,7 +537,8 @@ import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vu
 		:showCenterElements="true"
 		@openedReplyBox="openFloatingReplyBox"
 		@updateClicked="reloadThread"
-		@autoTimerToggled="onAutoTimerToggled" />
+		@autoTimerToggled="onAutoTimerToggled"
+		@openedGalleryMode="openGalleryMode" />
 	</template>
 
 	<BoardListNav :isCatalog=false />

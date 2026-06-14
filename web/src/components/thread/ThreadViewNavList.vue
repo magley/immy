@@ -15,7 +15,7 @@
 	}
 
 	const props = defineProps<ThreadNavProps>();
-	const emit = defineEmits(['autoTimerToggled', 'updateClicked', 'openedReplyBox']);
+	const emit = defineEmits(['autoTimerToggled', 'updateClicked', 'openedReplyBox', 'openedGalleryMode']);
 	
 	const onSetAutoTimer = (ev: Event) => {
 		emit('autoTimerToggled', (ev.target as HTMLInputElement).checked);
@@ -27,6 +27,10 @@
 
 	const openedReplyBox = () => {
 		emit('openedReplyBox');
+	}
+
+	const openedGalleryMode = () => {
+		emit('openedGalleryMode');
 	}
 </script>
 
@@ -42,6 +46,8 @@
 		[<a class="link" href="#" @click.prevent="doUpdate">Update</a>]
 		[<input type="checkbox" :checked="props.isAutoTimerUsed" @change="onSetAutoTimer" name="auto"><label for="auto"> Auto</label>]
 		<template v-if="props.isAutoTimerUsed">{{ props.autoTimer }}</template>
+		|
+		[<a class="link" href="#" @click.prevent="openedGalleryMode">Gallery</a>]
 	</span>
 	<span class="middle" v-if="showCenterElements">
 		[<a class="link" href="#" @click.prevent="openedReplyBox">Post a Reply</a>]
