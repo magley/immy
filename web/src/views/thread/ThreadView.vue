@@ -402,8 +402,8 @@
 		return !thread.value!.locked && !thread.value!.archived && !board.value!.config.locked;
 	}
 
-	const openGalleryMode = () => {
-		galleryMode.value!.OpenGalleryMode();
+	const openGalleryMode = (index: number) => {
+		galleryMode.value!.OpenGalleryMode(index);
 	}
 </script>
 
@@ -493,7 +493,7 @@
 		:showCenterElements="false"
 		@updateClicked="reloadThread"
 		@autoTimerToggled="onAutoTimerToggled"
-		@openedGalleryMode="openGalleryMode" />
+		@openedGalleryMode="openGalleryMode(0)" />
 
 		<template v-if="thread">
 			<PostComponent
@@ -537,7 +537,7 @@
 		@openedReplyBox="openFloatingReplyBox"
 		@updateClicked="reloadThread"
 		@autoTimerToggled="onAutoTimerToggled"
-		@openedGalleryMode="openGalleryMode" />
+		@openedGalleryMode="openGalleryMode(-1)" />
 	</template>
 
 	<BoardListNav :isCatalog=false />

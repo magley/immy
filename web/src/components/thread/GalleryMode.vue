@@ -51,8 +51,14 @@
 		open.value = false;
 	}
 
-	const OpenGalleryMode = () => {
+	/** Open gallery mode at the specified index. If index is negative, it counts from the back (-1 is last)*/
+	const OpenGalleryMode = (index: number) => {
 		open.value = true;
+		if (index < 0) {
+			currentPostIndex.value = postsWithAnImage().length + index;
+		} else {
+			currentPostIndex.value = index;
+		}
 		currentPostIndexChanged();
 	}
 
