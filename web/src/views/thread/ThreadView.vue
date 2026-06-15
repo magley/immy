@@ -195,6 +195,16 @@
 		return;
 	}
 
+	const deletedPostObject = (id: number) => {
+		for (let j = 0; j < posts.value.length; j++) {
+			if (posts.value[j]!.id == id) {
+				posts.value.splice(j, 1);
+				return;
+			}
+		}
+		return;
+	}
+
 	const determinePage = () => {
 		ThreadAPI.GetThreadsForCatalog(board.value!.code).then((res: AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>) => {
 			let threads: ThreadForCatalogDTO[] = res.data.data!;
@@ -531,6 +541,7 @@
 			@onDelete="deleteThread"
 			@onChangeAutoCycle="onChangeAutoCycle"
 			@onPostUpdated="(dto: PostDTO) => updatePostObject(dto)"
+			@onPostDeleted="(post_id: number) => deletedPostObject(post_id)"
 			/>
 		</template>
 

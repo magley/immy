@@ -14,7 +14,7 @@
 	import CreatePostForm from "@/components/post/CreatePostForm.vue";
 	import type { UserRole } from "@/api/user.api";
 	import BoardBanner from "@/components/board/BoardBanner.vue";
-import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vue";
+	import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vue";
 	
 	const board = ref<BoardDTO | undefined>(undefined);
 
@@ -169,6 +169,18 @@ import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vu
 				}
 
 				return;
+			}
+		}
+	}
+
+	const deletedPostObject = (id: number) => {
+		for (let i = 0; i < threads.value.length; i++) {
+			const thread = threads.value[i]!;
+			for (let j = 0; j < thread.posts.length; j++) {
+				if (thread.posts[j]!.id == id) {
+					thread.posts.splice(j, 1);
+					return;
+				}
 			}
 		}
 	}
@@ -345,6 +357,7 @@ import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vu
 					@onDelete="deleteThread"
 					@onChangeAutoCycle="onChangeAutoCycle"
 					@onPostUpdated="(dto: PostDTO) => updatePostObject(dto)"
+					@onPostDeleted="(post_id: number) => deletedPostObject(post_id)"
 					/>
 					<div v-if="i == 0 && thread.posts.length < thread.stats.post_count">
 						<template v-if="thread.stats.image_count - thread.posts.filter((p) => p.filename).length > 0">

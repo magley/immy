@@ -47,6 +47,7 @@ import type { AxiosError } from 'axios';
 		'onDelete',
 		'onChangeAutoCycle',
 		'onPostUpdated',
+		'onPostDeleted',
 	]);
 
 	const onClickPostNo = (post_num: number) => {
@@ -164,8 +165,6 @@ import type { AxiosError } from 'axios';
 			html: null
 		}
 
-		console.log(props.post.id, " ", dto);
-
 		PostAPI.UpdatePost(props.post.id, dto).then((res) => {
 			onPostUpdated(res.data.data!);
 		}).catch((err: AxiosError) => {
@@ -174,11 +173,20 @@ import type { AxiosError } from 'axios';
 	}
 
 	const deletePost = () => {
-
+		PostAPI.DeletePost(props.post.id).then((res) => {
+			onPostDeleted(props.post.id);
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
 	}
 
 	const onPostUpdated = (postDTO: PostDTO) => {
 		emit("onPostUpdated", postDTO);
+		popupDelete.value.visible = false;
+	}
+	const onPostDeleted = (id: number) => {
+		emit("onPostDeleted", id);
+		popupDelete.value.visible = false;
 	}
 </script>
 
