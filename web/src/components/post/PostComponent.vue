@@ -109,9 +109,67 @@
 	const canChangeThreadAutoCycle = () => {
 		return props.userRole == UserRole.Moderator || props.userRole == UserRole.Admin;
 	}
+
+	const clickBan = (post: PostDTO) => {
+
+	}
+
+	const clickDelete = async (post: PostDTO) => {
+		popupDelete.value.visible =  !popupDelete.value.visible;
+		await nextTick();
+		popupDelete.value.set_position();
+	}
+
+	const clickEdit = (post: PostDTO) => {
+
+	}
+
+	class Popup {
+		visible: boolean = false;
+		elemRef: ShallowRef<HTMLDivElement | null>;
+		elemPosID: string;
+
+		constructor(ref: ShallowRef<HTMLDivElement | null>, elemPosID: string) {
+			this.elemRef = ref;
+			this.elemPosID = elemPosID;
+		}
+
+		set_position = (offsetX: number = 16, offsetY: number = 24) => {
+			if (this.elemRef.value) {
+				const elemPos = document.getElementById(this.elemPosID)!;
+				const rect = elemPos.getBoundingClientRect();
+
+				this.elemRef.value.style.left = `${rect.left + window.scrollX + offsetX}px`;
+				this.elemRef.value.style.top = `${rect.top + window.scrollY + offsetY}px`;
+			}
+		}
+	}
+
+	const popupDeleteRef = useTemplateRef("delete-popup");
+	const popupDelete = ref<Popup>(new Popup(popupDeleteRef, `delete-post-btn-${id}`));
+	onClickOutside(popupDeleteRef, event => {
+		if (!popupDelete.value.visible) { return; }
+		setTimeout(() => { popupDelete.value.visible = false; }, 10);
+	});
+
+	const deletePostFile = () => {
+
+	}
+
+	const deletePost = () => {
+
+	}
 </script>
 
 <template>
+
+	<div v-show="popupDelete.visible" ref="delete-popup" class="popup">
+		<a href="#" @click.prevent="deletePostFile()">Delete file</a>
+		<a href="#" @click.prevent="deletePost()">Delete post</a>
+	</div>
+
+
+
 	<div :id="`p${post.num}`" class="postContainer">
 		<span v-if="thread.post_num != post.num" class="sideArrows"> &gt;&gt; </span>
 		<span class="post" :class="{
@@ -270,6 +328,28 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 </template>
 
 <style scoped>
+	.popup {
+		z-index: 10;
+		position: absolute;
+		border: 1px solid var(--post-border-color);
+		background-color: var(--post-background-color);
+
+		* {
+			border-bottom: 1px solid var(--background-color-accent);
+			padding: 0.2em;
+		}
+
+		*:hover {
+			background-color: var(--background-color);
+		}
+
+		a {
+			text-decoration: none;
+			display: block;
+		}
+	}
+
+
 	.postContainer {
 		display: flex;
 		gap: 2px;
