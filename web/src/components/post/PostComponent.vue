@@ -7,7 +7,10 @@
 	import { GetPostTimeReadable, type PostImageData, type PostLinkToken, type PostToken } from '@/model/post/post.model';
 	import { GetFileSizeByteString, GetMimeTypeFromFilename } from '@/util/file.util';
 	import { GetPublicIdColorBackground, GetPublicIdColorForeground } from '@/util/various.util';
+	import { onClickOutside } from '@vueuse/core';
+	import { ref, useTemplateRef, type ShallowRef, useId, nextTick } from 'vue';
 
+	const id = useId();
 	interface PostComponentProps {
 		userRole: UserRole | undefined;
 
@@ -148,6 +151,20 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 				@click="onClickPublicId(post.public_id)">
 				ID:{{post.public_id}}
 				<template v-if="public_id_count"> ({{public_id_count[post.public_id]}}) </template>
+			</span>
+			<!-- Post management by staff user -->
+			<span v-if="userRole != undefined && !thread.archived" class="admin-tools-small">
+				<a href="#" @click.prevent="clickBan(post)" title="Ban user">
+					<img src="/icons/no.png" alt="Ban" />
+				</a>
+
+				<a href="#" @click.prevent="clickDelete(post)" title="Delete post" :id="`delete-post-btn-${id}`">
+					<img src="/icons/delete.png" alt="Delete"/>
+				</a>
+
+				<a href="#" @click.prevent="clickEdit(post)" title="Edit post">
+					<img src="/icons/edit.png" alt="Edit"/>
+				</a>
 			</span>
 			<span class="date">{{ GetPostTimeReadable(post.created_at) }}</span>
 			<span class="postno"><a @click.prevent="onClickPostNo(post.num)" href="#" class="postNumLink">No.</a></span>
@@ -305,6 +322,19 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 
 					.auto-cycle-input {
 						max-width: 4em;
+					}
+				}
+
+				.admin-tools-small {
+					>* {
+						padding: 4px 4px 1px 4px;
+						margin: 0 2px;
+						border: 1px solid var(--highlighted-post-border-color);
+					}
+
+					>*:hover {
+						background-color: var(--background-color-darker);
+						border-color: var(--link-hover-color);
 					}
 				}
 
