@@ -1,13 +1,14 @@
 <script setup lang="ts">
 	import type { BoardDTO } from '@/api/board.api';
 	import { CdnAPI } from '@/api/cdn.api';
-	import type { PostDTO } from '@/api/post.api';
+	import { PostAPI, type PostDTO, type UpdatePostDTO } from '@/api/post.api';
 	import type { ThreadDTO } from '@/api/thread.api';
 	import { UserRole } from '@/api/user.api';
 	import { GetPostTimeReadable, type PostImageData, type PostLinkToken, type PostToken } from '@/model/post/post.model';
 	import { GetFileSizeByteString, GetMimeTypeFromFilename } from '@/util/file.util';
 	import { GetPublicIdColorBackground, GetPublicIdColorForeground } from '@/util/various.util';
 	import { onClickOutside } from '@vueuse/core';
+import type { AxiosError } from 'axios';
 	import { ref, useTemplateRef, type ShallowRef, useId, nextTick } from 'vue';
 
 	const id = useId();
@@ -45,6 +46,7 @@
 		'onArchive',
 		'onDelete',
 		'onChangeAutoCycle',
+		'onPostUpdated',
 	]);
 
 	const onClickPostNo = (post_num: number) => {
@@ -153,18 +155,37 @@
 	});
 
 	const deletePostFile = () => {
+		const dto: UpdatePostDTO = {
+			name: null,
+			tripcode: null,
+			sage: null,
+			content: null,
+			filename: "",
+			html: null
+		}
 
+		console.log(props.post.id, " ", dto);
+
+		PostAPI.UpdatePost(props.post.id, dto).then((res) => {
+			onPostUpdated(res.data.data!);
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
 	}
 
 	const deletePost = () => {
 
+	}
+
+	const onPostUpdated = (postDTO: PostDTO) => {
+		emit("onPostUpdated", postDTO);
 	}
 </script>
 
 <template>
 
 	<div v-show="popupDelete.visible" ref="delete-popup" class="popup">
-		<a href="#" @click.prevent="deletePostFile()">Delete file</a>
+		<a v-if="post.filename" href="#" @click.prevent="deletePostFile()">Delete file</a>
 		<a href="#" @click.prevent="deletePost()">Delete post</a>
 	</div>
 

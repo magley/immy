@@ -51,12 +51,12 @@ export interface CreatePostDTO {
 }
 
 export interface UpdatePostDTO {
-    name: string;
-    tripcode: string;
-    sage: boolean;
-    content: string;
-    filename: string;
-    html: string;
+    name: string | null;
+    tripcode: string | null;
+    sage: boolean | null;
+    content: string | null;
+    filename: string | null;
+    html: string | null;
 }
 
 export class PostAPI {

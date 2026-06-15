@@ -141,15 +141,36 @@ import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vu
 			auto_cycle: threadObj.auto_cycle,
 		}
 		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
-			for (let i = 0; i < threads.value.length; i++) {
-				if (threads.value[i]!.thread.id == threadObj.id) {
-					threads.value[i]!.thread = res.data.data!;
-					break;
-				}
-			}
+			updateThreadObject(threadObj.id, res.data.data!);
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});
+	}
+
+	const updateThreadObject = (thread_id: number, threadObj: ThreadDTO) => {
+		for (let i = 0; i < threads.value.length; i++) {
+			if (threads.value[i]!.thread.id == thread_id) {
+				threads.value[i]!.thread = threadObj;
+				return;
+			}
+		}
+	}
+
+	const updatePostObject = (postDTO: PostDTO) => {
+		for (let i = 0; i < threads.value.length; i++) {
+			if (threads.value[i]!.thread.id == postDTO.thread_id) {
+				const thread = threads.value[i]!;
+
+				for (let j = 0; j < thread.posts.length; j++) {
+					if (thread.posts[j]!.id == postDTO.id) {
+						thread.posts[j] = postDTO;
+						return;
+					}
+				}
+
+				return;
+			}
+		}
 	}
 
 	const onToggleLocked = (threadObj: ThreadDTO) => {
@@ -159,12 +180,7 @@ import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vu
 			auto_cycle: threadObj.auto_cycle,
 		}
 		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
-			for (let i = 0; i < threads.value.length; i++) {
-				if (threads.value[i]!.thread.id == threadObj.id) {
-					threads.value[i]!.thread = res.data.data!;
-					break;
-				}
-			}
+			updateThreadObject(threadObj.id, res.data.data!);
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});
@@ -177,12 +193,7 @@ import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vu
 			auto_cycle: threadObj.auto_cycle,
 		}
 		ThreadAPI.UpdateThread(threadObj.id, dto).then((res) => {
-			for (let i = 0; i < threads.value.length; i++) {
-				if (threads.value[i]!.thread.id == threadObj.id) {
-					threads.value[i]!.thread = res.data.data!;
-					break;
-				}
-			}
+			updateThreadObject(threadObj.id, res.data.data!);
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});
@@ -201,12 +212,7 @@ import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vu
 
 	const archiveThread = (thread: ThreadDTO) => {
 		ThreadAPI.ArchiveThread(thread.id).then((res: AxiosResponse<ApiResponse<ThreadDTO>>) => {
-			for (let i = 0; i < threads.value.length; i++) {
-				if (threads.value[i]!.thread.id == thread.id) {
-					threads.value[i]!.thread = res.data.data!;
-					break;
-				}
-			}
+			updateThreadObject(thread.id, res.data.data!);
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});
@@ -338,6 +344,7 @@ import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vu
 					@onArchive="archiveThread"
 					@onDelete="deleteThread"
 					@onChangeAutoCycle="onChangeAutoCycle"
+					@onPostUpdated="(dto: PostDTO) => updatePostObject(dto)"
 					/>
 					<div v-if="i == 0 && thread.posts.length < thread.stats.post_count">
 						<template v-if="thread.stats.image_count - thread.posts.filter((p) => p.filename).length > 0">

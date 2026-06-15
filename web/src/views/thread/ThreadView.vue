@@ -185,6 +185,16 @@
 		});
 	}
 
+	const updatePostObject = (postDTO: PostDTO) => {
+		for (let j = 0; j < posts.value.length; j++) {
+			if (posts.value[j]!.id == postDTO.id) {
+				posts.value[j] = postDTO;
+				return;
+			}
+		}
+		return;
+	}
+
 	const determinePage = () => {
 		ThreadAPI.GetThreadsForCatalog(board.value!.code).then((res: AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>) => {
 			let threads: ThreadForCatalogDTO[] = res.data.data!;
@@ -520,6 +530,7 @@
 			@onArchive="archiveThread"
 			@onDelete="deleteThread"
 			@onChangeAutoCycle="onChangeAutoCycle"
+			@onPostUpdated="(dto: PostDTO) => updatePostObject(dto)"
 			/>
 		</template>
 
