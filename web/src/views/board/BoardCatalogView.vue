@@ -378,7 +378,13 @@
 
 					<span class="body" v-if="showComment">
 						<template v-if="thread.thread.subject"><span class="subject">{{thread.thread.subject}}</span>: </template>
-						<span class="content">{{ thread.post?.content }}</span>
+						<span v-if="thread.post" class="content">
+							{{ thread.post.content }}
+							<span v-if="thread.post.html">
+								<br/>
+								<span v-html="thread.post.html"></span>
+							</span>
+						</span>
 					</span>
 				</span>
 			</template>

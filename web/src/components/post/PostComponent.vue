@@ -9,6 +9,7 @@
 	import { GetPublicIdColorBackground, GetPublicIdColorForeground } from '@/util/various.util';
 	import { onClickOutside } from '@vueuse/core';
 	import type { AxiosError } from 'axios';
+import { isErrored } from 'stream';
 	import { ref, useTemplateRef, type ShallowRef, useId, nextTick } from 'vue';
 
 	const id = useId();
@@ -126,7 +127,8 @@
 	}
 
 	const clickEdit = (post: PostDTO) => {
-
+		if (!isEditingPost.value) { beginEditingPost(); }
+		else { cancelEditingPost(); }
 	}
 
 	class Popup {
@@ -189,6 +191,38 @@
 	const onPostDeleted = (id: number) => {
 		emit("onPostDeleted", id);
 		popupDelete.value.visible = false;
+	}
+
+	const isEditingPost = ref<boolean>(false);
+	const editingPostContent = ref<string>("");
+	const editingPostHtml = ref<string>("");
+
+	const beginEditingPost = () => {
+		isEditingPost.value = true;
+		editingPostContent.value = props.post.content;
+		editingPostHtml.value = props.post.html;
+	}
+	const cancelEditingPost = () => {
+		isEditingPost.value = false;
+	}
+	const submitEditingPost = () => {
+		let dto: UpdatePostDTO = {
+			name: null,
+			tripcode: null,
+			sage: null,
+			content: editingPostContent.value,
+			filename: null,
+			html: editingPostHtml.value
+		};
+		if (editingPostContent.value == props.post.content) { dto.content = null; }
+		if (editingPostHtml.value == props.post.html) { dto.html = null; }
+
+		PostAPI.UpdatePost(props.post.id, dto).then((res) => {
+			onPostUpdated(res.data.data!);
+			isEditingPost.value = false;
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		})
 	}
 </script>
 
@@ -332,27 +366,40 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 			</div>
 
 			<span class="post-body">
-				<span v-for="token of post_tokens">
-					<span v-if="token.kind == 'text'"
-					:class="{'redtext': token.type=='redtext', 'greentext': token.type=='greentext'}">
-						{{token.text}}
+				<span v-if="isEditingPost">
+					<textarea v-model="editingPostContent" cols="40" rows="6" placeholder="Post content"></textarea>
+					<br/>
+					<textarea v-model="editingPostHtml" cols="40" rows="6" placeholder="Post HTML"></textarea>
+					<br/>
+					<button @click="submitEditingPost">Submit changes</button>
+				</span>
+				<span v-else>
+					<span v-for="token of post_tokens">
+						<span v-if="token.kind == 'text'"
+						:class="{'redtext': token.type=='redtext', 'greentext': token.type=='greentext'}">
+							{{token.text}}
+						</span>
+						<span v-else-if="token.kind == 'link'">
+							<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @pointerenter="onPostLinkHover(token.text)" @pointerleave="onPostLinkUnhover(token.text)">
+								{{token.text.trim()}}<template v-if="!token.local"> →</template>
+							</a>
+							{{getTrailingWhitespace(token.text)}}
+						</span>
+						<span v-else-if="token.kind == 'semantic'">
+							<template v-if="token.type == 'math'">
+								<vue-latex :expression="token.text" />
+							</template>
+							<template v-else-if="token.type == 'code'">
+								<highlightjs autodetect :code="token.text" />
+							</template>
+							<template v-else-if="token.type == 'spoiler'">
+								<span class="spoiler-text">{{ token.text }}</span>
+							</template>
+						</span>
 					</span>
-					<span v-else-if="token.kind == 'link'">
-						<a :href="`${token.href}`" :class="{strikethrough: token.fail}" class="postRef" @pointerenter="onPostLinkHover(token.text)" @pointerleave="onPostLinkUnhover(token.text)">
-							{{token.text.trim()}}<template v-if="!token.local"> →</template>
-						</a>
-						{{getTrailingWhitespace(token.text)}}
-					</span>
-					<span v-else-if="token.kind == 'semantic'">
-						<template v-if="token.type == 'math'">
-							<vue-latex :expression="token.text" />
-						</template>
-						<template v-else-if="token.type == 'code'">
-							<highlightjs autodetect :code="token.text" />
-						</template>
-						<template v-else-if="token.type == 'spoiler'">
-							<span class="spoiler-text">{{ token.text }}</span>
-						</template>
+					<span v-if="post.html">
+						<br/>
+						<span v-html="post.html"></span>
 					</span>
 				</span>
 			</span>
@@ -380,6 +427,40 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 		a {
 			text-decoration: none;
 			display: block;
+		}
+	}
+
+	.modal {
+		position: fixed;
+		z-index: 600;
+		overflow: hidden;
+		background-color: var(--post-background-color);
+		border: 1px solid gray;
+		padding: 2px;
+
+		left: 50%;
+
+		border: 1px solid var(--post-border-color);
+		background-color: var(--post-background-color);
+
+		.header {
+			background-color: var(--background-color-accent);
+			font-weight: bold;
+			text-align: center;
+			cursor: move;
+
+			label {
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+				cursor: move;
+			}
+
+			img {
+				float: right;
+				cursor: pointer;
+			}
 		}
 	}
 
