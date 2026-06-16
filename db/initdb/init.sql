@@ -81,8 +81,15 @@ create table users (
 	created_at 	timestamp default now()
 );
 
-create table users_boards (
-	user_id 	integer references users(id) on update cascade on delete cascade,
-	board_id 	integer references boards(id) on update cascade on delete cascade,
-	constraint 	user_board_pkey primary key (user_id, board_id)
+create table bans (
+	id			serial primary key,
+	ipstart		bigint not null,
+	ipend		bigint default null,
+	created_at	timestamp default now(),
+	expires		timestamp default null,			-- If null, ban is permanent
+	board_id	integer references boards(id), 	-- If null, banned from all boards
+	creator_id	integer references users(id),
+	reason		varchar,
+	warning		bool default false,
+	seen		bool default false
 );
