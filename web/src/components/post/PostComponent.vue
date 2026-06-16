@@ -326,6 +326,9 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 				</a>
 			</span>
 			<div v-else class="post-no-file">
+				<template v-if="post.md5 && post.thread_num == post.num">
+					<img :src="CdnAPI.GetPublicURI('file_deleted.png')" class="post-image-thumb" title="File deleted" />
+				</template>
 			</div>
 
 			<span class="post-body">

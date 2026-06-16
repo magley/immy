@@ -333,14 +333,12 @@
 				<span v-if='isShowingHiddenOnly == isHidden(thread)' class="catalog-post">
 					<div class="image-container">
 						<a href="#" @click.prevent="(e) => onClickThreadImage(e, thread)">
-<!-- 							<img
-							:src="CdnAPI.GetPostImageThumbnailURI(thread.post)"
-							:style="getDynamicImageStyle(thread)"
-							:class="{pinned: isPinned(thread)}"
+							<img v-if="!thread.post.filename && thread.post.md5"
+								:class="{pinned: isPinned(thread)}"
+								:src="CdnAPI.GetPublicURI('file_deleted.png')"
 							>
- -->
 							<!-- Spoiler -->
-							<img v-if="board.config.allow_spoilers && thread.post.spoiler"
+							<img v-else-if="board.config.allow_spoilers && thread.post.spoiler"
 								:class="{pinned: isPinned(thread)}"
 								class="spoiler"
 								:style="getDynamicImageStyle(thread)"

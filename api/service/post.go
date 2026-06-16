@@ -74,6 +74,9 @@ func (s *PostService) DeletePost(postId uint) (error) {
 	if err != nil {
 		return err
 	}
+	if post.ThreadNum == post.Num {
+		return s.ThreadService.DeleteThread(post.ThreadID)
+	}
 	
 	return s.PostRepo.DeletePost(post)
 }

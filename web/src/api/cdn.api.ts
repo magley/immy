@@ -9,11 +9,15 @@ export class CdnAPI {
 	}
 
 	static GetBannersURI(fname: string): string {
-		return `${ENV.CDN}/public/banners/${fname}`;
+		return this.GetPublicURI(`/banners/${fname}`);
 	}
 
 	static GetSpoilerURI(fname: string): string {
-		return `${ENV.CDN}/public/spoiler/${fname}`;
+		return this.GetPublicURI(`/spoiler/${fname}`);
+	}
+
+	static GetPublicURI(fname: string): string {
+		return `${ENV.CDN}/public/${fname}`;
 	}
 
 	static GetPostImageURI(post: PostDTO): string | undefined {
