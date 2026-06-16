@@ -83,10 +83,11 @@ create table users (
 
 create table bans (
 	id			serial primary key,
-	ipstart		bigint not null,
-	ipend		bigint default null,
+	ip_start	bigint not null,
+	ip_end		bigint default null,
 	created_at	timestamp default now(),
 	expires		timestamp default null,			-- If null, ban is permanent
+	deleted_at	timestamp default null,
 	board_id	integer references boards(id), 	-- If null, banned from all boards
 	creator_id	integer references users(id),
 	reason		varchar,

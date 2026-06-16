@@ -7,10 +7,12 @@ import BoardHomeView from "@/views/board/BoardHomeView.vue";
 import BoardCatalogView from "@/views/board/BoardCatalogView.vue";
 import ThreadView from "@/views/thread/ThreadView.vue";
 import BoardArchiveView from '@/views/board/BoardArchiveView.vue';
+import BannedView from '@/views/ban/BannedView.vue';
 
 const routes = [
 	{ path: '/', component: HomeView },
 	{ path: '/login', component: LoginView },
+	{ path: '/banned', component: BannedView },
 	{ path: '/admin-users', component: AdminUserView },
 	{ path: '/admin-boards', component: AdminBoardView },
 	{ path: '/:board_code/catalog', component: BoardCatalogView },

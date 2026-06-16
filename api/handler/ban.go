@@ -28,7 +28,7 @@ func (h *BanHandler) ListBans(c *gin.Context) {
 	}
 }
 
-func (h *BanHandler) GetBansOfIp(c *gin.Context) {
+func (h *BanHandler) GetMyBans(c *gin.Context) {
 	ip := c.Copy().ClientIP()
 	res, err := h.BanService.GetBansOfIp(ip)
 
