@@ -8,12 +8,14 @@
 	import { GetFileSizeByteString, GetMimeTypeFromFilename } from '@/util/file.util';
 	import { GetPublicIdColorBackground, GetPublicIdColorForeground } from '@/util/various.util';
 	import { onClickOutside } from '@vueuse/core';
-import type { AxiosError } from 'axios';
+	import type { AxiosError } from 'axios';
 	import { ref, useTemplateRef, type ShallowRef, useId, nextTick } from 'vue';
 
 	const id = useId();
 	interface PostComponentProps {
 		userRole: UserRole | undefined;
+
+		peek: boolean | undefined;
 
 		board: BoardDTO;
 		thread: ThreadDTO;
@@ -191,16 +193,16 @@ import type { AxiosError } from 'axios';
 </script>
 
 <template>
-
-	<div v-show="popupDelete.visible" ref="delete-popup" class="popup">
-		<a v-if="post.filename" href="#" @click.prevent="deletePostFile()">Delete file</a>
-		<a href="#" @click.prevent="deletePost()">Delete post</a>
-	</div>
-
-
-
 	<div :id="`p${post.num}`" class="postContainer">
-		<span v-if="thread.post_num != post.num" class="sideArrows"> &gt;&gt; </span>
+		<div v-if="!peek && popupDelete.visible" ref="delete-popup" class="popup">
+			<a v-if="post.filename" href="#" @click.prevent="deletePostFile()">Delete file</a>
+			<a href="#" @click.prevent="deletePost()">Delete
+				<template v-if="post.thread_num == post.num"><b>thread</b></template>
+				<template v-else>post</template>
+			</a>
+		</div>
+
+		<span v-if="!peek && thread.post_num != post.num" class="sideArrows"> &gt;&gt; </span>
 		<span class="post" :class="{
 			highlightedPost: is_highlighted,
 			opPost: is_op_post,
@@ -210,7 +212,7 @@ import type { AxiosError } from 'axios';
 
 		<div class="post-header">
 			<!-- Thread management by staff user -->
-			<div v-if="userRole != undefined && post.num == post.thread_num && !thread.archived" class="admin-tools">
+			<div v-if="!peek && userRole != undefined && post.num == post.thread_num && !thread.archived" class="admin-tools">
 				<button v-if="canStickyThread()"  @click="onToggleSticky(thread)">Toggle Sticky <img src="/icons/sticky.png" /></button>
 				<button v-if="canLockThread()"    @click="onToggleLocked(thread)">Toggle Locked <img src="/icons/lock.png" /></button>
 				<button v-if="canArchiveThread()" @click="onArchive(thread)">Archive <img src="/icons/archive.png" /></button>
@@ -226,7 +228,7 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 
 			<span class="subject" v-if="thread.subject && thread.post_num == post.num">{{ thread.subject }}</span>
 			<span class="username">{{ post.name ? post.name : "Anonymous" }}</span>
-			<span class="capcode" :class="post.user_role"  v-if="post.capcode">
+			<span class="capcode" :class="post.user_role" v-if="post.capcode">
 				## {{ post.user_role }}
 				<img :src="`/icons/user-role-${post.user_role}.gif`" class="icon" :title="post.user_role" />
 			</span>

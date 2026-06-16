@@ -438,6 +438,7 @@
 	<template v-if="peekPostVisible && peekPost">
 		<PostComponent
 		class="peek"
+		:peek="true"
 		id="peekElement"
 		:userRole="undefined"
 		:style="{ transform: 'translate(' + peekMouseX + 'px,' + peekMouseY + 'px)' }"
@@ -529,6 +530,7 @@
 			:image_data="imageData[post.id]"
 			:post_tokens="postTokens[post.id] ?? []"
 			:public_id_count="userIdCount"
+			:peek="false"
 			@onClickPostNo="onClickPostNo"
 			@onClickPostNumber="onClickPostNumber"
 			@onClickPostImage="onClickPostImage"

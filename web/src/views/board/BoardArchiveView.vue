@@ -102,6 +102,7 @@
 		:is_op_post="false"
 		:is_last_seen="false"
 		:backlinks="[]"
+		:peek="true"
 		:image_data="undefined"
 		:post_tokens="peekPost.tokens"
 		:public_id_count="undefined"

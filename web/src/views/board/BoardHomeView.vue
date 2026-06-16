@@ -294,6 +294,7 @@
 		:is_last_seen="false"
 		:backlinks="[]"
 		:image_data="undefined"
+		:peek="true"
 		:post_tokens="peekPost.tokens"
 		:public_id_count="undefined"
 		/>
@@ -345,6 +346,7 @@
 					:image_data="imageData[post.id]"
 					:post_tokens="postTokens[post.id] ?? []"
 					:public_id_count="undefined"
+					:peek="false"
 					@onClickPostNo="(n: number) => onClickPostNo(n, thread)"
 					@onClickPostNumber="(n: number) => onClickPostNumber(n, thread)"
 					@onClickPostImage="(n: number) => onClickPostImage(n, thread)"
