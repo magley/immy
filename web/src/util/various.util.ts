@@ -79,3 +79,41 @@ export const IsHexColorLight = (color: string): boolean => {
 	}
 	return false
 }
+
+export const DateFromDuration = (input: string): Date => {
+	const value = parseInt(input, 10);
+
+	const unit = input
+		.slice(String(value).length)
+		.trim()
+		.toLowerCase();
+
+	const SECOND = 1000;
+	const MINUTE = 60 * SECOND;
+	const HOUR = 60 * MINUTE;
+	const DAY = 24 * HOUR;
+	const WEEK = 7 * DAY;
+	const YEAR = 365 * DAY;
+
+	const unitMs: Record<string, number> = {
+		min: MINUTE,
+		minute: MINUTE,
+		minutes: MINUTE,
+		h: HOUR,
+		hour: HOUR,
+		hours: HOUR,
+		d: DAY,
+		day: DAY,
+		days: DAY,
+		w: WEEK,
+		week: WEEK,
+		weeks: WEEK,
+		y: YEAR,
+		year: YEAR,
+		years: YEAR,
+	};
+
+	const unitVal = unitMs[unit] ?? 0;
+
+	return new Date(Date.now() + value * unitVal);
+}
