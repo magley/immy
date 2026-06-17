@@ -1,6 +1,7 @@
 <script setup lang="ts">
-	import { BanAPI, type BanDTO } from '@/api/ban.api';
+	import { BanAPI, type BanDTO, type UpdateBanDTO } from '@/api/ban.api';
 	import type { ApiResponse } from '@/api/http';
+	import { GetPostTimeReadable } from '@/model/post/post.model';
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import { onMounted, ref } from 'vue';
 
@@ -17,20 +18,39 @@
 		error.value = undefined;
 		BanAPI.GetMyBans().then((res: AxiosResponse<ApiResponse<BanDTO[]>>) => {
 			bans.value = res.data.data!;
+			markExpiredBansAsSeen();
 		}).catch((err: AxiosError) => {
 			error.value = "Could not fetch your bans";
-			console.log(err);
+			console.error(err);
 		}).finally(() => {
 			loading.value = false;
 		});
 	}
 
+	const markExpiredBansAsSeen = () => {
+		for (let ban of bans.value) {
+			if (expired(ban)) {
+				const dto: UpdateBanDTO = {
+					seen: true,
+				};
+				BanAPI.UpdateBan(ban.id, dto);
+			}
+		}
+	}
+
+	const expired = (ban: BanDTO): boolean => {
+		if (ban.expires_at == null) return false;
+		return Date.parse(ban.expires_at) < new Date().getTime();
+	}
 </script>
 
 <template>
 	<div class="container">
 		<div class="header">
-			<h2>Banned?</h2>
+			<h2>
+				Banned<template v-if="bans.length == 0">?</template>
+				<template v-else>! ;-;</template>
+			</h2>
 		</div>
 		<div class="body">
 			<div v-if="loading">
@@ -49,7 +69,42 @@
 						Return <RouterLink to="/">home</RouterLink>.
 					</div>
 					<div v-else>
-						{{ bans }}
+						<div v-for="ban, i of bans" class="ban-info">
+							<p>
+								You have <u v-if="i > 0">also</u> been banned from
+								<template v-if="ban.board_id == null">
+									<b>all boards</b>
+								</template>
+								<template v-else>
+									<b>{{ ban.board_id }}</b>
+								</template>
+								for the following reason:
+							</p>
+							<div class="ban-reason">
+								{{ ban.reason }}
+							</div>
+							<p>
+								This ban has been issued at
+								<b>{{ GetPostTimeReadable(ban.created_at) }}</b>
+								and
+								<template v-if="!ban.expires_at">
+									<span class="bad">is permanent.</span>
+								</template>
+								<template v-else-if="expired(ban)">
+									has expired at
+									<b>{{ GetPostTimeReadable(ban.expires_at) }}</b>.
+									<br/>
+									<span class="good">
+										Now that you have seen this message, this ban is no longer effective.
+									</span>
+								</template>
+								<template v-else>
+									expires at
+									<b>{{ GetPostTimeReadable(ban.expires_at) }}</b>.
+								</template>
+							</p>
+							<hr />
+						</div>
 					</div>
 				</div>
 			</div>
@@ -60,6 +115,24 @@
 <style scoped>
 	.error {
 		color: var(--user-error-color);
+	}
+
+	.bad {
+		font-weight: bold;
+		color: var(--user-error-color);
+	}
+
+	.good {
+		font-weight: bold;
+		color: var(--username-color);
+	}
+
+
+	.ban-info {
+		.ban-reason {
+			margin-left: 2em;
+			white-space: pre;
+		}
 	}
 
 	.container {
