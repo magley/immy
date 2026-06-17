@@ -23,10 +23,10 @@ func (r *BanRepo) GetBansOfIp(ip string) ([]model.Ban, error) {
 	var bans []model.Ban
 	result := r.DB.
 		Model(&model.Ban{}).
-		Where("(expires_at is null or (expires_at > now() and seen = false))").
+		Where("(expires_at is null or (expires_at > now() or seen = false))").
 		Where("((ip_end is null and ip_start = ?) or (? between ip_start and ip_end))", ipBinary, ipBinary).
-		Order("created_at").
-		Order("expires_at").
+		Order("created_at desc").
+		Order("expires_at desc").
 		Find(&bans)
 	return bans, result.Error
 }
