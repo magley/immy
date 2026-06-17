@@ -4,7 +4,7 @@ import type { AxiosResponse } from "axios";
 export interface BanDTO {
     id: number;
     ip_start: number;
-    ip_end: number;
+    ip_end: number | null;
     created_at: string;
     expires_at: string | null;
     deleted_at: string | null;
@@ -17,11 +17,9 @@ export interface BanDTO {
 
 export interface CreateBanDTO {
     ip_start: string;
-    ip_end: string;
-    created_at: string;
+    ip_end: string | null;
     expires_at: string | null;
     board_id: number | null;
-    creator_id: number;
     reason: string;
     warning: boolean;
 }

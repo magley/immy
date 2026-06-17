@@ -1,8 +1,9 @@
 package repo
 
 import (
-	"gorm.io/gorm"
 	util "immy-api/util"
+
+	"gorm.io/gorm"
 
 	model "immy-api/model"
 )
@@ -22,8 +23,8 @@ func (r *BanRepo) GetBansOfIp(ip string) ([]model.Ban, error) {
 	var bans []model.Ban
 	result := r.DB.
 		Model(&model.Ban{}).
-		Where("expires_at is null or expires_at > now() or seen = false").
-		Where("(ip_end is null and ip_start = ?) or (? between ip_start and ip_end)", ipBinary, ipBinary).
+		Where("(expires_at is null or (expires_at > now() and seen = false))").
+		Where("((ip_end is null and ip_start = ?) or (? between ip_start and ip_end))", ipBinary, ipBinary).
 		Order("created_at").
 		Order("expires_at").
 		Find(&bans)
@@ -33,12 +34,17 @@ func (r *BanRepo) GetBansOfIp(ip string) ([]model.Ban, error) {
 func (r *BanRepo) CreateBan(dto model.CreateBanDTO, creator *model.User) (*model.Ban, error) {
 	ban := model.Ban{
 		IpStart: util.IPv4toUint64(dto.IpStart),
-		IpEnd: util.IPv4toUint64(dto.IpEnd),
+		// IpEnd: ,
 		ExpiresAt: dto.ExpiresAt,
 		BoardID: dto.BoardID,
 		CreatorID: creator.ID,
 		Reason: dto.Reason,
 		Warning: dto.Warning,
+	}
+
+	if dto.IpEnd != nil {
+		ipEnd := util.IPv4toUint64(*dto.IpEnd)
+		ban.IpEnd = &ipEnd
 	}
 
 	result := r.DB.Create(&ban)
