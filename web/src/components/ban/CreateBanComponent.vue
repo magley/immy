@@ -4,6 +4,7 @@
 	import type { PostDTO } from '@/api/post.api';
 	import { GetPostTimeReadable } from '@/model/post/post.model';
 	import { DateFromDuration } from '@/util/various.util';
+	import { breakpointsAntDesign } from '@vueuse/core';
 	import { AxiosError } from 'axios';
 	import { onMounted } from 'vue';
 	import { ref, useId } from 'vue';
@@ -51,10 +52,12 @@
 			banDTO.value.expires_at = null;
 			banDTO.value.board_id = null;
 		}
+		if (formPermanentBan.value) {
+			banDTO.value.expires_at = null;
+		}
+		applyBanDuration();
 
 		error.value = undefined;
-
-		console.log(banDTO.value.ip_start);
 
 		BanAPI.CreateBan(banDTO.value).then((res) => {
 
@@ -67,7 +70,7 @@
 	const applyBanDuration = () => {
 		let durationValueFinal = banExpirationPresetVal.value;
 		if (banExpirationPresetVal.value == "custom") {
-			durationValueFinal = banDurationVal.value
+			durationValueFinal = banDurationVal.value;
 		}
 		banDTO.value.expires_at = DateFromDuration(durationValueFinal).toISOString();
 	}
@@ -76,8 +79,10 @@
 <template>
 	<div>
 		<div>
-			<label :for="`warning-${id}`">Warning:</label>
+			<label :for="`warning-${id}`">Is warning:</label>
 			<input type=checkbox :id="`warning-${id}`" v-model="banDTO.warning" />
+
+			<hr/>
 		</div>
 
 		<!-- Ban only -->
@@ -102,10 +107,12 @@
 				</div>
 			</div>
 
+			<hr/>
+
 			<!-- Ban duration -->
 			<div>
 				<div>
-					<label :for="`warning-${id}`">Permanent:</label>
+					<label :for="`permanent-${id}`">Permanent:</label>
 					<input type=checkbox :id="`permanent-${id}`" v-model="formPermanentBan" />
 				</div>
 
@@ -114,11 +121,8 @@
 				</div>
 				<div v-else>
 					<div>
-						Expires on: {{ GetPostTimeReadable(banDTO.expires_at!) }}
-					</div>
-					<div>
-						<b>Set duration:</b>
-						<select v-model="banExpirationPresetVal">
+						<label :for="`ban-duration-${id}`">Ban duration: </label>
+						<select :id="`ban-duration-${id}`" v-model="banExpirationPresetVal">
 							<option value="5min">5 minutes</option>
 							<option value="1h">1 hour</option>
 							<option value="24h">24 hours</option>
@@ -129,7 +133,6 @@
 							<option value="custom">Custom</option>
 						</select>
 						<br/>
-
 						<div v-if="banExpirationPresetVal == 'custom'">
 							<label :for="`ban-duration-custom-${id}`">Enter duration:</label>
 							<input
@@ -137,12 +140,12 @@
 							v-model="banDurationVal"
 							placeholder="5min, 1h, 5 days, 1 year" />
 						</div>
-
-						<button @click="onClickSetBanDuration">Set ban duration</button>
 					</div>
-
 				</div>
 			</div>
+
+			<hr/>
+
 			<!-- Board -->
 			<div v-if="props.currentBoard">
 				<label :for="`ban-local-${id}`">Ban on /{{ props.currentBoard.code }}/</label>
@@ -151,21 +154,23 @@
 				<label :for="`ban-global-${id}`">Ban globally</label>
 				<input :id="`ban-global-${id}`" type="radio" v-model="banDTO.board_id" :value="null" />
 			</div>
+
+			<hr/>
 		</div>
 
 		<!-- Warning only -->
 		<div v-else>
-
 		</div>
 
 		<!-- Common -->
 		<div>
-
 			<textarea v-model="banDTO.reason" placeholder="Ban message" rows="4" cols="20"></textarea>
+
+			<hr/>
 
 			<br/>
 			<div class="error" v-if="error">{{ error }}</div>
-			<button @click="onClickSubmitBan">Submit ban</button>
+			<button class="submit" @click="onClickSubmitBan">Submit ban</button>
 		</div>
 	</div>
 </template>
@@ -173,5 +178,10 @@
 <style>
 	.error {
 		color: var(--user-error-color);
+	}
+
+	.submit {
+		float: right;
+		padding: 0.2em;
 	}
 </style>

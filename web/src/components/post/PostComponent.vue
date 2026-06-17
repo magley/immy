@@ -9,8 +9,8 @@
 	import { GetPublicIdColorBackground, GetPublicIdColorForeground } from '@/util/various.util';
 	import { onClickOutside } from '@vueuse/core';
 	import type { AxiosError } from 'axios';
-import { isErrored } from 'stream';
 	import { ref, useTemplateRef, type ShallowRef, useId, nextTick } from 'vue';
+	import CreateBanComponent from '../ban/CreateBanComponent.vue';
 
 	const id = useId();
 	interface PostComponentProps {
@@ -116,8 +116,10 @@ import { isErrored } from 'stream';
 		return props.userRole == UserRole.Moderator || props.userRole == UserRole.Admin;
 	}
 
-	const clickBan = (post: PostDTO) => {
-
+	const clickBan = async (post: PostDTO) => {
+		popupBan.value.visible =  !popupBan.value.visible;
+		await nextTick();
+		popupBan.value.set_position();
 	}
 
 	const clickDelete = async (post: PostDTO) => {
@@ -224,16 +226,28 @@ import { isErrored } from 'stream';
 			console.error(err);
 		})
 	}
+
+
+	const popupBanRef = useTemplateRef("ban-popup");
+	const popupBan = ref<Popup>(new Popup(popupBanRef, `ban-post-btn-${id}`));
+	onClickOutside(popupBanRef, event => {
+		if (!popupBan.value.visible) { return; }
+		setTimeout(() => { popupBan.value.visible = false; }, 10);
+	});
 </script>
 
 <template>
 	<div :id="`p${post.num}`" class="postContainer">
-		<div v-if="!peek && popupDelete.visible" ref="delete-popup" class="popup">
+		<div v-if="!peek && popupDelete.visible" ref="delete-popup" class="popup popup-menu">
 			<a v-if="post.filename" href="#" @click.prevent="deletePostFile()">Delete file</a>
 			<a href="#" @click.prevent="deletePost()">Delete
 				<template v-if="post.thread_num == post.num"><b>thread</b></template>
 				<template v-else>post</template>
 			</a>
+		</div>
+
+		<div v-if="!peek && popupBan.visible" ref="ban-popup" class="popup popup-ban">
+			<CreateBanComponent :post="undefined" :currentBoard="board" />
 		</div>
 
 		<span v-if="!peek && thread.post_num != post.num" class="sideArrows"> &gt;&gt; </span>
@@ -277,7 +291,7 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 			</span>
 			<!-- Post management by staff user -->
 			<span v-if="userRole != undefined && !thread.archived" class="admin-tools-small">
-				<a href="#" @click.prevent="clickBan(post)" title="Ban user">
+				<a href="#" @click.prevent="clickBan(post)" title="Ban user" :id="`ban-post-btn-${id}`">
 					<img src="/icons/no.png" alt="Ban" />
 				</a>
 
@@ -415,6 +429,14 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 		border: 1px solid var(--post-border-color);
 		background-color: var(--post-background-color);
 
+	}
+
+	.popup-ban {
+		padding: 1em;
+		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+	}
+
+	.popup-menu {
 		* {
 			border-bottom: 1px solid var(--background-color-accent);
 			padding: 0.2em;
@@ -429,41 +451,6 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 			display: block;
 		}
 	}
-
-	.modal {
-		position: fixed;
-		z-index: 600;
-		overflow: hidden;
-		background-color: var(--post-background-color);
-		border: 1px solid gray;
-		padding: 2px;
-
-		left: 50%;
-
-		border: 1px solid var(--post-border-color);
-		background-color: var(--post-background-color);
-
-		.header {
-			background-color: var(--background-color-accent);
-			font-weight: bold;
-			text-align: center;
-			cursor: move;
-
-			label {
-				-webkit-user-select: none;
-				-moz-user-select: none;
-				-ms-user-select: none;
-				user-select: none;
-				cursor: move;
-			}
-
-			img {
-				float: right;
-				cursor: pointer;
-			}
-		}
-	}
-
 
 	.postContainer {
 		display: flex;

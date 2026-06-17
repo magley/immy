@@ -81,7 +81,8 @@ export const IsHexColorLight = (color: string): boolean => {
 }
 
 export const DateFromDuration = (input: string): Date => {
-	const value = parseInt(input, 10);
+	let value = parseInt(input, 10);
+	if (isNaN(value)) value = 0;
 
 	const unit = input
 		.slice(String(value).length)
@@ -114,6 +115,10 @@ export const DateFromDuration = (input: string): Date => {
 	};
 
 	const unitVal = unitMs[unit] ?? 0;
+	let plusDelta = value * unitVal;
+	if (plusDelta < 0) {
+		plusDelta = 0;
+	}
 
-	return new Date(Date.now() + value * unitVal);
+	return new Date(Date.now() + plusDelta);
 }
