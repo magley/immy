@@ -33,9 +33,14 @@ export class BanAPI {
         return axiosInstance.get(`/bans/?offset=${offset}&limit=${limit}`);
     }
 
+    static async ListBansForAdmin(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<BanDTO[]>>> {
+        return axiosInstance.get(`/bans/admin?offset=${offset}&limit=${limit}`);
+    }
+
     static async GetMyBans(): Promise<AxiosResponse<ApiResponse<BanDTO[]>>> {
         return axiosInstance.get(`/bans/my`);
     }
+
     static async CreateBan(dto: CreateBanDTO): Promise<AxiosResponse<ApiResponse<BanDTO>>> {
         return axiosInstance.post(`/bans/`, dto);
     }

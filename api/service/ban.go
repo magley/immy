@@ -13,6 +13,10 @@ func (s *BanService) ListBans(offset, limit int) ([]model.Ban, error) {
 	return s.BanRepo.ListBans(offset, limit)
 }
 
+func (s *BanService) ListBansForAdmin(offset, limit int) ([]model.Ban, error) {
+	return s.BanRepo.ListBansForAdmin(offset, limit)
+}
+
 func (s *BanService) GetBansOfIp(ip string) ([]model.Ban, error) {
 	return s.BanRepo.GetBansOfIp(ip)
 }

@@ -28,6 +28,25 @@ func (h *BanHandler) ListBans(c *gin.Context) {
 	}
 }
 
+func (h *BanHandler) ListBansForAdmin(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin, model.UserRoleModerator})
+	if !ok {
+		return
+	}
+
+	offset, limit := util.GetOffsetLimit(c)
+	res, err := h.BanService.ListBansForAdmin(offset, limit)
+
+	if err != nil {
+		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
+		return
+	} else {
+		util.OK(c, res)
+		return
+	}
+}
+
+
 func (h *BanHandler) GetMyBans(c *gin.Context) {
 	ip := c.Copy().ClientIP()
 	res, err := h.BanService.GetBansOfIp(ip)

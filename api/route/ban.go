@@ -9,6 +9,7 @@ func RegisterBanRoutes(h *handler.BanHandler, rg *gin.RouterGroup) {
 	bans := rg.Group("/bans")
 	{
     	bans.GET("/", h.ListBans)
+    	bans.GET("/admin", h.ListBansForAdmin)
     	bans.GET("/my", h.GetMyBans)
     	bans.POST("/", h.CreateBan)
     	bans.GET("/:id", h.GetBan)

@@ -18,6 +18,18 @@ func (r *BanRepo) ListBans(offset int, limit int) ([]model.Ban, error) {
 	return bans, result.Error
 }
 
+func (r *BanRepo) ListBansForAdmin(offset int, limit int) ([]model.Ban, error) {
+	var bans []model.Ban
+	result := r.DB.
+		Unscoped().
+		Limit(limit).
+		Offset(offset).
+		Find(&bans).
+		Order("created_at desc").
+		Order("expires_at desc")
+	return bans, result.Error
+}
+
 func (r *BanRepo) GetBansOfIp(ip string) ([]model.Ban, error) {
 	ipBinary := util.IPv4toUint64(ip)
 	var bans []model.Ban

@@ -65,11 +65,15 @@
 			|
 			<RouterLink to="/admin-boards">Boards</RouterLink>
 			|
+			<RouterLink to="/admin-bans">Bans</RouterLink>
+			|
 		</span>
 		<span v-if="userRole == UserRole.Moderator">
 			<RouterLink to="/admin-users">Users</RouterLink>
 			|
 			<RouterLink to="/admin-boards">Boards</RouterLink>
+			|
+			<RouterLink to="/admin-bans">Bans</RouterLink>
 			|
 		</span>
 		<span v-if="userRole == UserRole.Janitor">
