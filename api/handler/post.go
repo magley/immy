@@ -14,6 +14,7 @@ import (
 type PostHandler struct {
 	PostService *service.PostService
 	UserService *service.UserService
+	BanService *service.BanService
 }
 
 
@@ -49,11 +50,16 @@ func (h *PostHandler) CreatePost(c *gin.Context) {
 
 		// Silently fail, assume user doesn't exist.
 		if err != nil {
-			log.Print("Cloud not get user: ", jwt.Id, ": ", err.Error())
+			log.Print("Could not get user: ", jwt.Id, ": ", err.Error())
 			user = nil
 		}
 	}
-	
+
+	bans, _ := h.BanService.GetBansOfIp(c.Copy().ClientIP())
+	if banned, _ := util.BanCheck(c, bans); banned {
+		return
+	}
+
 	res, err := h.PostService.CreatePost(dto, c.ClientIP(), user)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())

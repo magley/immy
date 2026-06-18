@@ -16,7 +16,8 @@ type ThreadHandler struct {
 	ThreadService 	*service.ThreadService
 	BoardService 	*service.BoardService
 	PostService 	*service.PostService
-	UserService *service.UserService
+	UserService 	*service.UserService
+	BanService 		*service.BanService
 }
 
 func (h *ThreadHandler) ListThreads(c *gin.Context) {
@@ -68,6 +69,11 @@ func (h *ThreadHandler) CreateThread(c *gin.Context) {
 			log.Print("Cloud not get user: ", jwt.Id, ": ", err.Error())
 			user = nil
 		}
+	}
+
+	bans, _ := h.BanService.GetBansOfIp(c.Copy().ClientIP())
+	if banned, _ := util.BanCheck(c, bans); banned {
+		return
 	}
 	
 	res, err := h.ThreadService.CreateThread(dto, c.ClientIP(), user)

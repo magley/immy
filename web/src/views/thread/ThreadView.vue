@@ -21,7 +21,6 @@
 	import BoardBanner from '@/components/board/BoardBanner.vue';
 	import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
 	import GalleryMode from '@/components/thread/GalleryMode.vue';
-	import CreateBanComponent from '@/components/ban/CreateBanComponent.vue';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -430,8 +429,6 @@
 
 <template>
 	<BoardListNav :isCatalog=false />
-
-	<CreateBanComponent :post="undefined" :currentBoard="board"/>
 
 	<template v-if="board && thread">
 		<GalleryMode ref="galleryMode" :board="board" :thread="thread" :posts="posts" />

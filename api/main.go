@@ -2,15 +2,16 @@ package main
 
 import (
 	"log"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"gorm.io/driver/postgres"
-	
-	"immy-api/repo"
-	"immy-api/service"
+	"gorm.io/gorm"
+
 	"immy-api/handler"
+	"immy-api/repo"
 	"immy-api/route"
+	"immy-api/service"
 )
 
 
@@ -61,8 +62,8 @@ func main() {
 	postService.ThreadService = threadService
 	
 	boardHandler := &handler.BoardHandler{BoardService: boardService}
-	postHandler := &handler.PostHandler{PostService: postService, UserService: userService}
-	threadHandler := &handler.ThreadHandler{ThreadService: threadService, BoardService: boardService, PostService: postService, UserService: userService}
+	postHandler := &handler.PostHandler{PostService: postService, UserService: userService, BanService: banService}
+	threadHandler := &handler.ThreadHandler{ThreadService: threadService, BoardService: boardService, PostService: postService, UserService: userService, BanService: banService}
 	userHandler := &handler.UserHandler{UserService: userService}
 	banHandler := &handler.BanHandler{BanService: banService, UserService: userService}
 

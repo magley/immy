@@ -1,8 +1,9 @@
 package util
 
 import (
-	"net/http"
 	"fmt"
+	"immy-api/model"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -82,4 +83,31 @@ func Unauthorized(c *gin.Context, err error) {
 		Success: false,
 		Error:   errInfo,
 	})
+}
+
+func Banned(c *gin.Context, justWarning bool) {
+	code := "BANNED"
+	if justWarning {
+		code = "WARNED"
+	}
+
+	c.JSON(http.StatusForbidden, Response{
+		Success: false,
+		Error:   &ErrorInfo{ Code: code },
+	})
+}
+
+func BanCheck(c *gin.Context, bans []model.Ban) (bool, []model.Ban) {
+	if len(bans) > 0 {
+		justWarning := true
+		for _, ban := range bans {
+			if !ban.Warning {
+				justWarning = false
+				break
+			}
+		}
+		Banned(c, justWarning)
+		return true, bans
+	}
+	return false, []model.Ban{}
 }

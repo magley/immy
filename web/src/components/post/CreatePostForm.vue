@@ -1,7 +1,7 @@
 <script setup lang="ts">
 	import { ref, useTemplateRef } from 'vue';
 	import { PostAPI, type CreatePostDTO, type PostDTO, type CreatePostForThreadDTO } from "@/api/post.api.ts";
-	import type { ApiResponse } from '@/api/http';
+	import type { ApiErrorInfo, ApiResponse } from '@/api/http';
 	import type { AxiosResponse, AxiosError } from 'axios';
 	import { FileToBase64, GetFileFromEvent } from '@/util/file.util';
 	import { type BoardDTO } from '@/api/board.api';
@@ -95,9 +95,16 @@
 
 		PostAPI.CreatePost(replyDTO.value).then((res: AxiosResponse<ApiResponse<PostDTO>>) => {
 			emit('postCreated');
-		}).catch((err: AxiosError) => {
-			replyError.value = "Could not post reply";
-			console.error(err);
+		}).catch((err: AxiosError<ApiResponse<PostDTO>>) => {
+			if (err.response?.data.error?.code == "BANNED") {
+				replyError.value = "You are <a href='/banned'>banned</a>.";
+				console.log("You are banned");
+			} else if (err.response?.data.error?.code == "WARNED") {
+				replyError.value = "You have been <a href='/banned'>warned</a>.";
+			} else {
+				replyError.value = "Could not post reply";
+				console.error(err);
+			}
 		});
 	}
 
@@ -130,9 +137,15 @@
 
 		ThreadAPI.CreateThread(createThreadDTO).then((res: AxiosResponse<ApiResponse<ThreadDTO>>) => {
 			emit('postCreated');
-		}).catch((err: AxiosError) => {
-			replyError.value = "Could not create thread";
-			console.error(err);
+		}).catch((err: AxiosError<ApiResponse<PostDTO>>) => {
+			if (err.response?.data.error?.code == "BANNED") {
+				replyError.value = "You are <a href='/banned'>banned</a>.";
+			} else if (err.response?.data.error?.code == "WARNED") {
+				replyError.value = "You have been <a href='/banned'>warned</a>.";
+			} else {
+				replyError.value = "Could not create thread";
+				console.error(err);
+			}
 		});
 	}
 	
@@ -259,8 +272,8 @@ int main() {
 		</button>
 
 		<template v-if="replyError">
-			<div/>
-			<span class="error">{{replyError}}</span>
+			<br/>
+			<div class="postError" v-html="replyError"></div>
 		</template>
 	</form>
 </template>
@@ -268,6 +281,11 @@ int main() {
 <style scoped>
 	.error {
 		color: var(--user-error-color);
+	}
+
+	.postError {
+		color: var(--user-error-color);
+		padding: 2px;
 	}
 
 	.help-container {
