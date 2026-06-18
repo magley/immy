@@ -49,6 +49,10 @@ export class BanAPI {
         return axiosInstance.get(`/bans/${banId}`);
     }
 
+    static async GetBanForAdmin(banId: number): Promise<AxiosResponse<ApiResponse<BanDTO>>> {
+        return axiosInstance.get(`/bans/admin/${banId}`);
+    }
+
     static async UpdateBan(banId: number, dto: UpdateBanDTO): Promise<AxiosResponse<ApiResponse<BanDTO>>> {
         return axiosInstance.put(`/bans/${banId}`, dto);
     }

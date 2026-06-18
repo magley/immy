@@ -96,12 +96,32 @@ func (h* BanHandler) CreateBan(c *gin.Context) {
 }
 
 func (h *BanHandler) GetBan(c *gin.Context) {
+	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin, model.UserRoleModerator})
+	if !ok {
+		return
+	}
+
 	banId, ok := util.ParamUintSafe(c, "id", "Ban")
 	if !ok {
 		return
 	}
 
 	res, err := h.BanService.GetBan(banId)
+	if err != nil {
+		util.NotFound(c, "Ban", banId)
+		return
+	} else {
+		util.OK(c, res)
+	}
+}
+
+func (h *BanHandler) GetBanForAdmin(c *gin.Context) {
+	banId, ok := util.ParamUintSafe(c, "id", "Ban")
+	if !ok {
+		return
+	}
+
+	res, err := h.BanService.GetBanForAdmin(banId)
 	if err != nil {
 		util.NotFound(c, "Ban", banId)
 		return

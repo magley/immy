@@ -29,6 +29,10 @@ func (s *BanService) GetBan(banId uint) (*model.Ban, error) {
 	return s.BanRepo.GetBan(banId)
 }
 
+func (s *BanService) GetBanForAdmin(banId uint) (*model.Ban, error) {
+	return s.BanRepo.GetBanForAdmin(banId)
+}
+
 func (s *BanService) UpdateBan(banId uint, dto model.UpdateBanDTO) (*model.Ban, error) {
 	ban, err := s.GetBan(banId)
 	if err != nil {

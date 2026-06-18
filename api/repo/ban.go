@@ -53,6 +53,9 @@ func (r *BanRepo) CreateBan(dto model.CreateBanDTO, creator *model.User) (*model
 		Reason: dto.Reason,
 		Warning: dto.Warning,
 	}
+	if (ban.Warning) {
+		ban.ExpiresAt = nil
+	}
 
 	if dto.IpEnd != nil {
 		ipEnd := util.IPv4toUint64(*dto.IpEnd)
@@ -66,6 +69,12 @@ func (r *BanRepo) CreateBan(dto model.CreateBanDTO, creator *model.User) (*model
 func (r *BanRepo) GetBan(banId uint) (*model.Ban, error) {
 	var ban model.Ban
 	result := r.DB.First(&ban, banId)
+	return &ban, result.Error
+}
+
+func (r *BanRepo) GetBanForAdmin(banId uint) (*model.Ban, error) {
+	var ban model.Ban
+	result := r.DB.Unscoped().First(&ban, banId)
 	return &ban, result.Error
 }
 

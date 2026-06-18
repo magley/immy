@@ -47,7 +47,7 @@
 	const isExpired = (ban: BanDTO) => {
 		if (!ban.expires_at) return false;
 		const expiresAt = Date.parse(ban.expires_at);
-		if (expiresAt > new Date().getMilliseconds()) return true;
+		if (expiresAt < new Date().getTime()) return true;
 		return false;
 	}
 
@@ -57,6 +57,28 @@
 
 	const isRemoved = (ban: BanDTO) => {
 		return (ban.deleted_at != null);
+	}
+
+	const removeBan = (ban: BanDTO) => {
+		BanAPI.DeleteBan(ban.id).then((res) => {
+			refreshBan(ban.id);
+		}).catch((err: AxiosError) => {
+			error.value = `Failed to delete ban #${ban.id}`;
+			console.error(err);
+		});
+	}
+
+	const refreshBan = (banID: number) => {
+		BanAPI.GetBanForAdmin(banID).then((res) => {
+			for (let i = 0; i < bans.value.length; i++) {
+				if (bans.value[i]!.id == banID) {
+					bans.value[i] = res.data.data!
+				}
+			}
+		}).catch((err: AxiosError) => {
+			error.value = `Failed to refresh ban #${banID}`;
+			console.error(err);
+		})
 	}
 </script>
 
@@ -80,12 +102,14 @@
 				<tr v-for="ban, i of bans" :class="{finished: isBanFinished(ban)}">
 					<td>{{ ban.id }}</td>
 					<td>
-						<template v-if="ban.ip_end == null">
-							{{ banNumToIP(ban.ip_start) }}
-						</template>
-						<template v-else>
-							{{ banNumToIP(ban.ip_start) }} - {{ banNumToIP(ban.ip_end) }}
-						</template>
+						<tt>
+							<template v-if="ban.ip_end == null">
+								{{ banNumToIP(ban.ip_start) }}
+							</template>
+							<template v-else>
+								{{ banNumToIP(ban.ip_start) }} - {{ banNumToIP(ban.ip_end) }}
+							</template>
+						</tt>
 					</td>
 					<td>{{ GetPostTimeReadable(ban.created_at) }}</td>
 					<td>
@@ -111,6 +135,9 @@
 						<template v-else-if="isRemoved(ban)">
 							<img src="/icons/trash.png" :title="`Ban manually removed at ${GetPostTimeReadable(ban.deleted_at!)}`" />
 						</template>
+						<template v-else>
+							<button @click="removeBan(ban)" :title="`Remove ban`"><img src="/icons/delete.png"/></button>
+						</template>
 					</td>
 				</tr>
 			</tbody>
@@ -125,6 +152,10 @@
 
 	.bad {
 		color: var(--user-error-color);
+	}
+
+	tt {
+		font-size: 12pt;
 	}
 
 	h1 {
