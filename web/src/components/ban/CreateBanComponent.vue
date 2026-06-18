@@ -2,9 +2,7 @@
 	import { BanAPI, type CreateBanDTO } from '@/api/ban.api';
 	import type { BoardDTO } from '@/api/board.api';
 	import type { PostDTO } from '@/api/post.api';
-	import { GetPostTimeReadable } from '@/model/post/post.model';
 	import { DateFromDuration } from '@/util/various.util';
-	import { breakpointsAntDesign } from '@vueuse/core';
 	import { AxiosError } from 'axios';
 	import { onMounted } from 'vue';
 	import { ref, useId } from 'vue';
@@ -55,6 +53,10 @@
 		if (formPermanentBan.value) {
 			banDTO.value.expires_at = null;
 		}
+		if (banDTO.value.ip_start == '') {
+			error.value = "Please specify an IP address";
+			return;
+		}
 		applyBanDuration();
 
 		error.value = undefined;
@@ -83,18 +85,15 @@
 			<input type=checkbox :id="`warning-${id}`" v-model="banDTO.warning" />
 
 			<hr/>
-		</div>
 
-		<!-- Ban only -->
-		<div v-if="!banDTO.warning">
 			<!-- Ban IP -->
 			<div v-if="!props.post">
-				<div>
+				<div v-if="!banDTO.warning">
 					<label :for="`is-range-${id}`">Is range ban:</label>
 					<input type=checkbox :id="`is-range-${id}`" v-model="isRangeban" />
 				</div>
 
-				<div v-if="!isRangeban">
+				<div v-if="!isRangeban || banDTO.warning">
 					<label :for="`ip-${id}`">IP address:</label>
 					<input :id="`ip-${id}`" v-model="banDTO.ip_start" placeholder="172.20.0.1" />
 				</div>
@@ -106,9 +105,11 @@
 					<input :id="`ip-end-${id}`"  v-model="banDTO.ip_end" placeholder="172.20.0.254" />
 				</div>
 			</div>
-
 			<hr/>
+		</div>
 
+		<!-- Ban only -->
+		<div v-if="!banDTO.warning">
 			<!-- Ban duration -->
 			<div>
 				<div>
