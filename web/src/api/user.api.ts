@@ -39,7 +39,7 @@ export interface LoginResponseDTO {
 }
 
 export interface AuthorzationDTO {
-    role: string | undefined;
+    required_roles: string[];
 }
 
 export class UserAPI {

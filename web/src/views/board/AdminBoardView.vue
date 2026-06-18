@@ -18,7 +18,7 @@
 	const boardEditShown = ref<Record<string, boolean>>({}); // board code => true/false
 	
 	onMounted(() => {
-		UserAPI.AuthorizeUser({role: UserRole.Admin}).then(() => {
+		UserAPI.AuthorizeUser({required_roles: [UserRole.Admin]}).then(() => {
 			get_boards();
 			get_allowed_mime_types();
 		}).catch((err: AxiosError) => {

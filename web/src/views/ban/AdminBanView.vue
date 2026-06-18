@@ -12,8 +12,7 @@
 	const bans = ref<BanDTO[]>([]);
 
 	onMounted(() => {
-		// TODO: Authorize with mods too?
-		UserAPI.AuthorizeUser({role: UserRole.Admin}).then(() => {
+		UserAPI.AuthorizeUser({required_roles: [UserRole.Admin, UserRole.Moderator]}).then(() => {
 			getBans();
 		}).catch((err: AxiosError) => {
 			console.error(err);

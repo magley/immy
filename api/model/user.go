@@ -44,5 +44,5 @@ type LoginResponseDTO struct {
 }
 
 type AuthorizationDTO struct {
-	Role		*string		`json:"role"`
+	RequiredRoles []string	`json:"required_roles"`
 }

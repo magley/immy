@@ -17,7 +17,7 @@
 	const createUserError = ref<string>("");
 	
 	onMounted(() => {
-		UserAPI.AuthorizeUser({role: UserRole.Admin}).then(() => {
+		UserAPI.AuthorizeUser({required_roles: [UserRole.Admin]}).then(() => {
 			get_users();
 		}).catch((err: AxiosError) => {
 			console.error(err);

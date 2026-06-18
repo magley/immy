@@ -71,8 +71,15 @@ func (s *UserService) LoginUser(dto model.LoginUserDTO) (*model.LoginResponseDTO
 }
 
 func (s *UserService) AuthorizeUser(dto model.AuthorizationDTO, jwt *util.JWTClaims) error {
-	if dto.Role != nil {
-		if jwt.Role != *dto.Role {
+	if len(dto.RequiredRoles) > 0 {
+		roleSatisfied := false
+		for _, r := range dto.RequiredRoles {
+			if r == jwt.Role {
+				roleSatisfied = true
+				break
+			}
+		}
+		if !roleSatisfied {
 			return errors.New("Invalid role")
 		}
 	}
