@@ -11,15 +11,27 @@ type BanService struct {
 	UserService 	*UserService
 }
 
-func (s *BanService) ListBans(offset, limit int) ([]*model.Ban, error) {
-	return s.censorBans2(s.BanRepo.ListBans(offset, limit))
+func (s *BanService) ListBans(offset, limit int) ([]*model.Ban, int64, error) {
+	bans, err := s.censorBans2(s.BanRepo.ListBans(offset, limit))
+	if err != nil {
+		return bans, 0, err
+	}
+	totalCount, err := s.BanRepo.GetBanCount(true)
+	if err != nil {
+		return bans, 0, err
+	}
+	return bans, totalCount, err
 }
 
-func (s *BanService) ListBansForAdmin(offset, limit int) ([]*model.BanExtDTO, error) {
+func (s *BanService) ListBansForAdmin(offset, limit int) ([]*model.BanExtDTO, int64, error) {
 	bans, err := s.BanRepo.ListBansForAdmin(offset, limit)
 	var result []*model.BanExtDTO
 	if err != nil {
-		return result, err
+		return result, 0, err
+	}
+	totalCount, err := s.BanRepo.GetBanCount(true)
+	if err != nil {
+		return result, 0, err
 	}
 
 	for _, ban := range bans {
@@ -27,12 +39,12 @@ func (s *BanService) ListBansForAdmin(offset, limit int) ([]*model.BanExtDTO, er
 
 		if ban.BoardID != nil {
 			board, err := s.BoardService.GetBoard(*ban.BoardID)
-			if err != nil { return result, err }
+			if err != nil { return result, 0, err }
 			boardCode = &board.Code
 		}
 
 		user, err := s.UserService.GetUser(ban.CreatorID)
-		if err != nil { return result, err }
+		if err != nil { return result, 0, err }
 
 		ban2 := &model.BanExtDTO{
 			Ban: *ban,
@@ -41,7 +53,8 @@ func (s *BanService) ListBansForAdmin(offset, limit int) ([]*model.BanExtDTO, er
 		}
 	 	result = append(result, ban2)
 	}
-	return result, err
+
+	return result, totalCount, err
 }
 
 func (s *BanService) GetBansOfIp(ip string) ([]*model.Ban, error) {

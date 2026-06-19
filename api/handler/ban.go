@@ -1,13 +1,13 @@
 package handler
 
-
 import (
-	"net/http"
-	"github.com/gin-gonic/gin"
 	util "immy-api/util"
+	"net/http"
 
-	"immy-api/service"
+	"github.com/gin-gonic/gin"
+
 	"immy-api/model"
+	"immy-api/service"
 )
 
 type BanHandler struct {
@@ -17,13 +17,13 @@ type BanHandler struct {
 
 func (h *BanHandler) ListBans(c *gin.Context) {
 	offset, limit := util.GetOffsetLimit(c)
-	res, err := h.BanService.ListBans(offset, limit)
+	res, total, err := h.BanService.ListBans(offset, limit)
 
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
 		return
 	} else {
-		util.OK(c, res)
+		util.OKPaged(c, res, util.MetaPage(limit, offset, total))
 		return
 	}
 }
@@ -35,13 +35,13 @@ func (h *BanHandler) ListBansForAdmin(c *gin.Context) {
 	}
 
 	offset, limit := util.GetOffsetLimit(c)
-	res, err := h.BanService.ListBansForAdmin(offset, limit)
+	res, total, err := h.BanService.ListBansForAdmin(offset, limit)
 
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
 		return
 	} else {
-		util.OK(c, res)
+		util.OKPaged(c, res, util.MetaPage(limit, offset, total))
 		return
 	}
 }

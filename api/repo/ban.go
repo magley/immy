@@ -24,10 +24,20 @@ func (r *BanRepo) ListBansForAdmin(offset int, limit int) ([]*model.Ban, error) 
 		Unscoped().
 		Limit(limit).
 		Offset(offset).
-		Find(&bans).
 		Order("created_at desc").
-		Order("expires_at desc")
+		Find(&bans)
 	return bans, result.Error
+}
+
+func (r *BanRepo) GetBanCount(includeDeleted bool) (int64, error) {
+	cnt := int64(0)
+
+	query := r.DB
+	if (includeDeleted) {
+		query = query.Unscoped()
+	}
+	result := query.Model(&model.Ban{}).Count(&cnt)
+	return cnt, result.Error
 }
 
 func (r *BanRepo) GetBansOfIp(ip string) ([]*model.Ban, error) {
@@ -38,7 +48,6 @@ func (r *BanRepo) GetBansOfIp(ip string) ([]*model.Ban, error) {
 		Where("((warning = false and expires_at is null) or (expires_at > now() or seen = false) or (warning = true and seen = false))").
 		Where("((ip_end is null and ip_start = ?) or (? between ip_start and ip_end))", ipBinary, ipBinary).
 		Order("created_at desc").
-		Order("expires_at desc").
 		Find(&bans)
 	return bans, result.Error
 }

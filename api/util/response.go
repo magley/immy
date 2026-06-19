@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"immy-api/model"
+	"math"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -110,4 +111,13 @@ func BanCheck(c *gin.Context, bans []*model.Ban) (bool, []*model.Ban) {
 		return true, bans
 	}
 	return false, []*model.Ban{}
+}
+
+func MetaPage(limit, offset int, total int64) *Meta {
+	return &Meta{
+		Page: offset / limit + 1,
+		PerPage: limit,
+		Total: int(total),
+		TotalPages: int(math.Ceil(float64(total) / float64(limit))),
+	}
 }
