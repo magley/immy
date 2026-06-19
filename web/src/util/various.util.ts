@@ -2,6 +2,11 @@ export const AddRangeNoDuplicates = <T>(target: T[], range: T[]): T[] => {
 	return range.reduce((acc, item) => {return acc.includes(item) ? acc : [...acc, item] }, [...target]);
 }
 
+export const UniqueArray = <T>(arr: T[]): T[] => {
+	return arr.filter((x, i, a) => a.indexOf(x) == i);
+}
+
+
 export const GetElipsisString = (input: string, lenIncludingDots: number = 10 + 3) => {
 	if (!input) return input;
 
@@ -85,9 +90,9 @@ export const DateFromDuration = (input: string): Date => {
 	if (isNaN(value)) value = 0;
 
 	const unit = input
-		.slice(String(value).length)
-		.trim()
-		.toLowerCase();
+	.slice(String(value).length)
+	.trim()
+	.toLowerCase();
 
 	const SECOND = 1000;
 	const MINUTE = 60 * SECOND;
