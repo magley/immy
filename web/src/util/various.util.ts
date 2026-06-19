@@ -122,3 +122,36 @@ export const DateFromDuration = (input: string): Date => {
 
 	return new Date(Date.now() + plusDelta);
 }
+
+export const GetTimeDifferenceBasic = (from: Date, to: Date): string => {
+	const diffMs = Math.abs(to.getTime() - from.getTime());
+
+	const second = 1000;
+	const minute = 60 * second;
+	const hour = 60 * minute;
+	const day = 24 * hour;
+	const month = 30 * day;
+	const year = 365 * day;
+
+	if (diffMs >= year) {
+		return `${Math.round(diffMs / year)} year(s)`;
+	}
+
+	if (diffMs >= month) {
+		return `${Math.round(diffMs / month)} month(s)`;
+	}
+
+	if (diffMs >= day) {
+		return `${Math.round(diffMs / day)} day(s)`;
+	}
+
+	if (diffMs >= hour) {
+		return `${Math.round(diffMs / hour)} hour(s)`;
+	}
+
+	if (diffMs >= minute) {
+		return `${Math.round(diffMs / minute)} minute(s)`;
+	}
+
+	return `${Math.round(diffMs / second)} second(s)`;
+}

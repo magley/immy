@@ -1,13 +1,17 @@
 <script setup lang="ts">
 	import { BanAPI, type BanDTO, type UpdateBanDTO } from '@/api/ban.api';
+	import { BoardAPI, type BoardDTO } from '@/api/board.api';
 	import type { ApiResponse } from '@/api/http';
 	import { GetPostTimeReadable } from '@/model/post/post.model';
+	import { GetTimeDifferenceBasic } from '@/util/various.util';
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import { onMounted, ref, warn } from 'vue';
 
 	const bans = ref<BanDTO[]>([]);
 	const error = ref<string | undefined>(undefined);
 	const loading = ref<boolean>(true);
+
+	const boardCodes = ref<Record<number, string>>({});
 
 	onMounted(() => {
 		getBans();
@@ -19,6 +23,7 @@
 		BanAPI.GetMyBans().then((res: AxiosResponse<ApiResponse<BanDTO[]>>) => {
 			bans.value = res.data.data!;
 			markExpiredBansAsSeen();
+			fetchBoardCodes(res.data.data!);
 		}).catch((err: AxiosError) => {
 			error.value = "Could not fetch your bans";
 			console.error(err);
@@ -34,6 +39,15 @@
 					seen: true,
 				};
 				BanAPI.UpdateBan(ban.id, dto);
+			}
+		}
+	}
+
+	const fetchBoardCodes = (bans_arr: BanDTO[]) => {
+		for (let ban of bans.value) {
+
+			if (ban.board_id != null && !boardCodes.value[ban.board_id]) {
+				BoardAPI.GetBoardById(ban.board_id).then((res) => boardCodes.value[ban.board_id!] = res.data.data!.code);
 			}
 		}
 	}
@@ -82,7 +96,7 @@
 										<b>all boards</b>
 									</template>
 									<template v-else>
-										<b>{{ ban.board_id }}</b>
+										<b>/{{ boardCodes[ban.board_id] }}/</b>
 									</template>
 								</template>
 								for the following reason:
@@ -102,7 +116,10 @@
 									</template>
 									<template v-else>
 										and expires at
-										<b>{{ GetPostTimeReadable(ban.expires_at) }}</b>.
+										<b>{{ GetPostTimeReadable(ban.expires_at) }}</b>,
+										<br/>which is
+										<b>{{ GetTimeDifferenceBasic(new Date(Date.parse(ban.created_at)), new Date(Date.parse(ban.expires_at))) }}</b>
+										from now.
 									</template>
 								</template>
 

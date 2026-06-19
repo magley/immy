@@ -12,14 +12,14 @@ type BanRepo struct {
 	DB *gorm.DB
 }
 
-func (r *BanRepo) ListBans(offset int, limit int) ([]model.Ban, error) {
-	var bans []model.Ban
+func (r *BanRepo) ListBans(offset int, limit int) ([]*model.Ban, error) {
+	var bans []*model.Ban
 	result := r.DB.Limit(limit).Offset(offset).Find(&bans)
 	return bans, result.Error
 }
 
-func (r *BanRepo) ListBansForAdmin(offset int, limit int) ([]model.Ban, error) {
-	var bans []model.Ban
+func (r *BanRepo) ListBansForAdmin(offset int, limit int) ([]*model.Ban, error) {
+	var bans []*model.Ban
 	result := r.DB.
 		Unscoped().
 		Limit(limit).
@@ -30,9 +30,9 @@ func (r *BanRepo) ListBansForAdmin(offset int, limit int) ([]model.Ban, error) {
 	return bans, result.Error
 }
 
-func (r *BanRepo) GetBansOfIp(ip string) ([]model.Ban, error) {
+func (r *BanRepo) GetBansOfIp(ip string) ([]*model.Ban, error) {
 	ipBinary := util.IPv4toUint64(ip)
-	var bans []model.Ban
+	var bans []*model.Ban
 	result := r.DB.
 		Model(&model.Ban{}).
 		Where("((warning = false and expires_at is null) or (expires_at > now() or seen = false) or (warning = true and seen = false))").

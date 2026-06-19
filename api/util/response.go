@@ -97,7 +97,7 @@ func Banned(c *gin.Context, justWarning bool) {
 	})
 }
 
-func BanCheck(c *gin.Context, bans []model.Ban) (bool, []model.Ban) {
+func BanCheck(c *gin.Context, bans []*model.Ban) (bool, []*model.Ban) {
 	if len(bans) > 0 {
 		justWarning := true
 		for _, ban := range bans {
@@ -109,5 +109,5 @@ func BanCheck(c *gin.Context, bans []model.Ban) (bool, []model.Ban) {
 		Banned(c, justWarning)
 		return true, bans
 	}
-	return false, []model.Ban{}
+	return false, []*model.Ban{}
 }

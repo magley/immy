@@ -15,6 +15,13 @@ export interface BanDTO {
     seen: boolean;
 }
 
+export interface BanExtDTO {
+    ban: BanDTO
+    board_code: string | null;
+    creator_username: string;
+}
+
+
 export interface CreateBanDTO {
     ip_start: string;
     ip_end: string | null;
@@ -33,7 +40,7 @@ export class BanAPI {
         return axiosInstance.get(`/bans/?offset=${offset}&limit=${limit}`);
     }
 
-    static async ListBansForAdmin(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<BanDTO[]>>> {
+    static async ListBansForAdmin(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<BanExtDTO[]>>> {
         return axiosInstance.get(`/bans/admin?offset=${offset}&limit=${limit}`);
     }
 
@@ -49,7 +56,7 @@ export class BanAPI {
         return axiosInstance.get(`/bans/${banId}`);
     }
 
-    static async GetBanForAdmin(banId: number): Promise<AxiosResponse<ApiResponse<BanDTO>>> {
+    static async GetBanForAdmin(banId: number): Promise<AxiosResponse<ApiResponse<BanExtDTO>>> {
         return axiosInstance.get(`/bans/admin/${banId}`);
     }
 

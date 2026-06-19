@@ -57,7 +57,7 @@ func main() {
 	postService = &service.PostService{PostRepo: postRepo, BoardService: boardService, ThreadRepo: threadRepo}
 	threadService = &service.ThreadService{ThreadRepo: threadRepo, BoardService: boardService, PostService: postService}
 	userService = &service.UserService{UserRepo: userRepo}
-	banService = &service.BanService{BanRepo: banRepo}
+	banService = &service.BanService{BanRepo: banRepo, BoardService: boardService, UserService: userService}
 	
 	postService.ThreadService = threadService
 	
