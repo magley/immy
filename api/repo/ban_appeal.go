@@ -39,6 +39,7 @@ func (r *BanAppealRepo) CreateBanAppeal(dto model.CreateBanAppealDTO, ban *model
 	banappeal := model.BanAppeal{
 		BanID: ban.ID,
 		Message: dto.Message,
+		Status: model.BanAppealStatusPending,
 	}
 
 	result := r.DB.Create(&banappeal)

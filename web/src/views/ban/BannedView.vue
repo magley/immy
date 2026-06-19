@@ -1,5 +1,6 @@
 <script setup lang="ts">
 	import { BanAPI, type BanDTO, type UpdateBanDTO } from '@/api/ban.api';
+	import { BanAppealAPI, type BanAppealDTO, type CreateBanAppealDTO } from '@/api/ban_appeal.api';
 	import { BoardAPI, type BoardDTO } from '@/api/board.api';
 	import type { ApiResponse } from '@/api/http';
 	import { GetPostTimeReadable } from '@/model/post/post.model';
@@ -13,6 +14,10 @@
 
 	const boardCodes = ref<Record<number, string>>({});
 
+	const canAppeal = ref<Record<number, boolean>>({});
+	const appeals = ref<Record<number, BanAppealDTO[]>>({});
+	const appealText = ref<Record<number, string>>({});
+
 	onMounted(() => {
 		getBans();
 	});
@@ -24,11 +29,33 @@
 			bans.value = res.data.data!;
 			markExpiredBansAsSeen();
 			fetchBoardCodes(res.data.data!);
+
+			for (let ban of res.data.data!) {
+				getAppeals(ban.id);
+			}
 		}).catch((err: AxiosError) => {
 			error.value = "Could not fetch your bans";
 			console.error(err);
 		}).finally(() => {
 			loading.value = false;
+		});
+	}
+
+	const getAppeals = (banID: number) => {
+		BanAppealAPI.CanAppealBan(banID).then((res) => {
+			canAppeal.value[banID] = res.data.data!;
+			if (res.data.data!) {
+				BanAppealAPI.GetBanAppealsOfBan(banID).then((res) => {
+					appeals.value[banID] = res.data.data!;
+					appealText.value[banID] = "";
+				}).catch((err: AxiosError) => {
+					error.value = "Could not fetch ban appeals";
+					console.error(err);
+				});
+			}
+		}).catch((err: AxiosError) => {
+			error.value = "Could not fetch ban appeals";
+			console.error(err);
 		});
 	}
 
@@ -56,6 +83,21 @@
 		if (ban.warning) return true;
 		if (ban.expires_at == null) return false;
 		return Date.parse(ban.expires_at) < new Date().getTime();
+	}
+
+	const submitAppeal = (ban: BanDTO) => {
+		const msg: string = appealText.value[ban.id] ?? "";
+		const dto: CreateBanAppealDTO = {
+			ban_id: ban.id,
+			message: msg,
+		};
+		BanAppealAPI.CreateBanAppeal(dto).then((res) => {
+			appealText.value[ban.id] = "";
+			getAppeals(ban.id);
+		}).catch((err: AxiosError) => {
+			error.value = "Could not submit ban appeal";
+			console.error(err);
+		});
 	}
 </script>
 
@@ -132,6 +174,32 @@
 									</span>
 								</template>
 							</p>
+
+							<div class="appeal-container">
+								<p v-if="!(canAppeal[ban.id] ?? false)">
+									You cannot appeal this ban.
+								</p>
+								<p v-else>
+									You can appeal your ban in the form below.
+									<br/>
+									Please be mindful when writing your message.
+									<br/>
+									<br/>
+									<textarea
+										v-model="appealText[ban.id]"
+										placeholder="Write your ban appeal here"
+										rows=5 cols=35>
+									</textarea>
+									<br/>
+									<button @click="submitAppeal(ban)">Submit</button>
+								</p>
+							</div>
+
+							<div>
+								<div v-for="appeal of appeals[ban.id]">
+									{{ appeal.id }} {{ appeal.message }} {{ appeal.status }}
+								</div>
+							</div>
 							<hr />
 						</div>
 					</div>
