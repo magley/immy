@@ -14,7 +14,7 @@ type BanAppealRepo struct {
 
 func (r *BanAppealRepo) ListBanAppeals(offset int, limit int) ([]*model.BanAppeal, error) {
 	var banappeals []*model.BanAppeal
-	result := r.DB.Limit(limit).Offset(offset).Find(&banappeals)
+	result := r.DB.Limit(limit).Offset(offset).Order("created_at DESC").Find(&banappeals)
 	return banappeals, result.Error
 }
 
@@ -68,7 +68,7 @@ func (r *BanAppealRepo) DeleteBanAppeal(banappeal *model.BanAppeal) (error) {
 
 func (r *BanAppealRepo) GetBanAppealsOfBan(ban *model.Ban) ([]*model.BanAppeal, error) {
 	var banappeals []*model.BanAppeal
-	result := r.DB.Model(&model.BanAppeal{}).Where("ban_id = ?", ban.ID).Find(&banappeals)
+	result := r.DB.Model(&model.BanAppeal{}).Where("ban_id = ?", ban.ID).Order("created_at DESC").Find(&banappeals)
 	return banappeals, result.Error
 }
 
