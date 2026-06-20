@@ -88,8 +88,7 @@ func (r *BanRepo) GetBanForAdmin(banId uint) (*model.Ban, error) {
 }
 
 func (r *BanRepo) UpdateBan(ban *model.Ban, dto model.UpdateBanDTO) (*model.Ban, error) {
-	if dto.Seen != nil { ban.Seen = *dto.Seen}
-
+	if dto.Seen != nil { ban.Seen = *dto.Seen }
 	result := r.DB.Save(&ban)
 	return ban, result.Error
 }

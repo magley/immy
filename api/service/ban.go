@@ -66,6 +66,10 @@ func (s *BanService) CreateBan(dto model.CreateBanDTO, creator *model.User) (*mo
 }
 
 func (s *BanService) GetBan(banId uint) (*model.Ban, error) {
+	return s.BanRepo.GetBan(banId)
+}
+
+func (s *BanService) GetBanCensored(banId uint) (*model.Ban, error) {
 	return s.censorBan2(s.BanRepo.GetBan(banId))
 }
 

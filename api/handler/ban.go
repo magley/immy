@@ -106,7 +106,7 @@ func (h *BanHandler) GetBan(c *gin.Context) {
 		return
 	}
 
-	res, err := h.BanService.GetBan(banId)
+	res, err := h.BanService.GetBanCensored(banId)
 	if err != nil {
 		util.NotFound(c, "Ban", banId)
 		return
