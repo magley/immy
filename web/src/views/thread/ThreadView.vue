@@ -512,6 +512,7 @@
 		:sticky="thread!.sticky"
 		:locked="thread!.locked"
 		:showCenterElements="false"
+		:archive="thread.archived"
 		@updateClicked="reloadThread"
 		@autoTimerToggled="onAutoTimerToggled"
 		@openedGalleryMode="openGalleryMode(0)" />
