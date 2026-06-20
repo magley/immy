@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	import { BanAPI, type BanDTO, type UpdateBanDTO } from '@/api/ban.api';
-	import { BanAppealAPI, type BanAppealDTO, type CreateBanAppealDTO } from '@/api/ban_appeal.api';
+	import { BanAppealAPI, type BanAppealDTO, type CreateBanAppealDTO, BanAppealStatus } from '@/api/ban_appeal.api';
 	import { BoardAPI, type BoardDTO } from '@/api/board.api';
 	import type { ApiResponse } from '@/api/http';
 	import { GetPostTimeReadable } from '@/model/post/post.model';
@@ -99,6 +99,16 @@
 			console.error(err);
 		});
 	}
+
+	const appealAnswer = (banAppeal: BanAppealDTO): string => {
+		switch (banAppeal.status) {
+		case BanAppealStatus.Pending: return "Awaiting moderator review";
+		case BanAppealStatus.Approved: return "Accepted, this ban will be appealed";
+		case BanAppealStatus.Rejected: return "Rejected, please write a new appeal";
+		case BanAppealStatus.RejectedFinal: return "Rejected, you cannot appeal this ban anymore";
+		default: return `Unknown (${banAppeal.status})`;
+		}
+	}
 </script>
 
 <template>
@@ -160,7 +170,7 @@
 										and expires at
 										<b>{{ GetPostTimeReadable(ban.expires_at) }}</b>,
 										<br/>which is
-										<b>{{ GetTimeDifferenceBasic(new Date(Date.parse(ban.created_at)), new Date(Date.parse(ban.expires_at))) }}</b>
+										<b>{{ GetTimeDifferenceBasic(new Date(), new Date(Date.parse(ban.expires_at))) }}</b>
 										from now.
 									</template>
 								</template>
@@ -195,9 +205,12 @@
 								</p>
 							</div>
 
-							<div>
-								<div v-for="appeal of appeals[ban.id]">
-									{{ appeal.id }} {{ appeal.message }} {{ appeal.status }}
+							<div v-if="(appeals[ban.id]?? []).length > 0">
+								<h3>Your appeals:</h3>
+								<div v-for="appeal of appeals[ban.id]" class="appeal">
+									<i>{{ appeal.message }}</i>
+									<br/>
+									<b>Status:</b> {{ appealAnswer(appeal) }}
 								</div>
 							</div>
 							<hr />
@@ -229,6 +242,10 @@
 		.ban-reason {
 			margin-left: 2em;
 			white-space: pre;
+		}
+
+		.appeal {
+			margin-top: 1em;
 		}
 	}
 
