@@ -75,7 +75,7 @@
 				[ <a href="#" @click.prevent="() => {collapsedNewBlogpostForm = true;}">Hide</a> ]
 			</div>
 			<h2>New blogpost</h2>
-			<CreateBlogpostComponent @created-blogpost="onBlogpostCreated" />
+			<CreateBlogpostComponent :blogpost-to-edit="undefined" @created-blogpost="onBlogpostCreated" />
 		</div>
 		<hr />
 	</div>

@@ -46,6 +46,7 @@ func (r *BlogpostRepo) GetBlogpost(blogpostId uint) (*model.Blogpost, error) {
 }
 
 func (r *BlogpostRepo) UpdateBlogpost(blogpost *model.Blogpost, dto model.UpdateBlogpostDTO) (*model.Blogpost, error) {
+	if dto.Title != nil { blogpost.Title = *dto.Title }
 	if dto.Html != nil { blogpost.Html = *dto.Html }
 	result := r.DB.Save(&blogpost)
 	return blogpost, result.Error

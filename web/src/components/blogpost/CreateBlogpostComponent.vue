@@ -1,15 +1,24 @@
 <script setup lang="ts">
-	import { type CreateBlogpostDTO, type BlogpostDTO, BlogpostAPI } from '@/api/blogpost.api';
+	import { type CreateBlogpostDTO, type BlogpostDTO, BlogpostAPI, type UpdateBlogpostDTO } from '@/api/blogpost.api';
 	import type { AxiosError } from 'axios';
 	import { ref } from 'vue';
 
+	interface Props {
+		// If `undefined`, then this component will "create" a new blogpost.
+		// Otherwise, it will edit the speicifed blogpost DTO.
+		blogpostToEdit: BlogpostDTO | undefined;
+	}
+
+	const isMakingNewBlogpost = (): boolean => props.blogpostToEdit == undefined;
+
 	const error = ref<string | undefined>(undefined);
 	const preview = ref<boolean>(false);
-	const emits = defineEmits(["createdBlogpost"]);
+	const emits = defineEmits(["createdBlogpost", "updatedBlogpost"]);
+	const props = defineProps<Props>();
 
 	const dto = ref<CreateBlogpostDTO>({
-		title: 'Untitled Blogpost',
-		html: 'This is my <b>blogpost</b>!'
+		title: props.blogpostToEdit?.title ?? 'Untitled Blogpost',
+		html: props.blogpostToEdit?.html ?? 'This is my <b>blogpost</b>!'
 	});
 
 	const createBlogpost = () => {
@@ -21,12 +30,44 @@
 			emits("createdBlogpost");
 		}).catch((err: AxiosError) => {
 			if (err.response?.status == 401) {
-				error.value = "You are not authorized to created blogposts."
+				error.value = "You are not authorized to create blogposts."
 			} else {
 				error.value = "Could not create blogpost";
 			}
 			console.error(err);
 		});
+	}
+
+	const updateBlogpost = () => {
+		if (props.blogpostToEdit == undefined) {
+			return;
+		}
+
+		const updateDTO: UpdateBlogpostDTO = {
+			title: dto.value.title,
+			html: dto.value.html,
+		};
+
+		BlogpostAPI.UpdateBlogpost(props.blogpostToEdit.id, updateDTO).then((res) => {
+			dto.value.title = "";
+			dto.value.html = "";
+			emits("updatedBlogpost", res.data.data!);
+		}).catch((err: AxiosError) => {
+			if (err.response?.status == 401) {
+				error.value = "You are not authorized to update blogposts."
+			} else {
+				error.value = "Could not update blogpost";
+			}
+			console.error(err);
+		});
+	}
+
+	const onClickSubmitButton  =() => {
+		if (isMakingNewBlogpost()) {
+			createBlogpost();
+		} else {
+			updateBlogpost();
+		}
 	}
 </script>
 
@@ -39,7 +80,10 @@
 			<label for="blog-html">Message:</label><br/>
 			<textarea id="blog-html" placeholder="Write your blogpost here (HTML supported)" cols="50" rows="10" v-model="dto.html" />
 			<br/>
-			<button @click="createBlogpost">Create</button>
+			<button @click="onClickSubmitButton">
+				<template v-if="isMakingNewBlogpost()">Create</template>
+				<template v-else>Update</template>
+			</button>
 			<br/>
 			<div class="error" v-if="error">{{error}}</div>
 		</div>

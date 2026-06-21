@@ -29,5 +29,6 @@ type CreateBlogpostDTO struct {
 }
 
 type UpdateBlogpostDTO struct {
+	Title 			*string	 		`json:"title"`
 	Html 			*string			`json:"html"`
 }

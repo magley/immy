@@ -23,6 +23,7 @@ export interface CreateBlogpostDTO {
 }
 
 export interface UpdateBlogpostDTO {
+    title: string | null;
     html: string | null;
 }
 

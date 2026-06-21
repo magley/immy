@@ -11,6 +11,7 @@ import BannedView from '@/views/ban/BannedView.vue';
 import AdminBanView from '@/views/ban/AdminBanView.vue';
 import PublicBansView from '@/views/ban/PublicBansView.vue';
 import BlogpostView from '@/views/blogpost/BlogpostView.vue';
+import SingleBlogpostView from '@/views/blogpost/SingleBlogpostView.vue';
 
 const routes = [
 	{ path: '/', component: HomeView },
@@ -18,6 +19,7 @@ const routes = [
 	{ path: '/banned', component: BannedView },
 	{ path: '/bans', component: PublicBansView },
 	{ path: '/blog', component: BlogpostView },
+	{ path: '/blog/:id', component: SingleBlogpostView },
 	{ path: '/admin-users', component: AdminUserView },
 	{ path: '/admin-boards', component: AdminBoardView },
 	{ path: '/admin-bans', component: AdminBanView },

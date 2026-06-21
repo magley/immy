@@ -29,7 +29,7 @@
 		</div>
 		<div v-else>
 			<div v-for="blog of blogposts">
-				{{ toDate(blog) }} <RouterLink :to="`blog/${blog.id}`">{{ blog.title }}</RouterLink>
+				{{ toDate(blog) }} <RouterLink :to="`/blog/${blog.id}`">{{ blog.title }}</RouterLink>
 			</div>
 		</div>
 		<hr/>

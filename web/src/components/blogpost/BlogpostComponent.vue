@@ -11,7 +11,11 @@ import { GetPostTimeReadable } from '@/model/post/post.model';
 
 <template>
 	<div class="blogpost">
-		<h2>{{ blogpost.title }} by {{ blogpost.author_name }} @ {{ GetPostTimeReadable(blogpost.created_at) }}</h2>
+		<h2>
+			<RouterLink :to="`/blog/${blogpost.id}`">{{ blogpost.title }}</RouterLink>
+			by {{ blogpost.author_name }}
+			@ {{ GetPostTimeReadable(blogpost.created_at) }}
+		</h2>
 		<p v-html="blogpost.html"></p>
 	</div>
 </template>
