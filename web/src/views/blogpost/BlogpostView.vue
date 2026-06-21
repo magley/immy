@@ -10,6 +10,9 @@
 	const loading = ref<boolean>(false);
 	const error = ref<string | undefined>(undefined);
 
+	const collapsedNewBlogpostForm = ref<boolean>(true);
+
+	const userRole = ref<string | undefined>(undefined);
 
 	const perPage = 20;
 	const page = ref<number>(1);
@@ -18,6 +21,7 @@
 
 	onMounted(() => {
 		getBlogposts();
+		userRole.value = localStorage.getItem("role") ?? undefined;
 	})
 
 	const getBlogposts = () => {
@@ -58,6 +62,23 @@
 	<h1>Blogposts</h1>
 	<div class="error" v-if="error">{{ error }}</div>
 
+	<div v-if="userRole == 'admin'">
+		<hr />
+		<div v-if="collapsedNewBlogpostForm" class="center">
+			<br/>
+			[ <a href="#" @click.prevent="() => {collapsedNewBlogpostForm = false;}">Create new blogpost</a> ]
+			<br/><br/>
+		</div>
+		<div v-else>
+			<div class="center">
+				<br/>
+				[ <a href="#" @click.prevent="() => {collapsedNewBlogpostForm = true;}">Hide</a> ]
+			</div>
+			<h2>New blogpost</h2>
+			<CreateBlogpostComponent @created-blogpost="onBlogpostCreated" />
+		</div>
+		<hr />
+	</div>
 
 	<template v-if="blogposts.length == 0">
 		<div class="center">No blogposts have been written yet.</div>
