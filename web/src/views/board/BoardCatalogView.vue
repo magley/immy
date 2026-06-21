@@ -14,6 +14,7 @@
 	import { onClickOutside } from '@vueuse/core'
 	import BoardBanner from '@/components/board/BoardBanner.vue';
 	import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
+	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
 
 	const board = ref<BoardDTO | undefined>(undefined);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
@@ -307,10 +308,12 @@
 			@postCreated="loadThreads()"
 			/>
 
-			<RandomBoardImageBanner />
-
-			<hr />
 		</div>
+
+		<BlogpostQuickList />
+		<RandomBoardImageBanner />
+
+		<hr />
 
 		<BoardViewNavList
 		:board_code="board.code"

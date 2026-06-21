@@ -9,6 +9,7 @@ func RegisterBlogpostRoutes(h *handler.BlogpostHandler, rg *gin.RouterGroup) {
 	blogposts := rg.Group("/blogposts")
 	{
     	blogposts.GET("/", h.ListBlogposts)
+    	blogposts.GET("/short", h.ListBlogpostsShort)
     	blogposts.POST("/", h.CreateBlogpost)
     	blogposts.GET("/:id", h.GetBlogpost)
     	blogposts.PUT("/:id", h.UpdateBlogpost)

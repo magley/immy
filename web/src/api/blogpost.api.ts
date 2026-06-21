@@ -31,6 +31,10 @@ export class BlogpostAPI {
         return axiosInstance.get(`/blogposts/?offset=${offset}&limit=${limit}`);
     }
 
+    static async ListBlogpostsShort(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<BlogpostDTO[]>>> {
+        return axiosInstance.get(`/blogposts/short?offset=${offset}&limit=${limit}`);
+    }
+
     static async CreateBlogpost(dto: CreateBlogpostDTO): Promise<AxiosResponse<ApiResponse<BlogpostDTO>>> {
         return axiosInstance.post(`/blogposts/`, dto);
     }

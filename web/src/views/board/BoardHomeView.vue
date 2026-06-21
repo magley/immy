@@ -15,6 +15,7 @@
 	import type { UserRole } from "@/api/user.api";
 	import BoardBanner from "@/components/board/BoardBanner.vue";
 	import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vue";
+	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
 	
 	const board = ref<BoardDTO | undefined>(undefined);
 
@@ -314,12 +315,12 @@
 			:mime_types_allowed="board.config.mime_types_allowed"
 			@postCreated="loadThreads()"
 			/>
-
-			<RandomBoardImageBanner />
-
-			<hr />
 		</div>
 
+		<BlogpostQuickList />
+		<RandomBoardImageBanner />
+
+		<hr />
 		<!-- Navigation and search -->
 		[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
 		[<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>]

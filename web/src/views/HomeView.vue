@@ -101,6 +101,18 @@ import { GetFileSizeByteString } from '@/util/file.util';
 			</span>
 		</div>
 	</div>
+
+	<div class="container">
+		<div class="body">
+			<span>
+				<RouterLink to="/blog">Blog</RouterLink>
+			</span>
+			•
+			<span>
+				<RouterLink to="/bans">Bans</RouterLink>
+			</span>
+		</div>
+	</div>
 </template>
 
 <style scoped>

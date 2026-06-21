@@ -2,7 +2,9 @@
 	import { BoardAPI, type BoardDTO } from '@/api/board.api';
 	import type { ApiResponse } from '@/api/http';
 	import { ThreadAPI, type ThreadForCatalogDTO } from '@/api/thread.api';
+import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
 	import BoardListNav from '@/components/board/BoardListNav.vue';
+import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
 	import PostComponent from '@/components/post/PostComponent.vue';
 	import { GetPostTimeReadable, SplitPostLink, type PostImageData } from '@/model/post/post.model';
 	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
@@ -83,7 +85,6 @@
 		peekPost.value = undefined;
 		peekPostVisible.value = false;
 	}
-
 </script>
 
 <template>
@@ -117,7 +118,11 @@
 			<small>{{board.description}}</small>
 		</div>
 
+		<BlogpostQuickList />
+		<RandomBoardImageBanner />
+
 		<hr />
+
 		<!-- Navigation and search -->
 		[<RouterLink :to="`/${route.params.board_code}`">Return</RouterLink>]
 		[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]

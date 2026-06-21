@@ -28,6 +28,19 @@ func (h *BlogpostHandler) ListBlogposts(c *gin.Context) {
 	}
 }
 
+func (h *BlogpostHandler) ListBlogpostsShort(c *gin.Context) {
+	offset, limit := util.GetOffsetLimit(c)
+	res, total, err := h.BlogpostService.ListBlogposts(offset, limit)
+
+	if err != nil {
+		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
+		return
+	} else {
+		util.OKPaged(c, h.BlogpostService.ToShortArr(res), util.MetaPage(limit, offset, total))
+		return
+	}
+}
+
 func (h* BlogpostHandler) CreateBlogpost(c *gin.Context) {
 	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin})
 	if !ok {

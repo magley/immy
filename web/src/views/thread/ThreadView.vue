@@ -21,6 +21,7 @@
 	import BoardBanner from '@/components/board/BoardBanner.vue';
 	import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
 	import GalleryMode from '@/components/thread/GalleryMode.vue';
+	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -482,6 +483,7 @@
 			</p>
 		</div>
 
+		<BlogpostQuickList />
 		<RandomBoardImageBanner />
 
 		<!-- Floating reply box -->

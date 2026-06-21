@@ -37,4 +37,5 @@
 		<template v-if="i < boards.length - 1"> / </template>
 	</span>
 	]
+	[ <RouterLink to="/bans">bans</RouterLink> | <RouterLink to="/blog">blog</RouterLink> ]
 </template>
