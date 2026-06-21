@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { BanAPI, type BanDTO, type BanExtDTO } from '@/api/ban.api';
+	import { BanAPI, type BanExtDTO } from '@/api/ban.api';
 	import { BanAppealAPI, type BanAppealDTO, BanAppealStatus, type UpdateBanAppealDTO } from '@/api/ban_appeal.api';
 	import { UserAPI, UserRole } from '@/api/user.api';
 	import { GetPostTimeReadable } from '@/model/post/post.model';

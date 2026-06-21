@@ -9,7 +9,9 @@
 	onMounted(() => {
 		userRole.value = localStorage.getItem("role") ?? undefined;
 		userName.value = localStorage.getItem("username") ?? undefined;
+
 		setTheme(localStorage.getItem("theme") ?? "yotsuba");
+		theme.value = localStorage.getItem("theme") ?? "yotsuba";
 	});
 
 	const themeChanged = () => {
