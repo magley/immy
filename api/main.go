@@ -47,13 +47,15 @@ func main() {
 	userRepo := &repo.UserRepo{DB : gormDB}
 	banRepo := &repo.BanRepo{DB : gormDB}
 	banAppealRepo := &repo.BanAppealRepo{DB : gormDB}
-	
+	blogpostRepo := &repo.BlogpostRepo{DB : gormDB}
+
 	var boardService *service.BoardService
 	var postService *service.PostService
 	var threadService *service.ThreadService
 	var userService *service.UserService
 	var banService *service.BanService
 	var banAppealService *service.BanAppealService
+	var blogpostService *service.BlogpostService
 	
 	boardService = &service.BoardService{BoardRepo: boardRepo}
 	postService = &service.PostService{PostRepo: postRepo, BoardService: boardService, ThreadRepo: threadRepo}
@@ -61,7 +63,8 @@ func main() {
 	userService = &service.UserService{UserRepo: userRepo}
 	banService = &service.BanService{BanRepo: banRepo, BoardService: boardService, UserService: userService}
 	banAppealService = &service.BanAppealService{BanAppealRepo: banAppealRepo, BanService: banService, UserService: userService}
-	
+	blogpostService = &service.BlogpostService{BlogpostRepo: blogpostRepo, UserService: userService}
+
 	postService.ThreadService = threadService
 	
 	boardHandler := &handler.BoardHandler{BoardService: boardService}
@@ -70,6 +73,7 @@ func main() {
 	userHandler := &handler.UserHandler{UserService: userService}
 	banHandler := &handler.BanHandler{BanService: banService, UserService: userService}
 	banAppealHandler := &handler.BanAppealHandler{BanAppealService: banAppealService, UserService: userService}
+	blogpostHandler := &handler.BlogpostHandler{BlogpostService: blogpostService, UserService: userService}
 
 	metaHandler := &handler.MetaHandler{BoardService: boardService}
 	
@@ -84,6 +88,7 @@ func main() {
 			route.RegisterThreadRoutes(threadHandler, v1)
 			route.RegisterBanRoutes(banHandler, v1)
 			route.RegisterBanAppealRoutes(banAppealHandler, v1)
+			route.RegisterBlogpostRoutes(blogpostHandler, v1)
 		}
 	}
 	
