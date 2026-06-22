@@ -278,7 +278,6 @@
 </script>
 
 <template>
-
 	<template v-if="peekPostVisible && peekPost">
 		<PostComponent
 		class="peek"
@@ -380,7 +379,7 @@
 		</template>
 
 		<!-- Pagination -->
-		<div>
+		<span class="pagination">
 			<span v-if="page > 0">
 				[<a :href="`/${board.code}?page=${page - 1 + 1}`">Prev</a>]
 			</span>
@@ -390,19 +389,15 @@
 			<span v-if="page < totalPages - 1">
 				[<a :href="`/${board.code}?page=${page + 1 + 1}`">Next</a>]
 			</span>
-		</div>
 
-		<hr />
-
-		<!-- Navigation and search #2 -->
-		<div>
-			[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
-			[<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>]
-			[<a class="link" :href="`#top`">Top</a>]
-		</div>
+			<span class="nav">
+				<!-- Navigation and search #2 -->
+				[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
+				[<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>]
+				[<a class="link" :href="`#top`">Top</a>]
+			</span>
+		</span>
 	</template>
-
-	<BoardListNav :isCatalog=false />
 </template>
 
 <style scoped>
