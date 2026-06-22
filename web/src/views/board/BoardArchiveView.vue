@@ -2,9 +2,8 @@
 	import { BoardAPI, type BoardDTO } from '@/api/board.api';
 	import type { ApiResponse } from '@/api/http';
 	import { ThreadAPI, type ThreadForCatalogDTO } from '@/api/thread.api';
-import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
-	import BoardListNav from '@/components/board/BoardListNav.vue';
-import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
+	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
+	import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
 	import PostComponent from '@/components/post/PostComponent.vue';
 	import { GetPostTimeReadable, SplitPostLink, type PostImageData } from '@/model/post/post.model';
 	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
@@ -88,8 +87,6 @@ import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vu
 </script>
 
 <template>
-	<BoardListNav :isCatalog=false />
-
 	<template v-if="peekPostVisible && peekPost">
 		<PostComponent
 		class="peek"
@@ -147,31 +144,29 @@ import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vu
 				<tr v-for="thread of threads">
 					<td>
 						<RouterLink
-							:to="`/${board.code}/thread/${thread.post.num}`"
-							@pointerenter="onPostLinkHover(`>>${thread.post.num}`)"
-							@pointerleave="onPostLinkUnhover(`>>${thread.post.num}`)">
-							&gt;&gt;{{ thread.post.num }}
-						</RouterLink>
-					</td>
-					<td>{{ thread.post.content }}</td>
-					<td>{{ thread.stats.post_count }}</td>
-					<td>{{ thread.stats.image_count }}</td>
-					<td>{{ thread.stats.user_count }}</td>
-					<td>{{ GetPostTimeReadable(thread.post.created_at) }}</td>
-					<td>{{ GetPostTimeReadable(thread.stats.last_bump) }}</td>
-				</tr>
-			</tbody>
-		</table>
+						:to="`/${board.code}/thread/${thread.post.num}`"
+						@pointerenter="onPostLinkHover(`>>${thread.post.num}`)"
+						@pointerleave="onPostLinkUnhover(`>>${thread.post.num}`)">
+						&gt;&gt;{{ thread.post.num }}
+					</RouterLink>
+				</td>
+				<td>{{ thread.post.content }}</td>
+				<td>{{ thread.stats.post_count }}</td>
+				<td>{{ thread.stats.image_count }}</td>
+				<td>{{ thread.stats.user_count }}</td>
+				<td>{{ GetPostTimeReadable(thread.post.created_at) }}</td>
+				<td>{{ GetPostTimeReadable(thread.stats.last_bump) }}</td>
+			</tr>
+		</tbody>
+	</table>
 
-		<hr />
-		<!-- Navigation and search -->
-		[<RouterLink :to="`/${route.params.board_code}`">Return</RouterLink>]
-		[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
-		[<a class="link" :href="`#top`">Top</a>]
-		<hr />
-	</div>
-
-	<BoardListNav :isCatalog=false />
+	<hr />
+	<!-- Navigation and search -->
+	[<RouterLink :to="`/${route.params.board_code}`">Return</RouterLink>]
+	[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
+	[<a class="link" :href="`#top`">Top</a>]
+	<hr />
+</div>
 </template>
 
 <style scoped>

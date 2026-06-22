@@ -13,7 +13,6 @@
 	import { vElementVisibility } from '@vueuse/components';
 	import PostComponent from '@/components/post/PostComponent.vue';
 	import { AddRangeNoDuplicates } from '@/util/various.util';
-	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
 	import { GetTabTitleForThread } from '@/util/tab.util';
 	import { useTextSelection, useDraggable } from '@vueuse/core';
@@ -429,8 +428,6 @@
 </script>
 
 <template>
-	<BoardListNav :isCatalog=false />
-
 	<template v-if="board && thread">
 		<GalleryMode ref="galleryMode" :board="board" :thread="thread" :posts="posts" />
 	</template>
@@ -561,13 +558,12 @@
 		:sticky="thread!.sticky"
 		:locked="thread!.locked"
 		:showCenterElements="true"
+		:archive="archiveThread"
 		@openedReplyBox="openFloatingReplyBox"
 		@updateClicked="reloadThread"
 		@autoTimerToggled="onAutoTimerToggled"
 		@openedGalleryMode="openGalleryMode(-1)" />
 	</template>
-
-	<BoardListNav :isCatalog=false />
 </template>
 
 <style scoped>

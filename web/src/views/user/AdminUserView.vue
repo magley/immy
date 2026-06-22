@@ -4,7 +4,6 @@
 	import type { ApiResponse } from '@/api/http';
 	import type { AxiosResponse, AxiosError } from 'axios';
 	import { useRouter } from 'vue-router';
-	import BoardListNav from '@/components/board/BoardListNav.vue';
 
 	const router = useRouter();
 
@@ -73,9 +72,6 @@
 </script>
 
 <template>
-	<BoardListNav :isCatalog=false />
-	<hr/>
-
 	<h1>Users</h1>
 	
 	<form @submit.prevent="onSubmitCreateUser">
@@ -129,9 +125,6 @@
 			</tr>
 		</tbody>
 	</table>
-
-	<hr/>
-	<BoardListNav :isCatalog=false />
 </template>
 
 <style scoped>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 	import { ref, onMounted } from 'vue';
 	import { UserRole } from './api/user.api';
+import BoardListNav from './components/board/BoardListNav.vue';
 
 	const userRole = ref<string | undefined>(undefined);
 	const userName = ref<string | undefined>(undefined);
@@ -78,6 +79,10 @@
 
 		</span>
 	</nav>
+	<nav>
+		<BoardListNav :isCatalog=false />
+		<hr />
+	</nav>
 
 	<main>	
 		<!-- The key is so the page resets when the route changes. Don't use
@@ -86,15 +91,23 @@
 		<RouterView :key="$route.path"/>
 	</main>
 
-	<label>Theme:</label>
-	<select v-model="theme" @change="themeChanged">
-		<option value="yotsuba">Yotsuba</option>
-		<option value="yotsuba-b">Yotsuba B</option>
-		<option value="futaba">Futaba</option>
-		<option value="burichan">Burichan</option>
-	</select>
+	<nav>
+		<hr />
+		<BoardListNav :isCatalog=false />
+	</nav>
+
+	<div>
+		<label>Theme:</label>
+		<select v-model="theme" @change="themeChanged">
+			<option value="yotsuba">Yotsuba</option>
+			<option value="yotsuba-b">Yotsuba B</option>
+			<option value="futaba">Futaba</option>
+			<option value="burichan">Burichan</option>
+		</select>
+	</div>
 	
-	<span id="bottom"></span>
+	<span id="bottom">
+	</span>
 </template>
 
 <style scoped>

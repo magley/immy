@@ -264,8 +264,6 @@
 </script>
 
 <template>
-	<BoardListNav :isCatalog=true />
-
 	<!-- Modal menu -->
 	<table class="modal-menu" ref="modal-menu" id="modal-menu" v-if="modalMenuThread">
 		<tbody>
@@ -409,8 +407,6 @@
 		@onToggleHiddenThreads="onToggleHiddenThreads"
 		/>
 	</template>
-
-	<BoardListNav :isCatalog=true />
 </template>
 
 <style scoped>

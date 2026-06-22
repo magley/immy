@@ -8,7 +8,6 @@
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import { onMounted, onUnmounted, ref } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
-	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetPostPeek, type PostPeekBundle } from "@/model/post/post.peek";
 	import { GetTabTitleForBoard } from "@/util/tab.util";
 	import CreatePostForm from "@/components/post/CreatePostForm.vue";
@@ -279,7 +278,6 @@
 </script>
 
 <template>
-	<BoardListNav :isCatalog=false />
 
 	<template v-if="peekPostVisible && peekPost">
 		<PostComponent
@@ -421,5 +419,19 @@
 
 	.currentPage {
 		font-weight: bold;
+	}
+
+	.pagination {
+		background-color: var(--post-background-color);
+		display: inline-block;
+		padding: 1em;
+		border: 1px solid var(--post-border-color);
+
+		.nav {
+			margin-left: 1em;
+			* {
+				margin-left: 0.2em;
+			}
+		}
 	}
 </style>

@@ -78,9 +78,6 @@
 </script>
 
 <template>
-	<BoardListNav :isCatalog=false />
-	<hr/>
-
 	<h1>Boards</h1>
 
 	<div id="new-board-container">
@@ -158,9 +155,6 @@
 			</template>
 		</tbody>
 	</table>
-
-	<hr/>
-	<BoardListNav :isCatalog=false />
 </template>
 
 <style scoped>

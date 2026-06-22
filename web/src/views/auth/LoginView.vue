@@ -3,7 +3,6 @@
 	import { UserAPI, type LoginUserDTO, type LoginResponseDTO} from "@/api/user.api.ts";
 	import type { ApiResponse } from '@/api/http';
 	import type { AxiosResponse, AxiosError } from 'axios';
-import BoardListNav from '@/components/board/BoardListNav.vue';
 
 	const loginUserDTO = ref<LoginUserDTO>({
 		username: '',
@@ -36,9 +35,6 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 </script>
 
 <template>
-	<BoardListNav :isCatalog=false />
-	<hr/>
-
 	<form @submit.prevent="onSubmitLogin">
 		<h1>Login</h1>
 		
@@ -54,9 +50,6 @@ import BoardListNav from '@/components/board/BoardListNav.vue';
 			<span class="error">{{errorMessage}}</span>
 		</template>
 	</form>
-
-	<hr/>
-	<BoardListNav :isCatalog=false />
 </template>
 
 <style scoped>
