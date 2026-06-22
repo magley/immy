@@ -5,22 +5,19 @@
 	import { GetPostTimeReadable } from '@/model/post/post.model';
 	import { GetTimeDifferenceBasic } from '@/util/various.util';
 	import type { AxiosError } from 'axios';
-	import { onMounted, ref } from 'vue';
+	import { onMounted, reactive, ref } from 'vue';
 	import { useRouter } from 'vue-router';
+	import PaginatorComponent from '@/components/PaginatorComponent.vue';
+	import { Paginator } from '@/util/pagination.util';
 
 	const router = useRouter();
 	const error = ref<string | undefined>(undefined);
-	const loading = ref<boolean>(true);
 	const bans = ref<BanExtDTO[]>([]);
+	const paginator = reactive<Paginator<BanExtDTO[]>>(new Paginator(BanAPI.ListBansForAdmin));
 	const banWhoseAppealIsOpen = ref<number | undefined>(undefined);
 	const appeals = ref<Record<number, BanAppealDTO[]>>({});
 	const appealError = ref<string | undefined>(undefined);
 	const banAppealResponse = ref<BanAppealStatus>(BanAppealStatus.Rejected);
-
-	const perPage = 15;
-	const page = ref<number>(1);
-	const pagesTotal = ref<number>(1);
-	const pagesNav = ref<number[]>([]);
 
 	onMounted(() => {
 		UserAPI.AuthorizeUser({required_roles: [UserRole.Admin, UserRole.Moderator]}).then(() => {
@@ -32,31 +29,13 @@
 	});
 
 	const getBans = () => {
-		if (page.value < 1) page.value = 1;
-		if (page.value > pagesTotal.value) page.value = pagesTotal.value;
-
-
-		loading.value = true;
-		BanAPI.ListBansForAdmin((page.value - 1) * perPage, perPage).then((res) => {
-			bans.value = res.data.data!;
-			loading.value = false;
-
-			const meta = res.data.meta!;
-			page.value = meta.page;
-			pagesTotal.value = meta.total_pages;
-			pagesNav.value = [
-				page.value - 4, page.value - 3, page.value - 2, page.value - 1,
-				page.value - 0,
-				page.value + 1, page.value + 2, page.value + 3, page.value + 4, page.value + 5,
-			];
-			pagesNav.value = pagesNav.value.filter((v) => v >= 1 && v <= meta.total_pages);
-		}).catch((err: AxiosError) => {
-			error.value = "Could not fetch bans";
-		});
+		paginator.getItems()
+			.then((res) => bans.value = res.data.data!)
+			.catch((_) => error.value = "Could not fetch bans!");
 	}
 
 	const gotoPage = (p: number) => {
-		page.value = p;
+		paginator.page = p;
 		getBans();
 	}
 
@@ -147,8 +126,13 @@
 	<h1>Bans</h1>
 
 	<div class="error" v-if="error">{{ error }}</div>
-	<div v-if="loading">Loading...</div>
+	<div v-if="paginator.loading">Loading...</div>
 	<div v-else>
+		<div class="center nav">
+			<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" />
+			<br/>
+		</div>
+
 		<table>
 			<tbody>
 				<tr>
@@ -260,19 +244,7 @@
 		</table>
 
 		<div class="center nav">
-			[<a href="#" @click.prevent="gotoPage(1)">First</a>]&thinsp;
-			[<a href="#" @click.prevent="gotoPage(page - 1)">Prev</a>]&thinsp;
-			<span v-for="p, i of pagesNav">
-				<template v-if="p == page">
-					<span>{{ p }} </span>
-				</template>
-				<template v-else>
-					<a href="#" @click.prevent="gotoPage(p)">{{ p }} </a>
-				</template>
-				<template v-if="i < pagesNav.length - 1">,</template>&thinsp;
-			</span>
-			[<a href="#" @click.prevent="gotoPage(page + 1)">Next</a>]&thinsp;
-			[<a href="#" @click.prevent="gotoPage(pagesTotal)">Last</a>]&thinsp;
+			<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" />
 		</div>
 	</div>
 </template>
