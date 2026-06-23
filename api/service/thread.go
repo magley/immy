@@ -195,8 +195,8 @@ func (s *ThreadService) GetThreadsForArchive(boardCode string) ([]model.ThreadFo
 	return res, nil
 }
 
-func (s *ThreadService) GetThreadsForHome(boardCode string, lastNpostsCount int, perPage int, page int) ([]model.ThreadForHomeDTO, int64, error) {
-	threads, err := s.ListThreadsOfBoardOrderByBump(boardCode, page * perPage, perPage)
+func (s *ThreadService) GetThreadsForHome(boardCode string, lastNpostsCount int, offset, limit int) ([]model.ThreadForHomeDTO, int64, error) {
+	threads, err := s.ListThreadsOfBoardOrderByBump(boardCode, offset, limit)
 	if err != nil {
 		return nil, 0, err
 	}

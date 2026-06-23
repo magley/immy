@@ -3,7 +3,6 @@ package handler
 import (
 	"immy-api/util"
 	"log"
-	"math"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -179,29 +178,17 @@ func (h *ThreadHandler) GetThreadsForArchive(c *gin.Context) {
 }
 
 func (h *ThreadHandler) GetThreadsForHome(c *gin.Context) {
+	offset, limit := util.GetOffsetLimit(c)
 	boardCode := c.Param("boardCode")
-	page, ok := util.QueryIntSafe(c, "page", "Threads")
-	if !ok {
-		return
-	}
-	perPage, ok := util.QueryIntSafe(c, "perPage", "Threads")
-	if !ok {
-		return
-	}
 	perThread := 5
 
-	res, totalThreads, err := h.ThreadService.GetThreadsForHome(boardCode, perThread, perPage, page)
+	res, totalThreads, err := h.ThreadService.GetThreadsForHome(boardCode, perThread, offset, limit)
 
 	if err != nil {
 		util.NotFound(c, "Threads of board", boardCode)
 		return
 	} else {
-		util.OKPaged(c, res, &util.Meta{
-			Page: page,
-			PerPage: perPage,
-			Total: int(totalThreads),
-			TotalPages: int(math.Ceil(float64(totalThreads) / float64(perPage))),
-		})
+		util.OKPaged(c, res, util.MetaPage(limit, offset, totalThreads))
 		return
 	}
 }
