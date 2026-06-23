@@ -29,7 +29,7 @@
 			<template v-if="i < paginator.pagesNav.length - 1">,</template>&thinsp;
 		</span>
 
-		[<template v-if="paginator.page < paginator.pagesTotal"><a href="#" @click.prevent="gotoPage(paginator.page + 1)">Prev</a></template>
+		[<template v-if="paginator.page < paginator.pagesTotal"><a href="#" @click.prevent="gotoPage(paginator.page + 1)">Next</a></template>
 		<template v-else>Next</template>]&thinsp;
 
 		[<a href="#" @click.prevent="gotoPage(paginator.pagesTotal)">Last</a>]&thinsp;

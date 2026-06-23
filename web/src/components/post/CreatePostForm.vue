@@ -98,7 +98,6 @@
 		}).catch((err: AxiosError<ApiResponse<PostDTO>>) => {
 			if (err.response?.data.error?.code == "BANNED") {
 				replyError.value = "You are <a href='/banned'>banned</a>.";
-				console.log("You are banned");
 			} else if (err.response?.data.error?.code == "WARNED") {
 				replyError.value = "You have been <a href='/banned'>warned</a>.";
 			} else {

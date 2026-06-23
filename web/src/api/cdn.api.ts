@@ -48,7 +48,6 @@ export class CdnAPI {
 			return undefined;
 		}
 		const i = Math.floor(Math.random() * fname.length);
-		console.log(fname, i);
 		return this.GetBannersURI("title/" + fname[i]!);
 	}
 
@@ -57,7 +56,6 @@ export class CdnAPI {
 			return undefined;
 		}
 		const i = Math.floor(Math.random() * fname.length);
-		console.log(fname, i);
 		return this.GetBannersURI("board/" + fname[i]!);
 	}
 

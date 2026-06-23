@@ -27,8 +27,6 @@
 	const getBlogpost = () => {
 		loading.value = true;
 
-		console.log(route.params);
-
 		const idStr = route.params.id;
 		if (idStr == undefined) {
 			router.push("/blog");

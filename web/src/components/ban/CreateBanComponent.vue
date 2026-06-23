@@ -65,7 +65,7 @@
 
 		}).catch((err: AxiosError) => {
 			error.value = "Could not ban user";
-			console.log(err);
+			console.error(err);
 		});
 	}
 
