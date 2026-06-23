@@ -6,7 +6,7 @@
 	import PostComponent from "@/components/post/PostComponent.vue";
 	import { type PostImageData, type PostToken, type PostLinkToken, ProcessPost, type ProcessedPost, SplitPostLink } from "@/model/post/post.model";
 	import type { AxiosError, AxiosResponse } from 'axios';
-	import { onMounted, onUnmounted, ref } from 'vue';
+	import { onMounted, onUnmounted, reactive, ref } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
 	import { GetPostPeek, type PostPeekBundle } from "@/model/post/post.peek";
 	import { GetTabTitleForBoard } from "@/util/tab.util";
@@ -15,6 +15,8 @@
 	import BoardBanner from "@/components/board/BoardBanner.vue";
 	import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vue";
 	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
+import { Paginator } from "@/util/pagination.util";
+import PaginatorComponent from "@/components/PaginatorComponent.vue";
 	
 	const board = ref<BoardDTO | undefined>(undefined);
 
@@ -24,10 +26,9 @@
 	const threads = ref<ThreadForHomeDTO[]>([]);
 	const threadsError = ref<string | undefined>(undefined);
 
-	const page = ref<number>(0);
-	const pageSize = ref<number>(10);
-	const totalPages = ref<number>(0);
-	const pages = ref<number[]>([]);
+
+	const getThreads = (offset: number, limit: number) => ThreadAPI.GetThreadsForHome(board.value!.code, offset, limit);
+	const pagination = reactive<Paginator<ThreadForHomeDTO[]>>(new Paginator(getThreads));
 
 	/** `post.user_id` which should be highlighted */
 	const highlightedPublicIDs = ref<Record<string, boolean>>({});
@@ -56,7 +57,7 @@
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
 		const page_num_string = route.query['page'] ?? "1";
-		page.value = Number(page_num_string) - 1;
+		pagination.page = Number(page_num_string) - 1;
 		loadBoard(board_code);
 		window.addEventListener('mousemove', updatePosition);
 
@@ -93,29 +94,18 @@
 			return;
 		}
 
-		threadsError.value = undefined;
-		ThreadAPI.GetThreadsForHome(board.value.code, page.value, pageSize.value).then((res : AxiosResponse<ApiResponse<ThreadForHomeDTO[]>>) => {
-			if (res.data.meta) {
-				totalPages.value = res.data.meta.total_pages;
-				pages.value = [];
-				for (let i = 1; i <= totalPages.value; i++) {
-					pages.value.push(i);
-				}
-			}
+		pagination.getItems()
+			.then((res) => {
+				threads.value = res.data.data!;
 
-			threads.value = res.data.data! ?? [];
-
-			// Process posts into tokens.
-			for (let i = 0; i < threads.value.length; i++) {
-				const thread: ThreadForHomeDTO = threads.value[i]!;
-				for (let j = 0; j < thread.posts.length; j++) {
-					processPost(thread.posts[j]!, thread);
+				for (let i = 0; i < threads.value.length; i++) {
+					const thread: ThreadForHomeDTO = threads.value[i]!;
+					for (let j = 0; j < thread.posts.length; j++) {
+						processPost(thread.posts[j]!, thread);
+					}
 				}
-			}
-		}).catch((err: AxiosError) => {
-			threadsError.value = "Could not fetch threads";
-			console.error(err);
-		});
+			})
+			.catch((_) => threadsError.value = "Could not fetch threads!");
 	}
 
 	const onClickPostNo = (post_num: number, thread: ThreadForHomeDTO) => {
@@ -275,6 +265,10 @@
 			console.error(err);
 		});
 	}
+
+	const gotoPage = (page: number) => {
+		router.push(`/${board.value!.code}?page=${page}`);
+	}
 </script>
 
 <template>
@@ -380,16 +374,7 @@
 
 		<!-- Pagination -->
 		<span class="pagination">
-			<span v-if="page > 0">
-				[<a :href="`/${board.code}?page=${page - 1 + 1}`">Prev</a>]
-			</span>
-			<span v-for="p of pages">
-				[<a :href="`/${board.code}?page=${p}`" :class="{currentPage : p-1 == page}">{{p}}</a>]
-			</span>
-			<span v-if="page < totalPages - 1">
-				[<a :href="`/${board.code}?page=${page + 1 + 1}`">Next</a>]
-			</span>
-
+			<PaginatorComponent :paginator="pagination" @gotoPage="gotoPage" />
 			<span class="nav">
 				<!-- Navigation and search #2 -->
 				[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
