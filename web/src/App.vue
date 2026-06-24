@@ -1,9 +1,9 @@
 <script setup lang="ts">
-	import { ref, onMounted, onUpdated, watch } from 'vue';
+	import { ref, onMounted, watch } from 'vue';
 	import { UserRole } from './api/user.api';
 	import BoardListNav from './components/board/BoardListNav.vue';
 	import { IsJwtExpired, RemoveLoginCredentials } from './util/various.util';
-	import { useRoute, type RouteLocationNormalizedGeneric, useRouter } from 'vue-router';
+	import { useRoute, useRouter } from 'vue-router';
 
 	const userRole = ref<string | undefined>(undefined);
 	const userName = ref<string | undefined>(undefined);
@@ -23,9 +23,13 @@
 	});
 
 	watch(route, (to, from) => {
-		if (IsJwtExpired(localStorage.getItem("jwt"))) {
-			toast.value = "Session expired."
-			router.push({ path: '/login', query: { redirect: route.fullPath } });
+		const jwt: string | null = localStorage.getItem("jwt");
+		if (jwt != null) {
+			RemoveLoginCredentials();
+			if (IsJwtExpired(jwt)) {
+				toast.value = "Session expired."
+				router.push({ path: '/login', query: { redirect: route.fullPath } });
+			}
 		}
 	});
 
