@@ -1,11 +1,18 @@
 <script setup lang="ts">
-	import { ref, onMounted } from 'vue';
+	import { ref, onMounted, onUpdated, watch } from 'vue';
 	import { UserRole } from './api/user.api';
-import BoardListNav from './components/board/BoardListNav.vue';
+	import BoardListNav from './components/board/BoardListNav.vue';
+	import { IsJwtExpired, RemoveLoginCredentials } from './util/various.util';
+	import { useRoute, type RouteLocationNormalizedGeneric, useRouter } from 'vue-router';
 
 	const userRole = ref<string | undefined>(undefined);
 	const userName = ref<string | undefined>(undefined);
 	const theme = ref<string>("yotsuba");
+
+	const toast = ref<string | undefined>(undefined);
+
+	const route = useRoute();
+	const router = useRouter();
 
 	onMounted(() => {
 		userRole.value = localStorage.getItem("role") ?? undefined;
@@ -13,6 +20,13 @@ import BoardListNav from './components/board/BoardListNav.vue';
 
 		setTheme(localStorage.getItem("theme") ?? "yotsuba");
 		theme.value = localStorage.getItem("theme") ?? "yotsuba";
+	});
+
+	watch(route, (to, from) => {
+		if (IsJwtExpired(localStorage.getItem("jwt"))) {
+			toast.value = "Session expired."
+			router.push("/login");
+		}
 	});
 
 	const themeChanged = () => {
@@ -37,11 +51,7 @@ import BoardListNav from './components/board/BoardListNav.vue';
 	}
 
 	const logOut = () => {
-		localStorage.removeItem("username");
-		localStorage.removeItem("id");
-		localStorage.removeItem("role");
-		localStorage.removeItem("jwt");
-
+		RemoveLoginCredentials();
 		location.reload();
 	}
 </script>
@@ -54,6 +64,8 @@ import BoardListNav from './components/board/BoardListNav.vue';
 		|
 		<RouterLink to="/login">Log In</RouterLink>
 	</nav>
+
+	<div class="toast" v-if="toast">{{ toast }}</div>
 
 	
 	<nav v-if="userRole != undefined">
@@ -111,4 +123,15 @@ import BoardListNav from './components/board/BoardListNav.vue';
 </template>
 
 <style scoped>
+	.toast {
+		position: fixed;
+		left: 0;
+		top: 0;
+		width: 100%;
+		background: red;
+		color: white;
+		z-index: 500;
+		padding: 0.25em;
+		margin: 0;
+	}
 </style>

@@ -1,15 +1,14 @@
 <script setup lang="ts">
 	import { ref, onMounted } from 'vue';
-	import { BoardAPI, type BoardDTO, type CreateBoardDTO, type UpdateBoardDTO } from "@/api/board.api.ts";
+	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
-	import { GetElipsisString, IsAlphaNumeric, StripSlashes } from '@/util/various.util';
-	import { GetFileSizeByteFromString, GetFileSizeByteString } from '@/util/file.util';
+	import { GetElipsisString } from '@/util/various.util';
+	import { GetFileSizeByteString } from '@/util/file.util';
 	import { MetaAPI } from '@/api/meta.api';
 	import BoardUpdate from '@/components/board/BoardUpdate.vue';
 	import { UserAPI, UserRole } from '@/api/user.api';
 	import { useRouter } from 'vue-router';
-	import BoardListNav from '@/components/board/BoardListNav.vue';
 
 	const router = useRouter();
 

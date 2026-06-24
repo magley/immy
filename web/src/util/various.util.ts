@@ -1,3 +1,5 @@
+import type { UserRole } from "@/api/user.api";
+
 export const AddRangeNoDuplicates = <T>(target: T[], range: T[]): T[] => {
 	return range.reduce((acc, item) => {return acc.includes(item) ? acc : [...acc, item] }, [...target]);
 }
@@ -159,4 +161,29 @@ export const GetTimeDifferenceBasic = (from: Date, to: Date): string => {
 	}
 
 	return `${Math.round(diffMs / second)} second(s)`;
+}
+
+export const RemoveLoginCredentials = () => {
+	localStorage.removeItem("username");
+	localStorage.removeItem("id");
+	localStorage.removeItem("role");
+	localStorage.removeItem("jwt");
+}
+
+// Returns `false` if `jwt` is `null`.
+export const IsJwtExpired = (jwt: string | null): boolean => {
+	if (jwt == null) return false;
+
+	const parts: string[] = jwt.split(".");
+	const bodyStr: string = atob(parts[1]!);
+
+	interface JSONBody {
+		username: string;
+		id: number;
+		role: UserRole;
+		iat: number;
+		exp: number;
+	}
+	const body: JSONBody = JSON.parse(bodyStr);
+	return body.exp < new Date().getTime();
 }
