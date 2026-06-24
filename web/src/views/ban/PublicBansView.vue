@@ -1,26 +1,17 @@
 <script setup lang="ts">
-	import { BanAPI, type BanExtDTO, type BanDTO } from '@/api/ban.api';
-	import { UserAPI, UserRole } from '@/api/user.api';
+	import { BanAPI, type BanExtDTO } from '@/api/ban.api';
 	import PaginatorComponent from '@/components/PaginatorComponent.vue';
 	import { GetPostTimeReadable } from '@/model/post/post.model';
 	import { Paginator } from '@/util/pagination.util';
 	import { GetTimeDifferenceBasic } from '@/util/various.util';
-	import type { AxiosError } from 'axios';
 	import { onMounted, reactive, ref } from 'vue';
-	import { useRouter } from 'vue-router';
 
-	const router = useRouter();
 	const error = ref<string | undefined>(undefined);
 	const bans = ref<BanExtDTO[]>([]);
-	const paginator = reactive<Paginator<BanExtDTO[]>>(new Paginator(BanAPI.ListBansForAdmin));
+	const paginator = reactive<Paginator<BanExtDTO[]>>(new Paginator(BanAPI.ListBansExt));
 
 	onMounted(() => {
-		UserAPI.AuthorizeUser({required_roles: [UserRole.Admin, UserRole.Moderator]}).then(() => {
-			getBans();
-		}).catch((err: AxiosError) => {
-			console.error(err);
-			router.push("/login");
-		});
+		getBans();
 	});
 
 	const getBans = () => {
@@ -53,7 +44,7 @@
 					<th>Duration</th>
 					<th>Reason</th>
 				</tr>
-				<tr v-for="ban, i of bans">
+				<tr v-for="ban of bans">
 					<td class="center">
 						{{ ban.board_code == null ? "global" : `/${ban.board_code}/` }}
 					</td>

@@ -40,6 +40,10 @@ export class BanAPI {
         return axiosInstance.get(`/bans/?offset=${offset}&limit=${limit}`);
     }
 
+    static async ListBansExt(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<BanExtDTO[]>>> {
+        return axiosInstance.get(`/bans/ext?offset=${offset}&limit=${limit}`);
+    }
+
     static async ListBansForAdmin(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<BanExtDTO[]>>> {
         return axiosInstance.get(`/bans/admin?offset=${offset}&limit=${limit}`);
     }
@@ -56,8 +60,12 @@ export class BanAPI {
         return axiosInstance.get(`/bans/${banId}`);
     }
 
+    static async GetBanExt(banId: number): Promise<AxiosResponse<ApiResponse<BanExtDTO>>> {
+        return axiosInstance.get(`/bans/${banId}/ext`);
+    }
+
     static async GetBanForAdmin(banId: number): Promise<AxiosResponse<ApiResponse<BanExtDTO>>> {
-        return axiosInstance.get(`/bans/admin/${banId}`);
+        return axiosInstance.get(`/bans/${banId}/admin`);
     }
 
     static async UpdateBan(banId: number, dto: UpdateBanDTO): Promise<AxiosResponse<ApiResponse<BanDTO>>> {
