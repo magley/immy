@@ -71,6 +71,10 @@ func (s *UserService) LoginUser(dto model.LoginUserDTO) (*model.LoginResponseDTO
 }
 
 func (s *UserService) AuthorizeUser(dto model.AuthorizationDTO, jwt *util.JWTClaims) error {
+	if jwt == nil {
+		return errors.New("Unauthenticated")
+	}
+
 	if len(dto.RequiredRoles) > 0 {
 		roleSatisfied := false
 		for _, r := range dto.RequiredRoles {
