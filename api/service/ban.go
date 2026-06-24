@@ -12,46 +12,53 @@ type BanService struct {
 }
 
 func (s *BanService) ListBans(offset, limit int) ([]*model.Ban, int64, error) {
-	bans, err := s.censorBans2(s.BanRepo.ListBans(offset, limit))
+	bans, err := s.BanRepo.ListBans(offset, limit)
 	if err != nil {
-		return bans, 0, err
+		return []*model.Ban{}, 0, err
 	}
 	totalCount, err := s.BanRepo.GetBanCount(true)
 	if err != nil {
-		return bans, 0, err
+		return []*model.Ban{}, 0, err
 	}
+
 	return bans, totalCount, err
 }
 
+func (s *BanService) ListBansCensored(offset, limit int) ([]*model.Ban, int64, error) {
+	bans, count, err := s.ListBans(offset, limit)
+	bans, err = s.censorBans2(bans, err)
+	return bans, count, err
+}
+
+func (s *BanService) ListBansExt(offset, limit int) ([]*model.BanExtDTO, int64, error) {
+	bans, count, err := s.ListBans(offset, limit)
+	if err != nil {
+		return []*model.BanExtDTO{}, 0, err
+	}
+	bansExt, err := s.toExtArr(bans)
+	if err != nil {
+		return []*model.BanExtDTO{}, 0, err
+	}
+	return bansExt, count, err
+}
+
+func (s *BanService) ListBansExtCensored(offset, limit int) ([]*model.BanExtDTO, int64, error) {
+	bans, count, err := s.ListBansExt(offset, limit)
+	bans = s.censorBansExt(bans)
+	return bans, count, err
+}
 func (s *BanService) ListBansForAdmin(offset, limit int) ([]*model.BanExtDTO, int64, error) {
 	bans, err := s.BanRepo.ListBansForAdmin(offset, limit)
-	var result []*model.BanExtDTO
 	if err != nil {
-		return result, 0, err
+		return []*model.BanExtDTO{}, 0, err
 	}
 	totalCount, err := s.BanRepo.GetBanCount(true)
 	if err != nil {
-		return result, 0, err
+		return []*model.BanExtDTO{}, 0, err
 	}
-
-	for _, ban := range bans {
-		var boardCode *string = nil
-
-		if ban.BoardID != nil {
-			board, err := s.BoardService.GetBoard(*ban.BoardID)
-			if err != nil { return result, 0, err }
-			boardCode = &board.Code
-		}
-
-		user, err := s.UserService.GetUser(ban.CreatorID)
-		if err != nil { return result, 0, err }
-
-		ban2 := &model.BanExtDTO{
-			Ban: *ban,
-			BoardCode: boardCode,
-			CreatorUsername: user.Username,
-		}
-	 	result = append(result, ban2)
+	result, err := s.toExtArr(bans)
+	if err != nil {
+		return []*model.BanExtDTO{}, 0, err
 	}
 
 	return result, totalCount, err
@@ -67,6 +74,22 @@ func (s *BanService) CreateBan(dto model.CreateBanDTO, creator *model.User) (*mo
 
 func (s *BanService) GetBan(banId uint) (*model.Ban, error) {
 	return s.BanRepo.GetBan(banId)
+}
+
+func (s *BanService) GetBanExt(banId uint) (*model.BanExtDTO, error) {
+	ban, err := s.BanRepo.GetBan(banId)
+	if err != nil {
+		return nil, err
+	}
+	return s.toExt(ban)
+}
+
+func (s *BanService) GetBanExtCensored(banId uint) (*model.BanExtDTO, error) {
+	ban, err := s.GetBanCensored(banId)
+	if err != nil {
+		return nil, err
+	}
+	return s.toExt(ban)
 }
 
 func (s *BanService) GetBanCensored(banId uint) (*model.Ban, error) {
@@ -96,6 +119,57 @@ func (s *BanService) DeleteBan(banId uint) (error) {
 }
 
 // =====================================================================================
+
+func (s *BanService) toExt(ban *model.Ban) (*model.BanExtDTO, error) {
+	var boardCode *string = nil
+
+	if ban.BoardID != nil {
+		board, err := s.BoardService.GetBoard(*ban.BoardID)
+		if err != nil {
+			return nil, err
+		}
+		boardCode = &board.Code
+	}
+
+	user, err := s.UserService.GetUser(ban.CreatorID)
+	if err != nil {
+		return nil, err
+	}
+
+	ban2 := &model.BanExtDTO{
+		Ban: *ban,
+		BoardCode: boardCode,
+		CreatorUsername: user.Username,
+	}
+ 	return ban2, nil
+}
+
+func (s *BanService) toExtArr(bans []*model.Ban) ([]*model.BanExtDTO, error) {
+	var bans2 []*model.BanExtDTO
+
+	for _, ban := range bans {
+		ban2, err := s.toExt(ban)
+		if err != nil {
+			return [](*model.BanExtDTO){}, err
+		}
+		bans2 = append(bans2, ban2)
+	}
+	return bans2, nil
+}
+
+func (s *BanService) censorBanExt(ban *model.BanExtDTO) (*model.BanExtDTO) {
+	ban.Ban.CreatorID = 0
+	ban.Ban.IpStart = 0
+	ban.Ban.IpEnd = nil
+	return ban
+}
+
+func (s *BanService) censorBansExt(bans []*model.BanExtDTO) ([]*model.BanExtDTO) {
+	for _, ban := range bans {
+		ban = s.censorBanExt(ban)
+	}
+	return bans
+}
 
 func (s *BanService) censorBan(ban *model.Ban) (*model.Ban) {
 	ban.CreatorID = 0
