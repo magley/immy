@@ -6,10 +6,11 @@
 	import { GetTimeDifferenceBasic } from '@/util/various.util';
 	import type { AxiosError } from 'axios';
 	import { onMounted, reactive, ref } from 'vue';
-	import { useRouter } from 'vue-router';
+	import { useRoute, useRouter } from 'vue-router';
 	import PaginatorComponent from '@/components/PaginatorComponent.vue';
 	import { Paginator } from '@/util/pagination.util';
 
+	const route = useRoute();
 	const router = useRouter();
 	const error = ref<string | undefined>(undefined);
 	const bans = ref<BanExtDTO[]>([]);
@@ -24,7 +25,7 @@
 			getBans();
 		}).catch((err: AxiosError) => {
 			console.error(err);
-			router.push("/login");
+			router.push({ path: '/login', query: { redirect: route.fullPath } });
 		});
 	});
 

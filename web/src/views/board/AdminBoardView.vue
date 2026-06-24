@@ -8,9 +8,10 @@
 	import { MetaAPI } from '@/api/meta.api';
 	import BoardUpdate from '@/components/board/BoardUpdate.vue';
 	import { UserAPI, UserRole } from '@/api/user.api';
-	import { useRouter } from 'vue-router';
+	import { useRoute, useRouter } from 'vue-router';
 
 	const router = useRouter();
+	const route = useRoute();
 
 	const boards = ref<BoardDTO[]>([]);
 	const allowedMimeTypes = ref<string[]>([]);
@@ -22,7 +23,7 @@
 			get_allowed_mime_types();
 		}).catch((err: AxiosError) => {
 			console.error(err);
-			router.push("/login");
+			router.push({ path: '/login', query: { redirect: route.fullPath } });
 		});
 	});
 

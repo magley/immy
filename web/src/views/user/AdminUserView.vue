@@ -3,9 +3,10 @@
 	import { UserAPI, type UserDTO, type CreateUserDTO, type UpdateUserDTO, UserRole} from "@/api/user.api.ts";
 	import type { ApiResponse } from '@/api/http';
 	import type { AxiosResponse, AxiosError } from 'axios';
-	import { useRouter } from 'vue-router';
+	import { useRoute, useRouter } from 'vue-router';
 
 	const router = useRouter();
+	const route = useRoute();
 
 	const users = ref<UserDTO[]>([]);
 	const createUserDTO = ref<CreateUserDTO>({
@@ -20,7 +21,7 @@
 			get_users();
 		}).catch((err: AxiosError) => {
 			console.error(err);
-			router.push("/login");
+			router.push({ path: '/login', query: { redirect: route.fullPath } });
 		});
 	});
 	

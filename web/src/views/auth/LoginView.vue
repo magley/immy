@@ -3,12 +3,15 @@
 	import { UserAPI, type LoginUserDTO, type LoginResponseDTO} from "@/api/user.api.ts";
 	import type { ApiResponse } from '@/api/http';
 	import type { AxiosResponse, AxiosError } from 'axios';
+	import { useRoute, useRouter } from 'vue-router';
 
 	const loginUserDTO = ref<LoginUserDTO>({
 		username: '',
 		password: ''
 	});
 	const errorMessage = ref<string | undefined>(undefined);
+	const router = useRouter();
+	const route = useRoute();
 
 	const onSubmitLogin = () => {
 		errorMessage.value = "";
@@ -30,7 +33,9 @@
 		localStorage.setItem("id", `${dto.id}`);
 		localStorage.setItem("role", dto.role);
 		localStorage.setItem("jwt", dto.jwt);
-		location.reload();
+
+  		const redirectPath = (route.query.redirect as string) || '/';
+	 	router.push(redirectPath);
 	}
 </script>
 

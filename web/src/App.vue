@@ -25,7 +25,7 @@
 	watch(route, (to, from) => {
 		if (IsJwtExpired(localStorage.getItem("jwt"))) {
 			toast.value = "Session expired."
-			router.push("/login");
+			router.push({ path: '/login', query: { redirect: route.fullPath } });
 		}
 	});
 
@@ -54,6 +54,10 @@
 		RemoveLoginCredentials();
 		location.reload();
 	}
+
+	const onClickLogin = () => {
+		router.push({ path: '/login', query: { redirect: route.fullPath } });
+	}
 </script>
 
 
@@ -62,7 +66,7 @@
 	<nav>
 		<RouterLink to="/"><b>ImmyChan</b></RouterLink> 
 		|
-		<RouterLink to="/login">Log In</RouterLink>
+		<a href="/login" @click.prevent="onClickLogin">Log In</a>
 	</nav>
 
 	<div class="toast" v-if="toast">{{ toast }}</div>
