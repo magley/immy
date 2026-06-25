@@ -184,6 +184,8 @@ export const IsJwtExpired = (jwt: string | null): boolean => {
 		iat: number;
 		exp: number;
 	}
+
 	const body: JSONBody = JSON.parse(bodyStr);
-	return body.exp > new Date().getTime();
+	const expire_ms = body.exp * 1000;
+	return expire_ms < new Date().getTime();
 }
