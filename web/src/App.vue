@@ -25,8 +25,8 @@
 	watch(route, (to, from) => {
 		const jwt: string | null = localStorage.getItem("jwt");
 		if (jwt != null) {
-			RemoveLoginCredentials();
 			if (IsJwtExpired(jwt)) {
+				RemoveLoginCredentials();
 				toast.value = "Session expired."
 				router.push({ path: '/login', query: { redirect: route.fullPath } });
 			}
