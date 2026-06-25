@@ -35,7 +35,7 @@
 		localStorage.setItem("jwt", dto.jwt);
 
   		const redirectPath = (route.query.redirect as string) || '/';
-	 	router.push(redirectPath);
+  		location.replace(redirectPath);
 	}
 </script>
 
