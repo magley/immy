@@ -59,9 +59,11 @@
 		<div class="center">No blogposts have been written yet.</div>
 	</template>
 	<template v-else>
-		<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" />
-		<BlogpostComponent v-for="blogpost of blogposts" :blogpost="blogpost" />
-		<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" />
+		<div class="center"><PaginatorComponent :paginator="paginator" @goto-page="gotoPage" /></div>
+		<div class="blogposts-container">
+			<BlogpostComponent v-for="blogpost of blogposts" :blogpost="blogpost" />
+		</div>
+		<div class="center"><PaginatorComponent :paginator="paginator" @goto-page="gotoPage" class="center" /></div>
 	</template>
 </template>
 
@@ -77,5 +79,9 @@
 	h1, h2 {
 		text-align: center;
 		color: var(--banner-title-color);
+	}
+
+	.blogposts-container {
+		margin: 1em;
 	}
 </style>

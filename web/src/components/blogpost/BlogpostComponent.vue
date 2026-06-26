@@ -25,7 +25,6 @@ import { GetPostTimeReadable } from '@/model/post/post.model';
 		width: 60%;
 		margin-left: auto;
 		margin-right: auto;
-		margin-top: 3em;
 
 		border: 1px solid var(--banner-title-color);
 		background: white;
