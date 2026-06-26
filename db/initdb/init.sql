@@ -89,7 +89,9 @@ create table bans (
 	expires		timestamp default null,			-- If null, ban is permanent
 	deleted_at	timestamp default null,
 	board_id	integer references boards(id), 	-- If null, banned from all boards
+	board_code	varchar,						-- Redundant field
 	creator_id	integer references users(id),
+	creator_username varchar,					-- Redundant field
 	reason		varchar,
 	warning		bool default false,
 	seen		bool default false
