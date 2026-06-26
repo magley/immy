@@ -9,18 +9,13 @@ export interface BanDTO {
     expires_at: string | null;
     deleted_at: string | null;
     board_id: number | null;
+    board_code: string | null;
     creator_id: number;
+    creator_username: string;
     reason: string;
     warning: boolean;
     seen: boolean;
 }
-
-export interface BanExtDTO {
-    ban: BanDTO
-    board_code: string | null;
-    creator_username: string;
-}
-
 
 export interface CreateBanDTO {
     ip_start: string;
@@ -40,11 +35,7 @@ export class BanAPI {
         return axiosInstance.get(`/bans/?offset=${offset}&limit=${limit}`);
     }
 
-    static async ListBansExt(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<BanExtDTO[]>>> {
-        return axiosInstance.get(`/bans/ext?offset=${offset}&limit=${limit}`);
-    }
-
-    static async ListBansForAdmin(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<BanExtDTO[]>>> {
+    static async ListBansForAdmin(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<BanDTO[]>>> {
         return axiosInstance.get(`/bans/admin?offset=${offset}&limit=${limit}`);
     }
 
@@ -60,11 +51,7 @@ export class BanAPI {
         return axiosInstance.get(`/bans/${banId}`);
     }
 
-    static async GetBanExt(banId: number): Promise<AxiosResponse<ApiResponse<BanExtDTO>>> {
-        return axiosInstance.get(`/bans/${banId}/ext`);
-    }
-
-    static async GetBanForAdmin(banId: number): Promise<AxiosResponse<ApiResponse<BanExtDTO>>> {
+    static async GetBanForAdmin(banId: number): Promise<AxiosResponse<ApiResponse<BanDTO>>> {
         return axiosInstance.get(`/bans/${banId}/admin`);
     }
 

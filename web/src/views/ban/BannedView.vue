@@ -1,18 +1,15 @@
 <script setup lang="ts">
 	import { BanAPI, type BanDTO, type UpdateBanDTO } from '@/api/ban.api';
 	import { BanAppealAPI, type BanAppealDTO, type CreateBanAppealDTO, BanAppealStatus } from '@/api/ban_appeal.api';
-	import { BoardAPI, type BoardDTO } from '@/api/board.api';
 	import type { ApiResponse } from '@/api/http';
 	import { GetPostTimeReadable } from '@/model/post/post.model';
 	import { GetTimeDifferenceBasic } from '@/util/various.util';
 	import type { AxiosError, AxiosResponse } from 'axios';
-	import { onMounted, ref, warn } from 'vue';
+	import { onMounted, ref } from 'vue';
 
 	const bans = ref<BanDTO[]>([]);
 	const error = ref<string | undefined>(undefined);
 	const loading = ref<boolean>(true);
-
-	const boardCodes = ref<Record<number, string>>({});
 
 	const canAppeal = ref<Record<number, boolean>>({});
 	const appeals = ref<Record<number, BanAppealDTO[]>>({});
@@ -28,8 +25,6 @@
 		BanAPI.GetMyBans().then((res: AxiosResponse<ApiResponse<BanDTO[]>>) => {
 			bans.value = res.data.data!;
 			markExpiredBansAsSeen();
-			fetchBoardCodes(res.data.data!);
-
 			for (let ban of res.data.data!) {
 				getAppeals(ban.id);
 			}
@@ -66,15 +61,6 @@
 					seen: true,
 				};
 				BanAPI.UpdateBan(ban.id, dto);
-			}
-		}
-	}
-
-	const fetchBoardCodes = (bans_arr: BanDTO[]) => {
-		for (let ban of bans.value) {
-
-			if (ban.board_id != null && !boardCodes.value[ban.board_id]) {
-				BoardAPI.GetBoardById(ban.board_id).then((res) => boardCodes.value[ban.board_id!] = res.data.data!.code);
 			}
 		}
 	}
@@ -148,7 +134,7 @@
 										<b>all boards</b>
 									</template>
 									<template v-else>
-										<b>/{{ boardCodes[ban.board_id] }}/</b>
+										<b>/{{ ban.board_code }}/</b>
 									</template>
 								</template>
 								for the following reason:

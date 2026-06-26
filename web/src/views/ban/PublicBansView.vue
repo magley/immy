@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { BanAPI, type BanExtDTO } from '@/api/ban.api';
+	import { BanAPI, type BanDTO } from '@/api/ban.api';
 	import PaginatorComponent from '@/components/PaginatorComponent.vue';
 	import { GetPostTimeReadable } from '@/model/post/post.model';
 	import { Paginator } from '@/util/pagination.util';
@@ -7,8 +7,8 @@
 	import { onMounted, reactive, ref } from 'vue';
 
 	const error = ref<string | undefined>(undefined);
-	const bans = ref<BanExtDTO[]>([]);
-	const paginator = reactive<Paginator<BanExtDTO[]>>(new Paginator(BanAPI.ListBansExt));
+	const bans = ref<BanDTO[]>([]);
+	const paginator = reactive<Paginator<BanDTO[]>>(new Paginator(BanAPI.ListBans));
 
 	onMounted(() => {
 		getBans();
@@ -46,22 +46,22 @@
 				</tr>
 				<tr v-for="ban of bans">
 					<td class="center">
-						{{ ban.board_code == null ? "global" : `/${ban.board_code}/` }}
+						{{ ban.board_id == null ? "global" : `/${ban.board_code}/` }}
 					</td>
 					<td class="center">
-						<template v-if="ban.ban.warning">
+						<template v-if="ban.warning">
 							Warning
 						</template>
-						<template v-else-if="ban.ban.expires_at">
-							<span :title="`Expires on ${GetPostTimeReadable(ban.ban.expires_at)}`">
-								{{ GetTimeDifferenceBasic(new Date(Date.parse(ban.ban.created_at)), new Date(Date.parse(ban.ban.expires_at))) }}
+						<template v-else-if="ban.expires_at">
+							<span :title="`Expires on ${GetPostTimeReadable(ban.expires_at)}`">
+								{{ GetTimeDifferenceBasic(new Date(Date.parse(ban.created_at)), new Date(Date.parse(ban.expires_at))) }}
 							</span>
 						</template>
 						<template v-else>
 							<b class="bad">Permanent</b>
 						</template>
 					</td>
-					<td>{{ ban.ban.reason }}</td>
+					<td>{{ ban.reason }}</td>
 				</tr>
 			</tbody>
 		</table>

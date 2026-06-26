@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { BanAPI, type BanExtDTO } from '@/api/ban.api';
+	import { BanAPI, type BanDTO } from '@/api/ban.api';
 	import { BanAppealAPI, type BanAppealDTO, BanAppealStatus, type UpdateBanAppealDTO } from '@/api/ban_appeal.api';
 	import { UserAPI, UserRole } from '@/api/user.api';
 	import { GetPostTimeReadable } from '@/model/post/post.model';
@@ -13,8 +13,8 @@
 	const route = useRoute();
 	const router = useRouter();
 	const error = ref<string | undefined>(undefined);
-	const bans = ref<BanExtDTO[]>([]);
-	const paginator = reactive<Paginator<BanExtDTO[]>>(new Paginator(BanAPI.ListBansForAdmin));
+	const bans = ref<BanDTO[]>([]);
+	const paginator = reactive<Paginator<BanDTO[]>>(new Paginator(BanAPI.ListBansForAdmin));
 	const banWhoseAppealIsOpen = ref<number | undefined>(undefined);
 	const appeals = ref<Record<number, BanAppealDTO[]>>({});
 	const appealError = ref<string | undefined>(undefined);
@@ -49,30 +49,30 @@
 		].join('.');
 	}
 
-	const isBanFinished = (ban: BanExtDTO) => {
+	const isBanFinished = (ban: BanDTO) => {
 		return isExpired(ban) || isWarningSeen(ban) || isRemoved(ban);
 	}
 
-	const isExpired = (ban: BanExtDTO) => {
-		if (!ban.ban.expires_at) return false;
-		const expiresAt = Date.parse(ban.ban.expires_at);
+	const isExpired = (ban: BanDTO) => {
+		if (!ban.expires_at) return false;
+		const expiresAt = Date.parse(ban.expires_at);
 		if (expiresAt < new Date().getTime()) return true;
 		return false;
 	}
 
-	const isWarningSeen = (ban: BanExtDTO): boolean => {
-		return (ban.ban.warning && ban.ban.seen);
+	const isWarningSeen = (ban: BanDTO): boolean => {
+		return (ban.warning && ban.seen);
 	}
 
-	const isRemoved = (ban: BanExtDTO) => {
-		return (ban.ban.deleted_at != null);
+	const isRemoved = (ban: BanDTO) => {
+		return (ban.deleted_at != null);
 	}
 
-	const removeBan = (ban: BanExtDTO) => {
-		BanAPI.DeleteBan(ban.ban.id).then((res) => {
-			refreshBan(ban.ban.id);
+	const removeBan = (ban: BanDTO) => {
+		BanAPI.DeleteBan(ban.id).then((res) => {
+			refreshBan(ban.id);
 		}).catch((err: AxiosError) => {
-			error.value = `Failed to delete ban #${ban.ban.id}`;
+			error.value = `Failed to delete ban #${ban.id}`;
 			console.error(err);
 		});
 	}
@@ -80,7 +80,7 @@
 	const refreshBan = (banID: number) => {
 		BanAPI.GetBanForAdmin(banID).then((res) => {
 			for (let i = 0; i < bans.value.length; i++) {
-				if (bans.value[i]!.ban.id == banID) {
+				if (bans.value[i]!.id == banID) {
 					bans.value[i] = res.data.data!
 				}
 			}
@@ -90,13 +90,13 @@
 		})
 	}
 
-	const onClickBanAppealShowButton = (ban: BanExtDTO) => {
-		if (banWhoseAppealIsOpen.value == ban.ban.id) {
+	const onClickBanAppealShowButton = (ban: BanDTO) => {
+		if (banWhoseAppealIsOpen.value == ban.id) {
 			banWhoseAppealIsOpen.value = undefined;
 		} else {
-			banWhoseAppealIsOpen.value = ban.ban.id;
+			banWhoseAppealIsOpen.value = ban.id;
 			appealError.value = undefined;
-			loadBanAppeals(ban.ban.id);
+			loadBanAppeals(ban.id);
 		}
 	}
 
@@ -110,12 +110,12 @@
 		});
 	}
 
-	const submitAppealResponse = (ban: BanExtDTO, appeal: BanAppealDTO) => {
+	const submitAppealResponse = (ban: BanDTO, appeal: BanAppealDTO) => {
 		const dto: UpdateBanAppealDTO = {
 			status: banAppealResponse.value
 		};
 		BanAppealAPI.UpdateBanAppeal(appeal.id, dto).then(() => {
-			loadBanAppeals(ban.ban.id);
+			loadBanAppeals(ban.id);
 		}).catch((err: AxiosError) => {
 			appealError.value = "Could not submit your response to the ban appeal";
 			console.error(err);
@@ -149,28 +149,28 @@
 				</tr>
 				<template v-for="ban, i of bans">
 					<tr :class="{finished: isBanFinished(ban)}">
-						<td>{{ ban.ban.id }}</td>
+						<td>{{ ban.id }}</td>
 						<td>
 							<tt>
-								<template v-if="ban.ban.ip_end == null">
-									{{ banNumToIP(ban.ban.ip_start) }}
+								<template v-if="ban.ip_end == null">
+									{{ banNumToIP(ban.ip_start) }}
 								</template>
 								<template v-else>
-									{{ banNumToIP(ban.ban.ip_start) }} - {{ banNumToIP(ban.ban.ip_end) }}
+									{{ banNumToIP(ban.ip_start) }} - {{ banNumToIP(ban.ip_end) }}
 								</template>
 							</tt>
 						</td>
 						<td class="center">
-							{{ ban.board_code == null ? "global" : `/${ban.board_code}/` }}
+							{{ ban.board_id == null ? "global" : `/${ban.board_code}/` }}
 						</td>
-						<td>{{ GetPostTimeReadable(ban.ban.created_at) }}</td>
+						<td>{{ GetPostTimeReadable(ban.created_at) }}</td>
 						<td>
-							<template v-if="ban.ban.warning">
+							<template v-if="ban.warning">
 								Warning
 							</template>
-							<template v-else-if="ban.ban.expires_at">
-								<span :title="`Expires on ${GetPostTimeReadable(ban.ban.expires_at)}`">
-									{{ GetTimeDifferenceBasic(new Date(Date.parse(ban.ban.created_at)), new Date(Date.parse(ban.ban.expires_at))) }}
+							<template v-else-if="ban.expires_at">
+								<span :title="`Expires on ${GetPostTimeReadable(ban.expires_at)}`">
+									{{ GetTimeDifferenceBasic(new Date(Date.parse(ban.created_at)), new Date(Date.parse(ban.expires_at))) }}
 								</span>
 							</template>
 							<template v-else>
@@ -178,31 +178,31 @@
 							</template>
 						</td>
 						<td class="center">{{ ban.creator_username }}</td>
-						<td>{{ ban.ban.reason }}</td>
+						<td>{{ ban.reason }}</td>
 						<td>
 							<template v-if="isExpired(ban)">
-								<img src="/icons/clock.png" :title="`Expired at ${GetPostTimeReadable(ban.ban.expires_at!)}.`" />
+								<img src="/icons/clock.png" :title="`Expired at ${GetPostTimeReadable(ban.expires_at!)}.`" />
 							</template>
 							<template v-else-if="isWarningSeen(ban)">
 								<img src="/icons/visible.png" :title="`User acknowledged this warning`" />
 							</template>
 							<template v-else-if="isRemoved(ban)">
-								<img src="/icons/trash.png" :title="`Ban manually removed at ${GetPostTimeReadable(ban.ban.deleted_at!)}`" />
+								<img src="/icons/trash.png" :title="`Ban manually removed at ${GetPostTimeReadable(ban.deleted_at!)}`" />
 							</template>
 							<template v-else>
 								<button @click="removeBan(ban)" :title="`Remove ban`"><img src="/icons/delete.png"/></button>
 							</template>
 						</td>
 						<td>
-							<button @click="onClickBanAppealShowButton(ban)" v-if="!ban.ban.warning">Show/Hide</button>
+							<button @click="onClickBanAppealShowButton(ban)" v-if="!ban.warning">Show/Hide</button>
 						</td>
 					</tr>
-					<tr v-if="banWhoseAppealIsOpen == ban.ban.id">
+					<tr v-if="banWhoseAppealIsOpen == ban.id">
 						<td colspan="9">
 							<h3>Appeals:</h3>
 							<span v-if="appealError" class="error">{{ error }}</span>
 							<div>
-								<div v-for="appeal, i of appeals[ban.ban.id]" class="ban-appeal-message">
+								<div v-for="appeal, i of appeals[ban.id]" class="ban-appeal-message">
 									<div>
 										<span class="user">User</span>
 										{{ GetPostTimeReadable(appeal.created_at) }}

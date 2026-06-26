@@ -14,7 +14,6 @@
 
 	const props = defineProps<CreateBanProps>();
 	const error = ref<string | undefined>(undefined);
-	const userID = ref<number | undefined>(undefined);
 
 
 	const id = useId();
@@ -39,10 +38,6 @@
 		submitBan();
 	}
 
-	const onClickSetBanDuration = () => {
-		applyBanDuration();
-	}
-
 	const submitBan = () => {
 		if (banDTO.value.warning) {
 			// Cleaning up, although it doesn't matter. If the ban is a
@@ -61,7 +56,7 @@
 
 		error.value = undefined;
 
-		BanAPI.CreateBan(banDTO.value).then((res) => {
+		BanAPI.CreateBan(banDTO.value).then(() => {
 
 		}).catch((err: AxiosError) => {
 			error.value = "Could not ban user";
