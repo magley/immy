@@ -16,7 +16,9 @@ type Ban struct {
 	ExpiresAt		*time.Time 		`json:"expires_at"`
 	DeletedAt 		gorm.DeletedAt 	`json:"deleted_at"`
 	BoardID 		*uint 			`json:"board_id"`
+	BoardCode 		string 			`json:"board_code"`			// Redundant
 	CreatorID 		uint 			`json:"creator_id"`
+	CreatorUsername string 			`json:"creator_username"`	// Redundant
 	Reason 			string 			`json:"reason"`
 	Warning 		bool 			`json:"warning"`
 	Seen			bool			`json:"seen"`

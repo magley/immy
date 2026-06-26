@@ -52,18 +52,22 @@ func (r *BanRepo) GetBansOfIp(ip string) ([]*model.Ban, error) {
 	return bans, result.Error
 }
 
-func (r *BanRepo) CreateBan(dto model.CreateBanDTO, creator *model.User) (*model.Ban, error) {
+func (r *BanRepo) CreateBan(dto model.CreateBanDTO, boardOrNull *model.Board, creator *model.User) (*model.Ban, error) {
 	ban := model.Ban{
 		IpStart: util.IPv4toUint64(dto.IpStart),
 		// IpEnd: ,
 		ExpiresAt: dto.ExpiresAt,
 		BoardID: dto.BoardID,
 		CreatorID: creator.ID,
+		CreatorUsername: creator.Username,
 		Reason: dto.Reason,
 		Warning: dto.Warning,
 	}
-	if (ban.Warning) {
+	if ban.Warning {
 		ban.ExpiresAt = nil
+	}
+	if boardOrNull != nil {
+		ban.BoardCode = boardOrNull.Code
 	}
 
 	if dto.IpEnd != nil {

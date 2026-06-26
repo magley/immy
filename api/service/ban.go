@@ -69,7 +69,17 @@ func (s *BanService) GetBansOfIp(ip string) ([]*model.Ban, error) {
 }
 
 func (s *BanService) CreateBan(dto model.CreateBanDTO, creator *model.User) (*model.Ban, error) {
-	return s.BanRepo.CreateBan(dto, creator)
+	var boardOrNull *model.Board = nil
+
+	if dto.BoardID != nil {
+		board, err := s.BoardService.GetBoard(*dto.BoardID)
+		if err != nil {
+			return nil, err
+		}
+		boardOrNull = board
+	}
+
+	return s.BanRepo.CreateBan(dto, boardOrNull, creator)
 }
 
 func (s *BanService) GetBan(banId uint) (*model.Ban, error) {
