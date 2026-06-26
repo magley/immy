@@ -28,19 +28,6 @@ func (h *BanHandler) ListBans(c *gin.Context) {
 	}
 }
 
-func (h *BanHandler) ListBansExt(c *gin.Context) {
-	offset, limit := util.GetOffsetLimit(c)
-	res, total, err := h.BanService.ListBansExt(offset, limit)
-
-	if err != nil {
-		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
-		return
-	} else {
-		util.OKPaged(c, res, util.MetaPage(limit, offset, total))
-		return
-	}
-}
-
 func (h *BanHandler) ListBansForAdmin(c *gin.Context) {
 	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin, model.UserRoleModerator})
 	if !ok {
@@ -115,21 +102,6 @@ func (h *BanHandler) GetBan(c *gin.Context) {
 	}
 
 	res, err := h.BanService.GetBanCensored(banId)
-	if err != nil {
-		util.NotFound(c, "Ban", banId)
-		return
-	} else {
-		util.OK(c, res)
-	}
-}
-func (h *BanHandler) GetBanExt(c *gin.Context) {
-
-	banId, ok := util.ParamUintSafe(c, "id", "Ban")
-	if !ok {
-		return
-	}
-
-	res, err := h.BanService.GetBanExtCensored(banId)
 	if err != nil {
 		util.NotFound(c, "Ban", banId)
 		return

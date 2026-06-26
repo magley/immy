@@ -24,12 +24,6 @@ type Ban struct {
 	Seen			bool			`json:"seen"`
 }
 
-type BanExtDTO struct {
-	Ban				Ban			`json:"ban"`
-	BoardCode 		*string 		`json:"board_code"`
-	CreatorUsername string 		`json:"creator_username"`
-}
-
 type CreateBanDTO struct {
 	IpStart 		string 			`json:"ip_start"`
 	IpEnd 			*string 		`json:"ip_end"`
