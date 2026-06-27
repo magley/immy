@@ -130,5 +130,7 @@ create table rules (
 	title 		varchar not null,
 	description varchar not null,
 	is_global 	bool default false,
-	danger 		integer default 1
+	danger 		integer default 1,
+	created_at	timestamp default now(),
+	deleted_at	timestamp default null
 );
