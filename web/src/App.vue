@@ -88,6 +88,8 @@
 			|
 			<RouterLink to="/admin-boards">Boards</RouterLink>
 			|
+			<RouterLink to="/admin-rules">Rules</RouterLink>
+			|
 			<RouterLink to="/admin-bans">Bans</RouterLink>
 			|
 		</span>
