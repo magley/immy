@@ -13,7 +13,7 @@ type Rule struct {
 	Description 	string 			`json:"description"`
 	IsGlobal 		bool			`json:"is_global"`
 	Danger 			int 			`json:"danger"`
-	ExpiresAt		*time.Time 		`json:"expires_at"`
+	CreatedAt		time.Time 		`json:"created_at"`
 	DeletedAt 		gorm.DeletedAt 	`json:"deleted_at"`
 }
 
