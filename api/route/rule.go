@@ -6,7 +6,7 @@ import (
 )
 
 func RegisterRuleRoutes(h *handler.RuleHandler, rg *gin.RouterGroup) {
-	Rules := rg.Group("/Rules")
+	Rules := rg.Group("/rules")
 	{
     	Rules.GET("/", h.ListRules)
     	Rules.POST("/", h.CreateRule)
