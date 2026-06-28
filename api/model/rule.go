@@ -17,11 +17,23 @@ type Rule struct {
 	DeletedAt 		gorm.DeletedAt 	`json:"deleted_at"`
 }
 
+type RuleBoard struct {
+	RuleID			uint			`json:"rule_id"`
+	BoardID			uint			`json:"board_id"`
+	CreatedAt		time.Time		`json:"created_at"`
+	DeletedAt		gorm.DeletedAt	`json:"deleted_at"`
+}
+
 type CreateRuleDTO struct {
 	Title	 		string 			`json:"title"`
 	Description 	string 			`json:"description"`
 	IsGlobal 		bool			`json:"is_global"`
 	Danger 			int 			`json:"danger"`
+}
+
+type CreateRuleBoardDTO struct {
+	RuleID			uint			`json:"rule_id"`
+	BoardID			uint			`json:"board_id"`
 }
 
 type UpdateRuleDTO struct {
