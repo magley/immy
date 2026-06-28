@@ -27,22 +27,22 @@ export interface UpdateRuleDTO {
 
 export class RuleAPI {
     static async ListRules(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<RuleDTO[]>>> {
-        return axiosInstance.get(`/Rules/?offset=${offset}&limit=${limit}`);
+        return axiosInstance.get(`/rules/?offset=${offset}&limit=${limit}`);
     }
 
     static async CreateRule(dto: CreateRuleDTO): Promise<AxiosResponse<ApiResponse<RuleDTO>>> {
-        return axiosInstance.post(`/Rules/`, dto);
+        return axiosInstance.post(`/rules/`, dto);
     }
 
-    static async GetRule(RuleId: number): Promise<AxiosResponse<ApiResponse<RuleDTO>>> {
-        return axiosInstance.get(`/Rules/${RuleId}`);
+    static async GetRule(ruleId: number): Promise<AxiosResponse<ApiResponse<RuleDTO>>> {
+        return axiosInstance.get(`/rules/${ruleId}`);
     }
 
-    static async UpdateRule(RuleId: number, dto: UpdateRuleDTO): Promise<AxiosResponse<ApiResponse<RuleDTO>>> {
-        return axiosInstance.put(`/Rules/${RuleId}`, dto);
+    static async UpdateRule(ruleId: number, dto: UpdateRuleDTO): Promise<AxiosResponse<ApiResponse<RuleDTO>>> {
+        return axiosInstance.put(`/rules/${ruleId}`, dto);
     }
 
-    static async DeleteRule(RuleId: number): Promise<AxiosResponse<ApiResponse<number>>> {
-        return axiosInstance.delete(`/Rules/${RuleId}`);
+    static async DeleteRule(ruleId: number): Promise<AxiosResponse<ApiResponse<number>>> {
+        return axiosInstance.delete(`/rules/${ruleId}`);
     }
 }
