@@ -144,7 +144,7 @@ func (h *RuleHandler) DeleteRuleBoard(c *gin.Context) {
 		return
 	}
 
-	boardId, ok := util.ParamUintSafe(c, "boardId", "Rule")
+	boardId, ok := util.ParamUintSafe(c, "boardId", "Board")
 	if !ok {
 		return
 	}
@@ -176,7 +176,7 @@ func (h *RuleHandler) ListAllRuleBoards(c *gin.Context) {
 }
 
 func (h *RuleHandler) ListAllRulesOfBoard(c *gin.Context) {
-	boardId, ok := util.ParamUintSafe(c, "boardId", "Rule")
+	boardId, ok := util.ParamUintSafe(c, "boardId", "Board")
 	if !ok {
 		return
 	}
