@@ -24,6 +24,10 @@ type RuleBoard struct {
 	DeletedAt		gorm.DeletedAt	`json:"deleted_at"`
 }
 
+func (RuleBoard) TableName() string {
+    return "rules_boards"
+}
+
 type CreateRuleDTO struct {
 	Title	 		string 			`json:"title"`
 	Description 	string 			`json:"description"`
