@@ -114,10 +114,17 @@ func BanCheck(c *gin.Context, bans []*model.Ban) (bool, []*model.Ban) {
 }
 
 func MetaPage(limit, offset int, total int64) *Meta {
+	totalPages := int(0)
+	page := int(0)
+	if limit != 0 {
+		page = offset / limit
+		totalPages = int(math.Ceil(float64(total) / float64(limit)))
+	}
+
 	return &Meta{
-		Page: offset / limit + 1,
+		Page: page + 1,
 		PerPage: limit,
 		Total: int(total),
-		TotalPages: int(math.Ceil(float64(total) / float64(limit))),
+		TotalPages: totalPages,
 	}
 }
