@@ -40,12 +40,6 @@ func (h* RuleHandler) CreateRule(c *gin.Context) {
 		return
 	}
 
-	_, err = util.GetJwt(c)
-	if err != nil {
-		util.Fail(c, http.StatusBadRequest, "JWT_FAIL", err.Error())
-		return
-	}
-
 	res, err := h.RuleService.CreateRule(dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
@@ -131,12 +125,6 @@ func (h* RuleHandler) CreateRuleBoard(c *gin.Context) {
 	err := c.ShouldBindJSON(&dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
-		return
-	}
-
-	_, err = util.GetJwt(c)
-	if err != nil {
-		util.Fail(c, http.StatusBadRequest, "JWT_FAIL", err.Error())
 		return
 	}
 
