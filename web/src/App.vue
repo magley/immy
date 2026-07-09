@@ -60,7 +60,7 @@
 	}
 
 	const onClickLogin = () => {
-		router.push({ path: '/login', query: { redirect: route.fullPath } });
+		router.push({ path: '/login' });
 	}
 </script>
 
