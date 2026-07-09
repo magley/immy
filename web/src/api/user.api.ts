@@ -20,6 +20,10 @@ export interface CreateUserDTO {
     password: string;
     role: UserRole;
 }
+export interface CreateFirstAdminDTO {
+    username: string;
+    password: string;
+}
 
 export interface UpdateUserDTO {
     username: string | null;
@@ -69,5 +73,9 @@ export class UserAPI {
 
     static async AuthorizeUser(dto: AuthorzationDTO): Promise<AxiosResponse<ApiResponse<void>>> {
         return axiosInstance.post(`/users/authorize`, dto);
+    }
+
+     static async CreateFirstAdmin(dto: CreateFirstAdminDTO): Promise<AxiosResponse<ApiResponse<UserDTO>>> {
+        return axiosInstance.post(`/users/init-admin`, dto);
     }
 }

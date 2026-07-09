@@ -13,6 +13,7 @@ import PublicBansView from '@/views/ban/PublicBansView.vue';
 import BlogpostView from '@/views/blogpost/BlogpostView.vue';
 import SingleBlogpostView from '@/views/blogpost/SingleBlogpostView.vue';
 import AdminRuleView from '@/views/rule/AdminRuleView.vue';
+import CreateFirstAdminView from '@/views/user/CreateFirstAdminView.vue';
 
 const routes = [
 	{ path: '/', component: HomeView },
@@ -25,6 +26,7 @@ const routes = [
 	{ path: '/admin-boards', component: AdminBoardView },
 	{ path: '/admin-bans', component: AdminBanView },
 	{ path: '/admin-rules', component: AdminRuleView },
+	{ path: '/admin-init', component: CreateFirstAdminView },
 	{ path: '/:board_code/catalog', component: BoardCatalogView },
 	{ path: '/:board_code/archive', component: BoardArchiveView },
 	{ path: '/:board_code/thread/:thread_num', component: ThreadView },
