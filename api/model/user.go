@@ -26,6 +26,11 @@ type CreateUserDTO struct {
 	Role 		UserRole   	`json:"role"`
 }
 
+type CreateFirstAdminDTO struct {
+	Username 	string 		`json:"username"`
+	Password 	string 		`json:"password"`
+}
+
 type UpdateUserDTO struct {
 	Username 	*string 	`json:"username"`
 	Role 		*UserRole   `json:"role"`

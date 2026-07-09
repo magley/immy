@@ -9,7 +9,7 @@ import (
 )
 
 type UserService struct {
-	UserRepo 	*repo.UserRepo
+	UserRepo *repo.UserRepo
 }
 
 func (s *UserService) ListUsers(offset, limit int) ([]model.User, error) {
@@ -33,16 +33,16 @@ func (s *UserService) UpdateUser(userId uint, dto model.UpdateUserDTO) (*model.U
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return s.UserRepo.UpdateUser(user, dto)
 }
 
-func (s *UserService) DeleteUser(userId uint) (error) {
+func (s *UserService) DeleteUser(userId uint) error {
 	user, err := s.GetUser(userId)
 	if err != nil {
 		return nil
 	}
-	
+
 	return s.UserRepo.DeleteUser(user)
 }
 
@@ -56,17 +56,17 @@ func (s *UserService) LoginUser(dto model.LoginUserDTO) (*model.LoginResponseDTO
 	if !ok {
 		return nil, fmt.Errorf("Unauthorized")
 	}
-	
+
 	jwt, err := util.CreateJWT(user.ID, user.Username, string(user.Role))
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &model.LoginResponseDTO{
-		ID: user.ID,
+		ID:       user.ID,
 		Username: user.Username,
-		Role: user.Role,
-		JWT: jwt,
+		Role:     user.Role,
+		JWT:      jwt,
 	}, nil
 }
 
@@ -98,4 +98,21 @@ func (s *UserService) AuthorizeUser(dto model.AuthorizationDTO, jwt *util.JWTCla
 	}
 
 	return nil
+}
+
+func (s *UserService) CreateFirstAdmin(dto model.CreateFirstAdminDTO) (*model.User, error) {
+	adminCount, err := s.UserRepo.GetUserCountOfRole(model.UserRoleAdmin)
+	if err != nil {
+		return nil, err
+	}
+	if adminCount > 0 {
+		return nil, errors.New("You can only create the initial admin using this method")
+	}
+
+	createUserDTO := model.CreateUserDTO{
+		Username: dto.Username,
+		Password: dto.Password,
+		Role:     model.UserRoleAdmin,
+	}
+	return s.CreateUser(createUserDTO)
 }

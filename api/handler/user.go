@@ -1,13 +1,13 @@
 package handler
 
-
 import (
-	"net/http"
-	"github.com/gin-gonic/gin"
 	util "immy-api/util"
-		
-	"immy-api/service"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
 	"immy-api/model"
+	"immy-api/service"
 )
 
 type UserHandler struct {
@@ -22,7 +22,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 
 	offset, limit := util.GetOffsetLimit(c)
 	res, err := h.UserService.ListUsers(offset, limit)
-	
+
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
 		return
@@ -32,7 +32,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 	}
 }
 
-func (h* UserHandler) CreateUser(c *gin.Context) {
+func (h *UserHandler) CreateUser(c *gin.Context) {
 	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin})
 	if !ok {
 		return
@@ -44,7 +44,7 @@ func (h* UserHandler) CreateUser(c *gin.Context) {
 		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
 		return
 	}
-	
+
 	res, err := h.UserService.CreateUser(dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
@@ -92,7 +92,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		util.Fail(c, http.StatusBadRequest, "ERROR", err.Error())
 		return
 	}
-	
+
 	res, err := h.UserService.UpdateUser(userId, dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "UPDATE_FAILED", err.Error())
@@ -129,7 +129,7 @@ func (h *UserHandler) LoginUser(c *gin.Context) {
 		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
 		return
 	}
-	
+
 	result, err := h.UserService.LoginUser(dto)
 	if err != nil {
 		util.Fail(c, http.StatusUnauthorized, "LOGIN_FAIL", err.Error())
@@ -161,6 +161,24 @@ func (h *UserHandler) AuthorizeUser(c *gin.Context) {
 		return
 	} else {
 		util.NoContent(c)
+		return
+	}
+}
+
+func (h *UserHandler) CreateFirstAdmin(c *gin.Context) {
+	var dto model.CreateFirstAdminDTO
+	err := c.ShouldBindJSON(&dto)
+	if err != nil {
+		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
+		return
+	}
+
+	res, err := h.UserService.CreateFirstAdmin(dto)
+	if err != nil {
+		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
+		return
+	} else {
+		util.Created(c, res.ID)
 		return
 	}
 }

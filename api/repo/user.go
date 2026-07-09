@@ -1,9 +1,10 @@
 package repo
 
 import (
-	"gorm.io/gorm"
 	util "immy-api/util"
-	
+
+	"gorm.io/gorm"
+
 	model "immy-api/model"
 )
 
@@ -17,6 +18,12 @@ func (r *UserRepo) ListUsers(offset int, limit int) ([]model.User, error) {
 	return users, result.Error
 }
 
+func (r *UserRepo) GetUserCountOfRole(role model.UserRole) (int64, error) {
+	var count int64
+	result := r.DB.Model(&model.User{}).Where("role = ?", role).Count(&count)
+	return count, result.Error
+}
+
 func (r *UserRepo) CreateUser(dto model.CreateUserDTO) (*model.User, error) {
 	hashedPassword, err := util.HashPassword(dto.Password)
 	if err != nil {
@@ -26,9 +33,9 @@ func (r *UserRepo) CreateUser(dto model.CreateUserDTO) (*model.User, error) {
 	user := model.User{
 		Username: dto.Username,
 		Password: hashedPassword,
-		Role: dto.Role,
+		Role:     dto.Role,
 	}
-	
+
 	result := r.DB.Create(&user)
 	return &user, result.Error
 }
@@ -40,14 +47,18 @@ func (r *UserRepo) GetUser(userId uint) (*model.User, error) {
 }
 
 func (r *UserRepo) UpdateUser(user *model.User, dto model.UpdateUserDTO) (*model.User, error) {
-	if dto.Username != nil { user.Username = *dto.Username }
-	if dto.Role != nil { user.Role = *dto.Role }
-	
+	if dto.Username != nil {
+		user.Username = *dto.Username
+	}
+	if dto.Role != nil {
+		user.Role = *dto.Role
+	}
+
 	result := r.DB.Save(&user)
 	return user, result.Error
 }
 
-func (r *UserRepo) DeleteUser(user *model.User) (error) {
+func (r *UserRepo) DeleteUser(user *model.User) error {
 	result := r.DB.Delete(&user)
 	return result.Error
 }
