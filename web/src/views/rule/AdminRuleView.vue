@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { RuleAPI, type RuleDTO, type CreateRuleDTO } from '@/api/rule.api';
+	import { RuleAPI, type RuleDTO, type CreateRuleDTO, RuleBoardDTO } from '@/api/rule.api';
 	import { UserAPI, UserRole } from '@/api/user.api';
 	import type { AxiosError } from 'axios';
 	import { onMounted, reactive, ref } from 'vue';
@@ -11,7 +11,9 @@
 	const router = useRouter();
 	const error = ref<string | undefined>(undefined);
 	const rules = ref<RuleDTO[]>([]);
+	const ruleBoards = ref<RuleBoardDTO[]>([]);
 	const paginator = reactive<Paginator<RuleDTO[]>>(new Paginator(RuleAPI.ListRules));
+
 
 	const newRule = ref<CreateRuleDTO>({
 		title: '',
@@ -33,8 +35,15 @@
 
 	const getRules = () => {
 		paginator.getItems()
-		.then((res) => rules.value = res.data.data!)
-		.catch((_) => error.value = "Could not fetch Rules!");
+		.then((res) => {
+			rules.value = res.data.data!;
+			RuleAPI.ListAllRuleBoards().then((res) => {
+				ruleBoards.value = res.data.data!
+			}).catch((err) => {
+				error.value = "Could not fetch Rules!";
+				console.error(err);
+			});
+		}).catch((_) => error.value = "Could not fetch Rules!");
 	}
 
 	const gotoPage = (p: number) => {
@@ -105,6 +114,7 @@
 	<div class="error" v-if="error">{{ error }}</div>
 	<div v-if="paginator.loading">Loading...</div>
 	<div>
+		<hr />
 		<div>
 			<div v-if="!newRuleFormVisible">
 				<div class="center">[<a href='#' @click.prevent="toggleNewRuleFormVisible" >Create New Rule</a>]</div>
@@ -129,6 +139,7 @@
 					<div v-if="newRuleError" class="error">{{ newRuleError }}</div>
 				</div>
 			</div>
+			<hr />
 		</div>
 
 		<div v-if="rules.length > 0">
