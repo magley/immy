@@ -40,6 +40,20 @@ create table threads (
 	auto_cycle 	integer default 0
 );
 
+create type user_role as enum (
+	'admin',
+	'moderator',
+	'janitor'
+);
+
+create table users (
+	id 			serial primary key,
+	username 	varchar(32) unique not null,
+	password 	varchar(255) not null,
+	role 		user_role not null,
+	created_at 	timestamp default now()
+);
+
 create table posts (
 	id 			serial primary key,
 	thread_id 	integer references threads(id) on delete cascade,
@@ -65,20 +79,6 @@ create table posts (
 	src_filename varchar,
 	spoiler		bool default false,
 	html 		varchar
-);
-
-create type user_role as enum (
-	'admin',
-	'moderator',
-	'janitor'
-);
-
-create table users (
-	id 			serial primary key,
-	username 	varchar(32) unique not null,
-	password 	varchar(255) not null,
-	role 		user_role not null,
-	created_at 	timestamp default now()
 );
 
 create table bans (
