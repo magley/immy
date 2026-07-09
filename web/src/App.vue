@@ -22,13 +22,13 @@
 		theme.value = localStorage.getItem("theme") ?? "yotsuba";
 	});
 
-	watch(route, (to, from) => {
+	watch(route, async (to, from) => {
 		const jwt: string | null = localStorage.getItem("jwt");
 		if (jwt != null) {
 			if (IsJwtExpired(jwt)) {
-				RemoveLoginCredentials();
 				toast.value = "Session expired."
-				router.push({ path: '/login', query: { redirect: route.fullPath } });
+				await router.push({ path: '/login', query: { redirect: route.fullPath } });
+				RemoveLoginCredentials();
 			}
 		}
 	});
