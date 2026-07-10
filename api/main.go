@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -14,12 +16,14 @@ import (
 	"immy-api/service"
 )
 
-
 func main() {
-	dsn := "host=db port=5432 user=admin dbname=admin password=admin sslmode=disable"
+	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
+		os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"),
+		os.Getenv("DB_DBNAME"), os.Getenv("DB_PASSWORD"),
+	)
 	gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		
+
 		log.Fatal(err)
 	}
 	db, err := gormDB.DB()
@@ -31,7 +35,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	
+
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
@@ -39,15 +43,15 @@ func main() {
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
-	}))	
-	
+	}))
+
 	boardRepo := &repo.BoardRepo{DB: gormDB}
-	postRepo := &repo.PostRepo{DB : gormDB}
-	threadRepo := &repo.ThreadRepo{DB : gormDB}
-	userRepo := &repo.UserRepo{DB : gormDB}
-	banRepo := &repo.BanRepo{DB : gormDB}
-	banAppealRepo := &repo.BanAppealRepo{DB : gormDB}
-	blogpostRepo := &repo.BlogpostRepo{DB : gormDB}
+	postRepo := &repo.PostRepo{DB: gormDB}
+	threadRepo := &repo.ThreadRepo{DB: gormDB}
+	userRepo := &repo.UserRepo{DB: gormDB}
+	banRepo := &repo.BanRepo{DB: gormDB}
+	banAppealRepo := &repo.BanAppealRepo{DB: gormDB}
+	blogpostRepo := &repo.BlogpostRepo{DB: gormDB}
 	ruleRepo := &repo.RuleRepo{DB: gormDB}
 
 	var boardService *service.BoardService
@@ -69,7 +73,7 @@ func main() {
 	ruleService = &service.RuleService{RuleRepo: ruleRepo}
 
 	postService.ThreadService = threadService
-	
+
 	boardHandler := &handler.BoardHandler{BoardService: boardService}
 	postHandler := &handler.PostHandler{PostService: postService, UserService: userService, BanService: banService}
 	threadHandler := &handler.ThreadHandler{ThreadService: threadService, BoardService: boardService, PostService: postService, UserService: userService, BanService: banService}
@@ -80,7 +84,7 @@ func main() {
 	ruleHandler := &handler.RuleHandler{RuleService: ruleService}
 
 	metaHandler := &handler.MetaHandler{BoardService: boardService}
-	
+
 	api := router.Group("/api")
 	{
 		v1 := api.Group("/v1")
@@ -96,6 +100,6 @@ func main() {
 			route.RegisterRuleRoutes(ruleHandler, v1)
 		}
 	}
-	
+
 	router.Run(":8080")
 }
