@@ -6,8 +6,8 @@ import (
 )
 
 type BlogpostService struct {
-	BlogpostRepo 		*repo.BlogpostRepo
-	UserService 	*UserService
+	BlogpostRepo *repo.BlogpostRepo
+	UserService  *UserService
 }
 
 func (s *BlogpostService) ListBlogposts(offset, limit int) ([]*model.Blogpost, int64, error) {
@@ -39,7 +39,7 @@ func (s *BlogpostService) UpdateBlogpost(blogpostId uint, dto model.UpdateBlogpo
 	return s.BlogpostRepo.UpdateBlogpost(blogpost, dto)
 }
 
-func (s *BlogpostService) DeleteBlogpost(blogpostId uint) (error) {
+func (s *BlogpostService) DeleteBlogpost(blogpostId uint) error {
 	blogpost, err := s.GetBlogpost(blogpostId)
 	if err != nil {
 		return nil
@@ -48,16 +48,16 @@ func (s *BlogpostService) DeleteBlogpost(blogpostId uint) (error) {
 	return s.BlogpostRepo.DeleteBlogpost(blogpost)
 }
 
-func (s *BlogpostService) ToShort(blogpost *model.Blogpost) (*model.BlogpostShortDTO) {
+func (s *BlogpostService) ToShort(blogpost *model.Blogpost) *model.BlogpostShortDTO {
 	return &model.BlogpostShortDTO{
-		ID: blogpost.ID,
-		Title: blogpost.Title,
+		ID:        blogpost.ID,
+		Title:     blogpost.Title,
 		CreatedAt: blogpost.CreatedAt,
 	}
 }
 
-func (s *BlogpostService) ToShortArr(blogposts []*model.Blogpost) ([]*model.BlogpostShortDTO) {
-	var result []*model.BlogpostShortDTO
+func (s *BlogpostService) ToShortArr(blogposts []*model.Blogpost) []*model.BlogpostShortDTO {
+	var result = []*model.BlogpostShortDTO{}
 	for _, blogpost := range blogposts {
 		result = append(result, s.ToShort(blogpost))
 	}
