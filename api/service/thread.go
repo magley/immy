@@ -132,7 +132,7 @@ func (s *ThreadService) GetThreadsForCatalog(boardCode string) ([]model.ThreadFo
 		return nil, err
 	}
 
-	var res []model.ThreadForCatalogDTO
+	var res = []model.ThreadForCatalogDTO{}
 
 	for _, thread := range threads {
 		post, err := s.PostService.GetPostByNum(boardCode, thread.PostNum)
@@ -167,7 +167,7 @@ func (s *ThreadService) GetThreadsForArchive(boardCode string) ([]model.ThreadFo
 		return nil, err
 	}
 
-	var res []model.ThreadForCatalogDTO
+	var res = []model.ThreadForCatalogDTO{}
 
 	for _, thread := range threads {
 		post, err := s.PostService.GetPostByNum(boardCode, thread.PostNum)
@@ -205,7 +205,7 @@ func (s *ThreadService) GetThreadsForHome(boardCode string, lastNpostsCount int,
 		return nil, 0, err
 	}
 
-	var res []model.ThreadForHomeDTO
+	var res = []model.ThreadForHomeDTO{}
 
 	for _, thread := range threads {
 		post, err := s.PostService.GetPostByNum(boardCode, thread.PostNum)
@@ -228,9 +228,9 @@ func (s *ThreadService) GetThreadsForHome(boardCode string, lastNpostsCount int,
 		}
 
 		threadWithPosts := model.ThreadForHomeDTO{
-			Thread:   thread,
-			Posts:    lastPosts,
-			Stats:    stats,
+			Thread: thread,
+			Posts:  lastPosts,
+			Stats:  stats,
 		}
 		res = append(res, threadWithPosts)
 	}
@@ -274,7 +274,7 @@ func (s *ThreadService) archiveThread(thread *model.Thread) (*model.Thread, erro
 	return s.ThreadRepo.ArchiveThread(thread)
 }
 
-func (s *ThreadService) ArchiveBumpedOffThreads(board *model.Board) (error) {
+func (s *ThreadService) ArchiveBumpedOffThreads(board *model.Board) error {
 	threads, err := s.ListThreadsOfBoardOrderByBump(board.Code, 0, 1000)
 	if err != nil {
 		return err
