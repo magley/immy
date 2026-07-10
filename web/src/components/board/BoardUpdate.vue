@@ -114,8 +114,8 @@
 			config: boardDTO.value.config
 		};
 
-		BoardAPI.CreateBoard(createBoardDTO).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
-			emits("created", res.data.data!.id);
+		BoardAPI.CreateBoard(createBoardDTO).then((res: AxiosResponse<ApiResponse<number>>) => {
+			emits("created", res.data.data!);
 		}).catch((err: AxiosError) => {
 			error.value = "Could not create board";
 			console.error(err);

@@ -62,8 +62,8 @@ export class BoardAPI {
         return axiosInstance.get<ApiResponse<BoardDTO[]>>(`/boards/?offset=${offset}&limit=${limit}`);
     }
 
-    static async CreateBoard(dto: CreateBoardDTO): Promise<AxiosResponse<ApiResponse<BoardDTO>>> {
-        return axiosInstance.post<ApiResponse<BoardDTO>>(`/boards/`, dto);
+    static async CreateBoard(dto: CreateBoardDTO): Promise<AxiosResponse<ApiResponse<number>>> {
+        return axiosInstance.post(`/boards/`, dto);
     }
 
     static async GetBoard(boardCode: string): Promise<AxiosResponse<ApiResponse<BoardDTO>>> {
