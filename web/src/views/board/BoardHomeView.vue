@@ -374,7 +374,7 @@ import PaginatorComponent from "@/components/PaginatorComponent.vue";
 
 		<!-- Pagination -->
 		<span class="pagination">
-			<PaginatorComponent :paginator="pagination" @gotoPage="gotoPage" />
+			<PaginatorComponent :paginator="pagination" @gotoPage="gotoPage" emptyMessage="No threads" />
 			<span class="nav">
 				<!-- Navigation and search #2 -->
 				[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
@@ -409,7 +409,7 @@ import PaginatorComponent from "@/components/PaginatorComponent.vue";
 
 		.nav {
 			margin-left: 1em;
-			* {
+			&* {
 				margin-left: 0.2em;
 			}
 		}
