@@ -74,7 +74,7 @@ func (s *ThreadService) CreateThread(dto model.CreateThreadDTO, requestIP string
 	if err != nil {
 		err = s.DeleteThread(thread.ID)
 		err = s.PostService.DeletePost(post.ID)
-		// TODO: What about board number?
+		board, err = s.BoardService.DecrementBoardPostCount(board)
 	}
 
 	err = s.ArchiveBumpedOffThreads(board)

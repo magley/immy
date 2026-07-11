@@ -1,12 +1,12 @@
 package service
 
 import (
-	"immy-api/repo"
 	"immy-api/model"
+	"immy-api/repo"
 )
 
 type BoardService struct {
-	BoardRepo 	*repo.BoardRepo
+	BoardRepo *repo.BoardRepo
 }
 
 func (s *BoardService) ListBoards(offset, limit int) ([]model.Board, error) {
@@ -30,7 +30,7 @@ func (s *BoardService) UpdateBoard(boardCode string, dto model.Board) (*model.Bo
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return s.BoardRepo.UpdateBoard(board, dto)
 }
 
@@ -39,17 +39,22 @@ func (s *BoardService) IncrementBoardPostCount(board *model.Board) (*model.Board
 	return s.BoardRepo.UpdateBoard(board, *board)
 }
 
+func (s *BoardService) DecrementBoardPostCount(board *model.Board) (*model.Board, error) {
+	board.Meta.PostCount -= 1
+	return s.BoardRepo.UpdateBoard(board, *board)
+}
+
 func (s *BoardService) IncrementBytesUploaded(board *model.Board, bytes uint) (*model.Board, error) {
 	board.Meta.BytesUploaded += bytes
 	return s.BoardRepo.UpdateBoard(board, *board)
 }
 
-func (s *BoardService) DeleteBoard(boardCode string) (error) {
+func (s *BoardService) DeleteBoard(boardCode string) error {
 	board, err := s.GetBoardByCode(boardCode)
 	if err != nil {
 		return err
 	}
-	
+
 	return s.BoardRepo.DeleteBoard(board)
 }
 
