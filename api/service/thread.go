@@ -160,27 +160,37 @@ func (s *ThreadService) GetThreadsForCatalog(boardCode string) ([]model.ThreadFo
 	return res, nil
 }
 
-func (s *ThreadService) GetThreadsForArchive(boardCode string) ([]model.ThreadForCatalogDTO, error) {
-	// TODO: Hardcoding it like this is bad.
-	threads, err := s.ListArchivedThreadsOfBoard(boardCode, 0, 1000)
+func (s *ThreadService) GetThreadsForArchive(boardCode string, offset int, limit int) ([]model.ThreadForCatalogDTO, int64, error) {
+	board, err := s.BoardService.GetBoardByCode(boardCode)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
+	threads, err := s.ListArchivedThreadsOfBoard(boardCode, offset, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total, err := s.ThreadRepo.GetArchivedThreadOfBoardCount(board.ID, false)
+	if err != nil {
+		return nil, 0, err
+	}
 	var res = []model.ThreadForCatalogDTO{}
+
+	log.Print(offset, " ", limit, " <---------------------------")
 
 	for _, thread := range threads {
 		post, err := s.PostService.GetPostByNum(boardCode, thread.PostNum)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		stats, err := s.GetThreadStats(&thread)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		lastPos, err := s.PostService.GetNPostsByThread(thread.ID, -1)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		threadWithPost := model.ThreadForCatalogDTO{
@@ -192,7 +202,7 @@ func (s *ThreadService) GetThreadsForArchive(boardCode string) ([]model.ThreadFo
 		res = append(res, threadWithPost)
 	}
 
-	return res, nil
+	return res, total, nil
 }
 
 func (s *ThreadService) GetThreadsForHome(boardCode string, lastNpostsCount int, offset, limit int) ([]model.ThreadForHomeDTO, int64, error) {

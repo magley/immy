@@ -12,17 +12,17 @@ import (
 )
 
 type ThreadHandler struct {
-	ThreadService 	*service.ThreadService
-	BoardService 	*service.BoardService
-	PostService 	*service.PostService
-	UserService 	*service.UserService
-	BanService 		*service.BanService
+	ThreadService *service.ThreadService
+	BoardService  *service.BoardService
+	PostService   *service.PostService
+	UserService   *service.UserService
+	BanService    *service.BanService
 }
 
 func (h *ThreadHandler) ListThreads(c *gin.Context) {
 	offset, limit := util.GetOffsetLimit(c)
 	res, err := h.ThreadService.ListThreads(offset, limit)
-	
+
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
 		return
@@ -35,7 +35,7 @@ func (h *ThreadHandler) ListThreads(c *gin.Context) {
 func (h *ThreadHandler) ListThreadsOfBoard(c *gin.Context) {
 	offset, limit := util.GetOffsetLimit(c)
 	boardCode := c.Param("boardCode")
-	
+
 	res, err := h.ThreadService.ListThreadsOfBoard(boardCode, offset, limit)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
@@ -74,7 +74,7 @@ func (h *ThreadHandler) CreateThread(c *gin.Context) {
 	if banned, _ := util.BanCheck(c, bans); banned {
 		return
 	}
-	
+
 	res, err := h.ThreadService.CreateThread(dto, c.ClientIP(), user)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
@@ -90,7 +90,7 @@ func (h *ThreadHandler) GetThread(c *gin.Context) {
 	if !ok {
 		return
 	}
-	
+
 	res, err := h.ThreadService.GetThread(threadId)
 	if err != nil {
 		util.NotFound(c, "Thread", threadId)
@@ -123,7 +123,7 @@ func (h *ThreadHandler) GetThreadByNum(c *gin.Context) {
 	if !ok {
 		return
 	}
-	
+
 	res, err := h.ThreadService.GetThreadByNum(boardCode, threadNum)
 	if err != nil {
 		util.NotFound(c, "Thread", threadNum)
@@ -165,14 +165,15 @@ func (h *ThreadHandler) GetThreadsForCatalog(c *gin.Context) {
 }
 
 func (h *ThreadHandler) GetThreadsForArchive(c *gin.Context) {
+	offset, limit := util.GetOffsetLimit(c)
 	boardCode := c.Param("boardCode")
 
-	res, err := h.ThreadService.GetThreadsForArchive(boardCode)
+	res, total, err := h.ThreadService.GetThreadsForArchive(boardCode, offset, limit)
 	if err != nil {
 		util.NotFound(c, "Threads of board", boardCode)
 		return
 	} else {
-		util.OK(c, res)
+		util.OKPaged(c, res, util.MetaPage(limit, offset, total))
 		return
 	}
 }
@@ -203,14 +204,14 @@ func (h *ThreadHandler) UpdateThread(c *gin.Context) {
 	if !ok {
 		return
 	}
-	
+
 	var dto model.UpdateThreadDTO
 	err := c.ShouldBindJSON(&dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "ERROR", err.Error())
 		return
 	}
-	
+
 	res, err := h.ThreadService.UpdateThread(threadId, dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "UPDATE_FAILED", err.Error())
@@ -231,7 +232,7 @@ func (h *ThreadHandler) DeleteThread(c *gin.Context) {
 	if !ok {
 		return
 	}
-	
+
 	err := h.ThreadService.DeleteThread(threadId)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "DELETE_FAIL", err.Error())
@@ -262,4 +263,3 @@ func (h *ThreadHandler) ArchiveThread(c *gin.Context) {
 		return
 	}
 }
-

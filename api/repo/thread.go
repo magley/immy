@@ -53,6 +53,21 @@ func (r *ThreadRepo) ListArchivedThreadsOfBoard(boardId uint, offset int, limit 
 	return threads, result.Error
 }
 
+func (r *ThreadRepo) GetArchivedThreadOfBoardCount(boardId uint, includeDeleted bool) (int64, error) {
+	cnt := int64(0)
+
+	query := r.DB
+	if includeDeleted {
+		query = query.Unscoped()
+	}
+	result := query.
+		Model(&model.Thread{}).
+		Where("threads.archived = ?", true).
+		Where("threads.board_id = ?", boardId).
+		Count(&cnt)
+	return cnt, result.Error
+}
+
 func (r *ThreadRepo) GetThreadCountPerBoard(boardId uint) (int64, error) {
 	var total int64
 	result := r.DB.Model(&model.Thread{}).Where("archived = ?", false).Where("board_id = ?", boardId).Count(&total)
@@ -63,10 +78,10 @@ func (r *ThreadRepo) CreateThread(dto model.CreateThreadDTO, boardID uint) (*mod
 	thread := model.Thread{
 		BoardID: boardID,
 		Subject: dto.Subject,
-		Locked: dto.Locked,
-		Sticky: dto.Sticky,
+		Locked:  dto.Locked,
+		Sticky:  dto.Sticky,
 	}
-	
+
 	result := r.DB.Create(&thread)
 	return &thread, result.Error
 }
@@ -84,10 +99,16 @@ func (r *ThreadRepo) GetThreadByNum(boardId uint, num uint) (*model.Thread, erro
 }
 
 func (r *ThreadRepo) UpdateThread(thread *model.Thread, dto model.UpdateThreadDTO) (*model.Thread, error) {
-	if dto.Locked != nil { thread.Locked = *dto.Locked }
-	if dto.Sticky != nil { thread.Sticky = *dto.Sticky }
-	if dto.AutoCycle != nil { thread.AutoCycle = *dto.AutoCycle }
-	
+	if dto.Locked != nil {
+		thread.Locked = *dto.Locked
+	}
+	if dto.Sticky != nil {
+		thread.Sticky = *dto.Sticky
+	}
+	if dto.AutoCycle != nil {
+		thread.AutoCycle = *dto.AutoCycle
+	}
+
 	result := r.DB.Save(&thread)
 	return thread, result.Error
 }
@@ -98,7 +119,7 @@ func (r *ThreadRepo) UpdateThreadNum(thread *model.Thread, num uint) (*model.Thr
 	return thread, result.Error
 }
 
-func (r *ThreadRepo) DeleteThread(thread *model.Thread) (error) {
+func (r *ThreadRepo) DeleteThread(thread *model.Thread) error {
 	result := r.DB.Delete(&thread)
 	return result.Error
 }
@@ -109,10 +130,10 @@ func (r *ThreadRepo) GetThreadStats(threadId uint) (model.ThreadStats, error) {
 		Model(&model.Post{}).
 		Where("thread_id = ?", threadId).
 		Select(
-			"COUNT(DISTINCT id) AS post_count, "+
-			"SUM(CASE WHEN filename != '' THEN 1 ELSE 0 END) AS image_count, "+
-			"COUNT(DISTINCT ipv4) AS user_count, "+
-			"MAX(CASE WHEN sage = false THEN created_at ELSE NULL END) AS last_bump").
+			"COUNT(DISTINCT id) AS post_count, " +
+				"SUM(CASE WHEN filename != '' THEN 1 ELSE 0 END) AS image_count, " +
+				"COUNT(DISTINCT ipv4) AS user_count, " +
+				"MAX(CASE WHEN sage = false THEN created_at ELSE NULL END) AS last_bump").
 		Scan(&stats)
 	return stats, result.Error
 }
