@@ -4,12 +4,14 @@
 	import { ThreadAPI, type ThreadForCatalogDTO } from '@/api/thread.api';
 	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
 	import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
+import PaginatorComponent from '@/components/PaginatorComponent.vue';
 	import PostComponent from '@/components/post/PostComponent.vue';
 	import { GetPostTimeReadable, SplitPostLink, type PostImageData } from '@/model/post/post.model';
 	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
+	import { Paginator } from '@/util/pagination.util';
 	import { GetTabTitleForBoard } from '@/util/tab.util';
 	import type { AxiosResponse, AxiosError } from 'axios';
-	import { onMounted, onUnmounted, ref } from 'vue';
+	import { onMounted, onUnmounted, reactive, ref } from 'vue';
 	import { useRoute, useRouter } from 'vue-router';
 
 	const board = ref<BoardDTO | undefined>(undefined);
@@ -17,6 +19,9 @@
 
 	const route = useRoute();
 	const router = useRouter();
+
+	const getThreads = (offset: number, limit: number) => ThreadAPI.GetThreadsForArchive(board.value!.code, offset, limit);
+	const pagination = reactive<Paginator<ThreadForCatalogDTO[]>>(new Paginator(getThreads));
 
 	/** Key is `board + postNum` concatenated */
 	const peekPostCache = ref<Record<string, PostPeekBundle>>({});
@@ -29,6 +34,9 @@
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
+		const page_num_string = route.query['page'] ?? "1";
+		pagination.page = Number(page_num_string) - 1;
+
 		loadBoard(board_code);
 		window.addEventListener('mousemove', updatePosition);
 	});
@@ -59,11 +67,11 @@
 	}
 
 	const loadThreads = () => {
-		ThreadAPI.GetThreadsForArchive(board.value!.code).then((res: AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>) => {
-			threads.value = res.data.data!;
-		}).catch((err: AxiosError) => {
-			console.error(err);
-		});
+		pagination.getItems()
+			.then((res) => {
+				threads.value = res.data.data!;
+			})
+			.catch((err) => console.error(err));
 	}
 
 	const onPostLinkHover = (postLink: string) => {
@@ -83,6 +91,10 @@
 	const onPostLinkUnhover = (postLink: string) => {
 		peekPost.value = undefined;
 		peekPostVisible.value = false;
+	}
+
+	const gotoPage = (page: number) => {
+		router.push(`/${board.value!.code}/archive?page=${page}`);
 	}
 </script>
 
@@ -160,12 +172,24 @@
 		</tbody>
 	</table>
 
+	<!-- Pagination -->
+	<span class="pagination">
+		<PaginatorComponent :paginator="pagination" @gotoPage="gotoPage" emptyMessage="No threads" />
+		<span class="nav">
+			<!-- Navigation and search #2 -->
+			[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
+			[<RouterLink :to="`/${route.params.board_code}/archive`">Archive</RouterLink>]
+			[<a class="link" :href="`#top`">Top</a>]
+		</span>
+	</span>
+<!-- 
+
 	<hr />
-	<!-- Navigation and search -->
 	[<RouterLink :to="`/${route.params.board_code}`">Return</RouterLink>]
 	[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
 	[<a class="link" :href="`#top`">Top</a>]
 	<hr />
+	 -->
 </div>
 </template>
 

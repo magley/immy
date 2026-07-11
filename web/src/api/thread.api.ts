@@ -83,8 +83,8 @@ export class ThreadAPI {
         return axiosInstance.get(`/threads/board/${boardCode}/catalog`);
     }
 
-    static async GetThreadsForArchive(boardCode: string): Promise<AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>> {
-        return axiosInstance.get(`/threads/board/${boardCode}/archive`);
+    static async GetThreadsForArchive(boardCode: string, offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>> {
+        return axiosInstance.get(`/threads/board/${boardCode}/archive?offset=${offset}&limit=${limit}`);
     }
 
     static async GetThreadsForHome(boardCode: string, offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<ThreadForHomeDTO[]>>> {
