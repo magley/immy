@@ -18,6 +18,11 @@ export interface RuleBoardDTO {
     deleted_at: string;
 }
 
+export interface RuleBoardIdDTO {
+    rule_id: number;
+    board_id: number;
+}
+
 export interface CreateRuleDTO {
     title: string;
     description: string;
@@ -61,7 +66,7 @@ export class RuleAPI {
     // ============================================================
     //  RULE <-> BOARD
 
-    static async CreateRuleBoard(dto: CreateRuleDTO): Promise<AxiosResponse<ApiResponse<RuleBoardDTO>>> {
+    static async CreateRuleBoard(dto: CreateRuleDTO): Promise<AxiosResponse<ApiResponse<RuleBoardIdDTO>>> {
         return axiosInstance.post(`/rules/board/`, dto);
     }
 
