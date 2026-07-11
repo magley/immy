@@ -15,9 +15,9 @@ import (
 )
 
 type PostService struct {
-	PostRepo 	*repo.PostRepo
-	ThreadRepo 	*repo.ThreadRepo
-	BoardService *BoardService
+	PostRepo      *repo.PostRepo
+	ThreadRepo    *repo.ThreadRepo
+	BoardService  *BoardService
 	ThreadService *ThreadService
 }
 
@@ -65,11 +65,11 @@ func (s *PostService) UpdatePost(postId uint, dto model.UpdatePostDTO) (*model.P
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return s.PostRepo.UpdatePost(post, dto)
 }
 
-func (s *PostService) DeletePost(postId uint) (error) {
+func (s *PostService) DeletePost(postId uint) error {
 	post, err := s.GetPost(postId)
 	if err != nil {
 		return err
@@ -77,11 +77,11 @@ func (s *PostService) DeletePost(postId uint) (error) {
 	if post.ThreadNum == post.Num {
 		return s.ThreadService.DeleteThread(post.ThreadID)
 	}
-	
+
 	return s.PostRepo.DeletePost(post)
 }
 
-func (s *PostService) DeleteFirstNPostsOfThread(thread *model.Thread, N uint) (error) {
+func (s *PostService) DeleteFirstNPostsOfThread(thread *model.Thread, N uint) error {
 	return s.PostRepo.DeleteFirstNPostsOfThread(thread.ID, thread.PostNum, N)
 }
 
@@ -89,6 +89,48 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user
 	thread, err := s.ThreadService.GetThread(dto.ThreadID)
 	if err != nil {
 		return nil, err
+	}
+
+	board, err := s.BoardService.GetBoard(thread.BoardID)
+	if err != nil {
+		return nil, err
+	}
+
+	dto2 := model.CreatePostCommonDTO{
+		Name:      dto.Name,
+		Content:   dto.Content,
+		Filename:  dto.Filename,
+		Filebytes: dto.Filebytes,
+		Options:   dto.Options,
+		Spoiler:   dto.Spoiler,
+		ThreadID:  &thread.ID,
+	}
+
+	return s.createPostCommon(dto2, board, thread, requestIP, user)
+}
+
+func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requestIP string, thread *model.Thread, board *model.Board, user *model.User) (*model.Post, error) {
+	dto2 := model.CreatePostCommonDTO{
+		Name:      dto.Name,
+		Content:   dto.Content,
+		Filename:  &dto.Filename,
+		Filebytes: &dto.Filebytes,
+		Options:   dto.Options,
+		Spoiler:   dto.Spoiler,
+		ThreadID:  &thread.ID,
+	}
+
+	return s.createPostCommon(dto2, board, thread, requestIP, user)
+}
+
+// createPostCommon is the function unifying logic between CreatePost and CreatePostForThread.
+// None of the parameters except `user` can be nil, but note that `thread` may have incomplete
+// fields if this post is an OP post (i.e. created along with the thread).
+func (s *PostService) createPostCommon(dto model.CreatePostCommonDTO, board *model.Board, thread *model.Thread, requestIP string, user *model.User) (*model.Post, error) {
+	// Check if posting is possible
+
+	if board.Config.Locked {
+		return nil, errors.New("Board locked. You may not create threads at this time.")
 	}
 
 	if thread.Locked {
@@ -99,24 +141,32 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user
 		return nil, errors.New("Thread archived. You may not reply at this time.")
 	}
 
+	// Validate post
+
 	threadStats, err := s.ThreadService.GetThreadStats(thread)
 	if err != nil {
 		return nil, err
 	}
 
-	board, err := s.BoardService.GetBoard(thread.BoardID)
+	err = s.validatePost(dto.Filebytes, thread, threadStats, board, true)
 	if err != nil {
 		return nil, err
 	}
 
-	if board.Config.Locked {
-		return nil, errors.New("Board locked. You may not reply at this time.")
-	}
+	// Increment board meta
 
-	err = s.validatePost(dto.Filebytes, thread, threadStats, board, false)
+	board, err = s.BoardService.IncrementBoardPostCount(board)
 	if err != nil {
 		return nil, err
 	}
+
+	// Sanitize inputs
+
+	dto.Name = strings.Trim(dto.Name, " \t")
+	dto.Content = strings.Trim(dto.Content, " \t")
+	dto.Options = strings.Trim(dto.Options, " \t")
+
+	// Process options
 
 	sage := s.hasOption(dto.Options, "sage")
 	if threadStats.PostCount >= board.Config.BumpLimit {
@@ -125,8 +175,22 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user
 
 	capcode := s.hasOption(dto.Options, "capcode") && user != nil
 
+	// Tripcode & ID
+
+	postName, postTripcode := s.createTripcode(dto.Name)
+
+	var publicID *string
+	if board.Config.IDsEnabled {
+		publicIDstr := util.CreateUserID(requestIP, thread.ID)
+		publicID = &publicIDstr
+	}
+
+	var userId *uint
+
+	// Compute MD5
+
 	md5 := ""
-	if (dto.Filebytes != nil) {
+	if dto.Filebytes != nil {
 		md5 = util.GetFileHashB64(*dto.Filebytes)
 
 		dupPost, err := s.PostRepo.GetPostWithDuplicateFileInThread(board.ID, thread.ID, md5)
@@ -142,65 +206,50 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user
 			}
 		}
 	}
-	
-	// TODO: This is identical to CreatePostForThread, so make
-	// a common method for both of them. Maybe in the future,
-	// CreatePostForThread will actually behave differently
-	// (like having additional fields in the Post to signify
-	// that this is an OP post). One exception is the ThreadNum
-	// field.
-	
-	board, err = s.BoardService.IncrementBoardPostCount(board)
-	if err != nil {
-		return nil, err
-	}
-	
-	dto.Name = strings.Trim(dto.Name, " \t")
-	dto.Content = strings.Trim(dto.Content, " \t")
-	dto.Options = strings.Trim(dto.Options, " \t")
-	
-	postName, postTripcode := s.createTripcode(dto.Name)
 
-	var publicID *string
-	if board.Config.IDsEnabled {
-		publicIDstr := util.CreateUserID(requestIP, thread.ID)
-		publicID = &publicIDstr
-	}
+	// User creator (if any)
 
-	var userId *uint
 	var userRole *model.UserRole
-	if user != nil { userId = &user.ID }
-	if user != nil { userRole = &user.Role }
+	if user != nil {
+		userId = &user.ID
+	}
+	if user != nil {
+		userRole = &user.Role
+	}
+
+	// Create Post struct
 
 	post := &model.Post{
-		ThreadID: thread.ID,
-		ThreadNum: thread.PostNum,
-		BoardID: board.ID,
-		Num: board.Meta.PostCount,
-		Name: postName,
-		Tripcode: postTripcode,
-		IPv4: requestIP,
-		UserID: userId,
-		UserRole: userRole,
-		PublicID: publicID,
-		Sage: sage,
-		Capcode: capcode,
-		Content: dto.Content,
+		ThreadID:    thread.ID,
+		ThreadNum:   board.Meta.PostCount,
+		BoardID:     board.ID,
+		Num:         board.Meta.PostCount,
+		Name:        postName,
+		Tripcode:    postTripcode,
+		IPv4:        requestIP,
+		UserID:      userId,
+		UserRole:    userRole,
+		PublicID:    publicID,
+		Sage:        sage,
+		Capcode:     capcode,
+		Content:     dto.Content,
 		SrcFilename: "",
-		Filename: "",
-		ImgWidth: 0,
-		ImgHeight: 0,
-		MD5: "",
-		Spoiler: dto.Spoiler,
-		Html: "",
+		Filename:    "",
+		ImgWidth:    0,
+		ImgHeight:   0,
+		MD5:         md5,
+		Spoiler:     dto.Spoiler,
+		Html:        "",
 	}
 
-	if (dto.Filename != nil && dto.Filebytes != nil) {
+	// File related fields
+
+	if dto.Filename != nil && dto.Filebytes != nil {
 		post.SrcFilename = *dto.Filename
 		post.Filename = util.GetPostImageFilename(board.Code, post.SrcFilename)
 	}
 
-	if (dto.Filename != nil && dto.Filebytes != nil) {
+	if dto.Filename != nil && dto.Filebytes != nil {
 		imgData, err := util.SaveFile(post.Filename, *dto.Filebytes)
 		if err != nil {
 			return nil, err
@@ -211,11 +260,12 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user
 			return nil, err
 		}
 
-		post.MD5 = md5
 		post.Filesize = imgData.SizeImageBytes
 		post.ImgWidth = uint(imgData.ImageWidth)
 		post.ImgHeight = uint(imgData.ImageHeight)
 	}
+
+	// Create post
 
 	post, err = s.PostRepo.CreatePost(post)
 	if err != nil {
@@ -227,109 +277,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user
 		return nil, err
 	}
 
-	return post, err 	
-}
-
-func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requestIP string, thread *model.Thread, board *model.Board, user *model.User) (*model.Post, error) {
-	if board.Config.Locked {
-		return nil, errors.New("Board locked. You may not create threads at this time.")
-	}
-
-	board, err := s.BoardService.IncrementBoardPostCount(board)
-	if err != nil {
-		return nil, err
-	}
-
-	threadStats, err := s.ThreadService.GetThreadStats(thread)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.validatePost(&dto.Filebytes, thread, threadStats, board, true)
-	if err != nil {
-		return nil, err
-	}
-
-	sage := s.hasOption(dto.Options, "sage")
-	if threadStats.PostCount >= board.Config.BumpLimit {
-		sage = true
-	}
-
-	capcode := s.hasOption(dto.Options, "capcode") && user != nil
-
-	md5 := ""
-	{
-		md5 = util.GetFileHashB64(dto.Filebytes)
-
-		dupPost, err := s.PostRepo.GetOPPostWithDuplicateFileInBoard(board.ID, md5, true)
-		if err != nil {
-			if err == gorm.ErrRecordNotFound {
-				// We want this.
-			} else {
-				return nil, err
-			}
-		} else {
-			if dupPost != nil {
-				return nil, errors.New(fmt.Sprintf("Duplicate file at #%d", dupPost.Num))
-			}
-		}
-	}
-
-	dto.Name = strings.Trim(dto.Name, " \t")
-	dto.Content = strings.Trim(dto.Content, " \t")
-	dto.Options = strings.Trim(dto.Options, " \t")
-	
-	postName, postTripcode := s.createTripcode(dto.Name)
-	
-	var publicID *string
-	if board.Config.IDsEnabled {
-		publicIDstr := util.CreateUserID(requestIP, thread.ID)
-		publicID = &publicIDstr
-	}
-
-	var userId *uint
-	var userRole *model.UserRole
-	if user != nil { userId = &user.ID }
-	if user != nil { userRole = &user.Role }
-
-	post := &model.Post{
-		ThreadID: thread.ID,
-		ThreadNum: board.Meta.PostCount,
-		BoardID: board.ID,
-		Num: board.Meta.PostCount,
-		Name: postName,
-		Tripcode: postTripcode,
-		IPv4: requestIP,
-		UserID: userId,
-		UserRole: userRole,
-		PublicID: publicID,
-		Sage: sage,
-		Capcode: capcode,
-		Content: dto.Content,
-		SrcFilename: dto.Filename,
-		Filename: util.GetPostImageFilename(board.Code, dto.Filename),
-		MD5: md5,
-		Spoiler: dto.Spoiler,
-		Html: "",
-	}
-	
-	imgData, err := util.SaveFile(post.Filename, dto.Filebytes)
-	if err != nil {
-		return nil, err
-	}
-
-	post.Filesize = imgData.SizeImageBytes
-	post.ImgWidth = uint(imgData.ImageWidth)
-	post.ImgHeight = uint(imgData.ImageHeight)
-
-	board, err = s.BoardService.IncrementBytesUploaded(board, imgData.SizeImageBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	post, err = s.PostRepo.CreatePost(post)
-
-	return post, err 
+	return post, err
 }
 
 func (s *PostService) validatePost(fileBytes *string, thread *model.Thread, threadStats model.ThreadStats, board *model.Board, opPost bool) error {
@@ -342,27 +290,27 @@ func (s *PostService) validatePost(fileBytes *string, thread *model.Thread, thre
 			return errors.New("Only OP can attach files")
 		}
 
-    	data, err := base64.StdEncoding.DecodeString(*fileBytes)
-    	if err != nil {
-    		return err
-    	}
+		data, err := base64.StdEncoding.DecodeString(*fileBytes)
+		if err != nil {
+			return err
+		}
 
-    	if len(data) > int(board.Config.MaxFileSize) {
-    		return errors.New("File too large")
-    	}
+		if len(data) > int(board.Config.MaxFileSize) {
+			return errors.New("File too large")
+		}
 
-    	mimeType := http.DetectContentType(data[:512])
-    	mimeOk := false
-    	for _, mime := range board.Config.MimeTypesAllowed {
-    		if mime == mimeType {
-    			mimeOk = true
-    			break
-    		}
-    	}
+		mimeType := http.DetectContentType(data[:512])
+		mimeOk := false
+		for _, mime := range board.Config.MimeTypesAllowed {
+			if mime == mimeType {
+				mimeOk = true
+				break
+			}
+		}
 
-    	if !mimeOk {
-    		return errors.New(fmt.Sprintf("Unsupported file type: %s", mimeType))
-    	}
+		if !mimeOk {
+			return errors.New(fmt.Sprintf("Unsupported file type: %s", mimeType))
+		}
 	}
 
 	return nil
@@ -370,16 +318,15 @@ func (s *PostService) validatePost(fileBytes *string, thread *model.Thread, thre
 
 func (s *PostService) createTripcode(fullName string) (string, string) {
 	parts, secure := splitCustom(fullName)
-	
-	
+
 	if len(parts) < 2 {
 		return fullName, ""
 	}
 	if len(parts[1]) == 0 {
 		return fullName, ""
 	}
-	fmt.Printf("%s,%s", parts[0],parts[1])
-	
+	fmt.Printf("%s,%s", parts[0], parts[1])
+
 	return parts[0], util.CreateTripcode(parts[1], secure)
 }
 
@@ -387,34 +334,33 @@ func (s *PostService) hasOption(options string, option string) bool {
 	parts := strings.Split(options, " ")
 	return slices.Index(parts, option) != -1
 }
+
 // splitCustom splits a string into two parts: the username and the tripcode password.
 // The two are separated by a '#'. If they are separated by two '#', then the tripcode
 // is meant to be secure, and the second return value is true. Otherwise, the tripcode
 // is meant to be insecure, so the second return value is false.
 //
-//
 // name          -> ([name], false)
 // name#pass     -> ([name, pass], false)
 // name##pass    -> ([name, pass], true)
 // name###pass   -> (name, #pass], true)
-//
 func splitCustom(s string) ([]string, bool) {
-    idx := strings.Index(s, "#")
-    if idx == -1 {
-        return []string{s}, false
-    }
+	idx := strings.Index(s, "#")
+	if idx == -1 {
+		return []string{s}, false
+	}
 
-    count := 1
-    for i := idx + 1; i < len(s) && s[i] == '#'; i++ {
-        count++
-    }
+	count := 1
+	for i := idx + 1; i < len(s) && s[i] == '#'; i++ {
+		count++
+	}
 
-    switch count {
-    case 1:
-        return []string{s[:idx], s[idx+1:]}, false
-    case 2:
-        return []string{s[:idx], s[idx+2:]}, true
-    default:
-        return []string{s[:idx], s[idx+count-2:]}, true
-    }
+	switch count {
+	case 1:
+		return []string{s[:idx], s[idx+1:]}, false
+	case 2:
+		return []string{s[:idx], s[idx+2:]}, true
+	default:
+		return []string{s[:idx], s[idx+count-2:]}, true
+	}
 }

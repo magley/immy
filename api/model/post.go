@@ -62,3 +62,14 @@ type UpdatePostDTO struct {
 	Html		*string 	`json:"html"`
 	Spoiler		*bool		`json:"spoiler"`
 }
+
+// Internal use only
+type CreatePostCommonDTO struct {
+	Name 		string 		`json:"name"`
+	Content 	string		`json:"content" binding:"required"`
+	Filename 	*string 	`json:"filename"`
+	Filebytes 	*string    	`json:"filebytes"`
+	Options 	string		`json:"options"`
+	Spoiler		bool		`json:"spoiler"`
+	ThreadID	*uint 		`json:"thread_id"`
+}
