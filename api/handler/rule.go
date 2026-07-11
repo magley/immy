@@ -27,7 +27,7 @@ func (h *RuleHandler) ListRules(c *gin.Context) {
 	}
 }
 
-func (h* RuleHandler) CreateRule(c *gin.Context) {
+func (h *RuleHandler) CreateRule(c *gin.Context) {
 	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin})
 	if !ok {
 		return
@@ -115,7 +115,7 @@ func (h *RuleHandler) DeleteRule(c *gin.Context) {
 // ===========================================================================
 // RULE <--> BOARD
 
-func (h* RuleHandler) CreateRuleBoard(c *gin.Context) {
+func (h *RuleHandler) CreateRuleBoard(c *gin.Context) {
 	_, ok := util.RequireRoleAny(c, []string{model.UserRoleAdmin})
 	if !ok {
 		return
@@ -133,7 +133,7 @@ func (h* RuleHandler) CreateRuleBoard(c *gin.Context) {
 		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
 		return
 	} else {
-		util.Created(c, res.BoardID) // TODO: This is not the primary key of a rule-board.
+		util.CreatedExt(c, model.RuleBoardIdDTO{RuleID: res.RuleID, BoardID: res.BoardID})
 		return
 	}
 }

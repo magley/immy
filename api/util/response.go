@@ -44,13 +44,17 @@ func NoContent(c *gin.Context) {
 func OKPaged(c *gin.Context, data interface{}, meta *Meta) {
 	c.JSON(http.StatusOK, Response{
 		Success: true,
-		Data: data,
-		Meta: meta,
+		Data:    data,
+		Meta:    meta,
 	})
 }
 
 func Created(c *gin.Context, id uint) {
 	c.JSON(http.StatusCreated, gin.H{"id": id})
+}
+
+func CreatedExt(c *gin.Context, data interface{}) {
+	c.JSON(http.StatusCreated, data)
 }
 
 func Fail(c *gin.Context, status int, code, message string) {
@@ -64,8 +68,8 @@ func Fail(c *gin.Context, status int, code, message string) {
 func NotFound(c *gin.Context, what string, identifier interface{}) {
 	c.JSON(http.StatusNotFound, Response{
 		Success: false,
-		Error:   &ErrorInfo{
-			Code: "NOT_FOUND",
+		Error: &ErrorInfo{
+			Code:    "NOT_FOUND",
 			Message: fmt.Sprintf("Could not find %s by '%v'", what, identifier),
 		},
 	})
@@ -94,7 +98,7 @@ func Banned(c *gin.Context, justWarning bool) {
 
 	c.JSON(http.StatusForbidden, Response{
 		Success: false,
-		Error:   &ErrorInfo{ Code: code },
+		Error:   &ErrorInfo{Code: code},
 	})
 }
 
@@ -122,9 +126,9 @@ func MetaPage(limit, offset int, total int64) *Meta {
 	}
 
 	return &Meta{
-		Page: page + 1,
-		PerPage: limit,
-		Total: int(total),
+		Page:       page + 1,
+		PerPage:    limit,
+		Total:      int(total),
 		TotalPages: totalPages,
 	}
 }

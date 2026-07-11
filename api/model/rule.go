@@ -40,6 +40,11 @@ type CreateRuleBoardDTO struct {
 	BoardID			uint			`json:"board_id"`
 }
 
+type RuleBoardIdDTO struct {
+	RuleID			uint			`json:"rule_id"`
+	BoardID			uint			`json:"board_id"`
+}
+
 type UpdateRuleDTO struct {
 	Title	 		*string 		`json:"title"`
 	Description 	*string 		`json:"description"`
