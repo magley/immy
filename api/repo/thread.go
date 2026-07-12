@@ -62,8 +62,8 @@ func (r *ThreadRepo) GetArchivedThreadOfBoardCount(boardId uint, includeDeleted 
 	}
 	result := query.
 		Model(&model.Thread{}).
-		Where("threads.archived = ?", true).
 		Where("threads.board_id = ?", boardId).
+		Where("threads.archived = ?", true).
 		Count(&cnt)
 	return cnt, result.Error
 }

@@ -177,8 +177,6 @@ func (s *ThreadService) GetThreadsForArchive(boardCode string, offset int, limit
 	}
 	var res = []model.ThreadForCatalogDTO{}
 
-	log.Print(offset, " ", limit, " <---------------------------")
-
 	for _, thread := range threads {
 		post, err := s.PostService.GetPostByNum(boardCode, thread.PostNum)
 		if err != nil {
