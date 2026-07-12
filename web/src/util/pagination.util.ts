@@ -29,8 +29,6 @@ export class Paginator<T> {
 			if (res.data.meta) {
 				const meta = res.data.meta;
 
-				console.log(this.pagesTotal);
-
 				this.page = meta.page;
 				this.pagesTotal = meta.total_pages;
 				this.pagesNav = [

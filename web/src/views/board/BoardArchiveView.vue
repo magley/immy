@@ -4,7 +4,7 @@
 	import { ThreadAPI, type ThreadForCatalogDTO } from '@/api/thread.api';
 	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
 	import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
-import PaginatorComponent from '@/components/PaginatorComponent.vue';
+	import PaginatorComponent from '@/components/PaginatorComponent.vue';
 	import PostComponent from '@/components/post/PostComponent.vue';
 	import { GetPostTimeReadable, SplitPostLink, type PostImageData } from '@/model/post/post.model';
 	import { GetPostPeek, type PostPeekBundle } from '@/model/post/post.peek';
@@ -34,8 +34,9 @@ import PaginatorComponent from '@/components/PaginatorComponent.vue';
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
+		pagination.perPage = 4;
 		const page_num_string = route.query['page'] ?? "1";
-		pagination.page = Number(page_num_string) - 1;
+		pagination.page = Number(page_num_string);
 
 		loadBoard(board_code);
 		window.addEventListener('mousemove', updatePosition);
@@ -95,6 +96,8 @@ import PaginatorComponent from '@/components/PaginatorComponent.vue';
 
 	const gotoPage = (page: number) => {
 		router.push(`/${board.value!.code}/archive?page=${page}`);
+		pagination.page = page;
+		loadThreads();
 	}
 </script>
 
@@ -182,14 +185,6 @@ import PaginatorComponent from '@/components/PaginatorComponent.vue';
 			[<a class="link" :href="`#top`">Top</a>]
 		</span>
 	</span>
-<!-- 
-
-	<hr />
-	[<RouterLink :to="`/${route.params.board_code}`">Return</RouterLink>]
-	[<RouterLink :to="`/${route.params.board_code}/catalog`">Catalog</RouterLink>]
-	[<a class="link" :href="`#top`">Top</a>]
-	<hr />
-	 -->
 </div>
 </template>
 
