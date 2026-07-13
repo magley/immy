@@ -22,16 +22,16 @@
 		theme.value = localStorage.getItem("theme") ?? "yotsuba";
 	});
 
-	watch(route, async (to, from) => {
-		const jwt: string | null = localStorage.getItem("jwt");
-		if (jwt != null) {
-			if (IsJwtExpired(jwt)) {
-				toast.value = "Session expired."
-				await router.push({ path: '/login', query: { redirect: route.fullPath } });
-				RemoveLoginCredentials();
-			}
-		}
-	});
+	// watch(route, async (to, from) => {
+	// 	const jwt: string | null = localStorage.getItem("jwt");
+	// 	if (jwt != null) {
+	// 		if (IsJwtExpired(jwt)) {
+	// 			toast.value = "Session expired."
+	// 			await router.push({ path: '/login', query: { redirect: route.fullPath } });
+	// 			RemoveLoginCredentials();
+	// 		}
+	// 	}
+	// });
 
 	const themeChanged = () => {
 		setTheme(theme.value);
