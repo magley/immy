@@ -20,13 +20,13 @@ func (r *BoardRepo) ListBoards(offset int, limit int) ([]model.Board, error) {
 
 func (r *BoardRepo) CreateBoard(dto model.CreateBoardDTO) (*model.Board, error) {
 	board := model.Board{
-		Name: dto.Name,
-		Code: dto.Code,
+		Name:        dto.Name,
+		Code:        dto.Code,
 		Description: dto.Description,
-		Config: dto.Config,
+		Config:      dto.Config,
 	}
 	log.Println(dto.Config)
-	
+
 	result := r.DB.Create(&board)
 	return &board, result.Error
 }
@@ -43,6 +43,12 @@ func (r *BoardRepo) GetBoard(boardId uint) (*model.Board, error) {
 	return &board, result.Error
 }
 
+func (r *BoardRepo) GetAllBoards() ([]model.Board, error) {
+	var boards []model.Board
+	result := r.DB.Order("id").Find(&boards)
+	return boards, result.Error
+}
+
 func (r *BoardRepo) UpdateBoard(board *model.Board, dto model.Board) (*model.Board, error) {
 	board.Name = dto.Name
 	board.Code = dto.Code
@@ -54,7 +60,7 @@ func (r *BoardRepo) UpdateBoard(board *model.Board, dto model.Board) (*model.Boa
 	return board, result.Error
 }
 
-func (r *BoardRepo) DeleteBoard(board *model.Board) (error) {
+func (r *BoardRepo) DeleteBoard(board *model.Board) error {
 	result := r.DB.Delete(&board)
 	return result.Error
 }

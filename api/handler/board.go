@@ -1,23 +1,35 @@
 package handler
 
 import (
-	"net/http"
-	"github.com/gin-gonic/gin"
 	util "immy-api/util"
+	"net/http"
 
-	"immy-api/service"
+	"github.com/gin-gonic/gin"
+
 	"immy-api/model"
+	"immy-api/service"
 )
 
 type BoardHandler struct {
 	BoardService *service.BoardService
 }
 
-
 func (h *BoardHandler) ListBoards(c *gin.Context) {
 	offset, limit := util.GetOffsetLimit(c)
 	res, err := h.BoardService.ListBoards(offset, limit)
-	
+
+	if err != nil {
+		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
+		return
+	} else {
+		util.OK(c, res)
+		return
+	}
+}
+
+func (h *BoardHandler) GetAllBoards(c *gin.Context) {
+	res, err := h.BoardService.GetAllBoards()
+
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "LIST_FAIL", err.Error())
 		return
@@ -39,7 +51,7 @@ func (h *BoardHandler) CreateBoard(c *gin.Context) {
 		util.Fail(c, http.StatusBadRequest, "BAD_JSON", err.Error())
 		return
 	}
-	
+
 	res, err := h.BoardService.CreateBoard(dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "CREATE_FAIL", err.Error())
@@ -52,7 +64,7 @@ func (h *BoardHandler) CreateBoard(c *gin.Context) {
 
 func (h *BoardHandler) GetBoard(c *gin.Context) {
 	boardCode := c.Param("code")
-	
+
 	res, err := h.BoardService.GetBoardByCode(boardCode)
 	if err != nil {
 		util.NotFound(c, "Board", boardCode)
@@ -93,7 +105,7 @@ func (h *BoardHandler) UpdateBoard(c *gin.Context) {
 		util.Fail(c, http.StatusBadRequest, "ERROR", err.Error())
 		return
 	}
-	
+
 	res, err := h.BoardService.UpdateBoard(boardCode, dto)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "UPDATE_FAILED", err.Error())
@@ -111,7 +123,7 @@ func (h *BoardHandler) DeleteBoard(c *gin.Context) {
 	}
 
 	boardCode := c.Param("code")
-		
+
 	err := h.BoardService.DeleteBoard(boardCode)
 	if err != nil {
 		util.Fail(c, http.StatusBadRequest, "DELETE_FAIL", err.Error())
