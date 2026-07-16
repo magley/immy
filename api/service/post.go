@@ -106,7 +106,7 @@ func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user
 		ThreadID:  &thread.ID,
 	}
 
-	return s.createPostCommon(dto2, board, thread, requestIP, user)
+	return s.createPostCommon(dto2, board, thread, false, requestIP, user)
 }
 
 func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requestIP string, thread *model.Thread, board *model.Board, user *model.User) (*model.Post, error) {
@@ -120,13 +120,13 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 		ThreadID:  &thread.ID,
 	}
 
-	return s.createPostCommon(dto2, board, thread, requestIP, user)
+	return s.createPostCommon(dto2, board, thread, true, requestIP, user)
 }
 
 // createPostCommon is the function unifying logic between CreatePost and CreatePostForThread.
 // None of the parameters except `user` can be nil, but note that `thread` may have incomplete
 // fields if this post is an OP post (i.e. created along with the thread).
-func (s *PostService) createPostCommon(dto model.CreatePostCommonDTO, board *model.Board, thread *model.Thread, requestIP string, user *model.User) (*model.Post, error) {
+func (s *PostService) createPostCommon(dto model.CreatePostCommonDTO, board *model.Board, thread *model.Thread, opPost bool, requestIP string, user *model.User) (*model.Post, error) {
 	// Check if posting is possible
 
 	if board.Config.Locked {
@@ -219,9 +219,14 @@ func (s *PostService) createPostCommon(dto model.CreatePostCommonDTO, board *mod
 
 	// Create Post struct
 
+	threadNum := board.Meta.PostCount
+	if !opPost {
+		threadNum = thread.PostNum
+	}
+
 	post := &model.Post{
 		ThreadID:    thread.ID,
-		ThreadNum:   board.Meta.PostCount,
+		ThreadNum:   threadNum,
 		BoardID:     board.ID,
 		Num:         board.Meta.PostCount,
 		Name:        postName,
