@@ -151,14 +151,14 @@
 					<tr :class="{finished: isBanFinished(ban)}">
 						<td>{{ ban.id }}</td>
 						<td>
-							<tt>
+							<span class="tt">
 								<template v-if="ban.ip_end == null">
 									{{ banNumToIP(ban.ip_start) }}
 								</template>
 								<template v-else>
 									{{ banNumToIP(ban.ip_start) }} - {{ banNumToIP(ban.ip_end) }}
 								</template>
-							</tt>
+							</span>
 						</td>
 						<td class="center">
 							{{ ban.board_id == null ? "global" : `/${ban.board_code}/` }}
@@ -215,7 +215,7 @@
 											<i>This appeal was never handled.</i>
 										</template>
 										<template v-else>
-											<i>Responsed with status</i> <tt><b>{{ appeal.status }}</b></tt>
+											<i>Responsed with status</i> <span class="tt"><b>{{ appeal.status }}</b></span>
 										</template>
 									</template>
 									<template v-else>
@@ -287,7 +287,7 @@
 		text-align: center;
 	}
 
-	tt {
+	.tt {
 		font-size: 12pt;
 	}
 
