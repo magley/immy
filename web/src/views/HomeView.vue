@@ -16,8 +16,7 @@ import { GetFileSizeByteString } from '@/util/file.util';
 	});
 
 	const loadBoards = () => {
-		// TODO: No limit here...
-		BoardAPI.ListBoards(0, 1000).then((res) => {
+		BoardAPI.GetAllBoards().then((res) => {
 			boards.value = res.data.data!;
 		}).catch((err: AxiosError) => {
 			console.error(err);

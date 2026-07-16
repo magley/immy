@@ -58,8 +58,8 @@ export interface BoardStatisticsDTO {
 }
 
 export class BoardAPI {
-    static async ListBoards(offset: number = 0, limit: number = 100): Promise<AxiosResponse<ApiResponse<BoardDTO[]>>> {
-        return axiosInstance.get<ApiResponse<BoardDTO[]>>(`/boards/?offset=${offset}&limit=${limit}`);
+    static async GetAllBoards(): Promise<AxiosResponse<ApiResponse<BoardDTO[]>>> {
+        return axiosInstance.get<ApiResponse<BoardDTO[]>>(`/boards/`);
     }
 
     static async CreateBoard(dto: CreateBoardDTO): Promise<AxiosResponse<ApiResponse<number>>> {

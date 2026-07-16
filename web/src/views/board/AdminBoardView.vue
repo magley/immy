@@ -36,7 +36,7 @@
 	}
 	
 	const get_boards = () => {
-		BoardAPI.ListBoards().then((res: AxiosResponse<ApiResponse<BoardDTO[]>>) => {
+		BoardAPI.GetAllBoards().then((res: AxiosResponse<ApiResponse<BoardDTO[]>>) => {
 			boards.value = res.data.data!;
 		}).catch((err) => {
 			console.error(err);
