@@ -69,7 +69,7 @@ func (r *BoardRepo) GetStatistics() ([]model.BoardStatisticsDTO, error) {
 	sql := `
 		select boards.id, boards.bytes_uploaded, boards.code, 
 				count(distinct threads.id) thread_count, 
-				count(distinct threads.id) filter (where threads.archived = false and threads.deleted_at = null) thread_count_alive, 
+				count(distinct threads.id) filter (where threads.archived = false and threads.deleted_at is null) thread_count_alive, 
 				count(distinct posts.id) post_count
 		from boards
 		join threads on boards.id = threads.board_id
