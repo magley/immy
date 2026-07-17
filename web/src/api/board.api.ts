@@ -53,6 +53,7 @@ export interface BoardStatisticsDTO {
     id: number;
     code: string;
     thread_count: number;
+    thread_count_alive: number;
     post_count: number;
     bytes_uploaded: number;
 }

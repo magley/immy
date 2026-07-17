@@ -69,7 +69,9 @@ import { GetFileSizeByteString } from '@/util/file.util';
 						[<RouterLink :to="`/${board.code}/catalog`">Catalog</RouterLink>]
 					</td>
 					<td>
-						{{ board_stats[board.code]?.thread_count }} threads
+						{{ board_stats[board.code]?.thread_count_alive }} active threads
+					</td>					<td>
+						{{ board_stats[board.code]?.thread_count }} threads ever
 					</td>
 					<td>
 						{{ board_stats[board.code]?.post_count }} posts
@@ -85,17 +87,20 @@ import { GetFileSizeByteString } from '@/util/file.util';
 		</div>
 		<div class="body flex">
 			<span>
+				<b>Active threads:</b>
+				{{ stats_raw.map((s) => s.thread_count_alive).reduce((a, b) => a + b, 0) }}
+			</span>
+			<span>
 				<b>Total threads:</b>
 				{{ stats_raw.map((s) => s.thread_count).reduce((a, b) => a + b, 0) }}
 			</span>
-
 			<span>
 				<b>Total posts:</b>
 				{{ stats_raw.map((s) => s.post_count).reduce((a, b) => a + b, 0) }}
 			</span>
 
 			<span>
-				<b>Total uploaded data:</b>
+				<b>Uploaded data:</b>
 				{{ GetFileSizeByteString(stats_raw.map((s) => s.bytes_uploaded).reduce((a, b) => a + b, 0)) }}
 			</span>
 		</div>
