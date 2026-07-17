@@ -86,7 +86,7 @@ create table bans (
 	ip_start	bigint not null,
 	ip_end		bigint default null,
 	created_at	timestamp default now(),
-	expires		timestamp default null,			-- If null, ban is permanent
+	expires_at	timestamp default null,			-- If null, ban is permanent
 	deleted_at	timestamp default null,
 	board_id	integer references boards(id), 	-- If null, banned from all boards
 	board_code	varchar,						-- Redundant field
