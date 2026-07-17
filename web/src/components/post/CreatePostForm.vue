@@ -211,7 +211,7 @@
 			<div v-if="board.config.spoiler_image">
 				Spoilers are enabled <a @click.prevent="toggleHelpSpoiler">[Help]</a>
 				<div v-if="spoilerExpanded" class="help-explanation">
-					Wrap hidden text with <tt>[spoiler] [/spoiler]</tt> tags:
+					Wrap hidden text with <span class="tt">[spoiler] [/spoiler]</span> tags:
 <pre>
 Darth Vader is [spoiler]Luke's father[/spoiler]
 </pre>
@@ -224,7 +224,7 @@ Darth Vader is [spoiler]Luke's father[/spoiler]
 			<div v-if="board.config.math_enabled">
 				<vue-latex expression="\LaTeX" /> is supported <a @click.prevent="toggleHelpMath">[Help]</a>
 				<div v-if="mathExpanded" class="help-explanation">
-					Wrap your equations between <tt>[math] [/math]</tt> tags:
+					Wrap your equations between <span class="tt">[math] [/math]</span> tags:
 <pre>
 The Pythagorean theorem is:
 [math]
@@ -239,9 +239,9 @@ a^2 + b^2 = c^2
 				</div>
 			</div>
 			<div v-if="board.config.code_enabled">
-				<tt><strong>Syntax highlighting</strong></tt> is supported <a @click.prevent="toggleHelpCode">[Help]</a>
+				<span class="tt"><strong>Syntax highlighting</strong></span> is supported <a @click.prevent="toggleHelpCode">[Help]</a>
 				<div v-if="codeExpanded" class="help-explanation">
-					Wrap your code between <tt>[code] [/code]</tt> tags:
+					Wrap your code between <span class="tt">[code] [/code]</span> tags:
 <pre>
 Hello world in C:
 [code]
@@ -285,6 +285,10 @@ int main() {
 	.postError {
 		color: var(--user-error-color);
 		padding: 2px;
+	}
+
+	.tt {
+		font-family: monospace;
 	}
 
 	.help-container {
