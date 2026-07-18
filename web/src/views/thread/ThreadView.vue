@@ -558,7 +558,7 @@
 		:sticky="thread!.sticky"
 		:locked="thread!.locked"
 		:showCenterElements="true"
-		:archive="archiveThread"
+		:archive="thread.archived"
 		@openedReplyBox="openFloatingReplyBox"
 		@updateClicked="reloadThread"
 		@autoTimerToggled="onAutoTimerToggled"
