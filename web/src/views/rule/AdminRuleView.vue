@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { RuleAPI, type RuleDTO, type CreateRuleDTO, RuleBoardDTO } from '@/api/rule.api';
+	import { RuleAPI, type RuleDTO, type CreateRuleDTO, type RuleBoardDTO } from '@/api/rule.api';
 	import { UserAPI, UserRole } from '@/api/user.api';
 	import type { AxiosError } from 'axios';
 	import { onMounted, reactive, ref } from 'vue';
@@ -144,7 +144,7 @@
 
 		<div v-if="rules.length > 0">
 			<div class="center nav">
-				<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" />
+				<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" empty-message="There are no rules defined yet" />
 				<br/>
 			</div>
 
@@ -170,7 +170,7 @@
 			</table>
 
 			<div class="center nav">
-				<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" />
+				<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" empty-message="There are no rules defined yet" />
 			</div>
 		</div>
 		<div v-else class="center">
