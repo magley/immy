@@ -59,11 +59,11 @@
 		<div class="center">No blogposts have been written yet.</div>
 	</template>
 	<template v-else>
-		<div class="center"><PaginatorComponent :paginator="paginator" @goto-page="gotoPage" /></div>
+		<div class="center"><PaginatorComponent :paginator="paginator" @goto-page="gotoPage" empty-message="There are no blogposts" /></div>
 		<div class="blogposts-container">
 			<BlogpostComponent v-for="blogpost of blogposts" :blogpost="blogpost" />
 		</div>
-		<div class="center"><PaginatorComponent :paginator="paginator" @goto-page="gotoPage" class="center" /></div>
+		<div class="center"><PaginatorComponent :paginator="paginator" @goto-page="gotoPage" empty-message="There are no blogposts" /></div>
 	</template>
 </template>
 
