@@ -33,7 +33,7 @@
 	<div v-if="paginator.loading">Loading...</div>
 	<div>
 		<div class="center nav">
-			<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" />
+			<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" empty-message="There are no bans at the moment" />
 			<br/>
 		</div>
 
@@ -67,7 +67,7 @@
 		</table>
 
 		<div class="center nav">
-			<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" />
+			<PaginatorComponent :paginator="paginator" @goto-page="gotoPage" empty-message="There are no bans at the moment" />
 		</div>
 	</div>
 </template>
