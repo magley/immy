@@ -1,27 +1,7 @@
 <script setup lang="ts">
+import { FilterAction, type Filter, FilterTarget, SaveFilters, LoadFilters } from '@/model/filter/filter.model';
 import { onMounted, ref } from 'vue';
 
-
-enum FilterAction {
-    Hide, Highlight
-}
-
-enum FilterTarget {
-    Comment,
-    Filename,
-    MD5,
-    Username,
-    Tripcode,
-    ThreadSubject
-}
-
-interface Filter {
-    text: string;
-    target: FilterTarget;
-    boards: string[];
-    enabled: boolean;
-    action: FilterAction; 
-}
 
 const filters = ref<Filter[]>([]);
 const FILTERS_KEY = "filters";
@@ -31,18 +11,6 @@ const newFilterTarget = ref<FilterTarget>(FilterTarget.Comment);
 const newFilterBoards = ref<string>("");
 const newFilterAction = ref<FilterAction>(FilterAction.Hide);
 
-const loadFilters = () => {
-    const filtersSaved: string | null = localStorage.getItem(FILTERS_KEY);
-    if (filtersSaved == null) {
-        return;
-    }
-    filters.value = JSON.parse(filtersSaved);
-}
-
-const saveFilters = () => {
-    const filtersSaved: string = JSON.stringify(filters.value);
-    localStorage.setItem(FILTERS_KEY, filtersSaved);
-}
 
 const addFilter = () => {
     const newFilter: Filter = {
@@ -53,11 +21,11 @@ const addFilter = () => {
         action: newFilterAction.value
     };
     filters.value.push(newFilter);
-    saveFilters();
+    SaveFilters(filters.value);
 }
 
 onMounted(() => {
-    loadFilters();
+    LoadFilters();
     // newFilterBoards.value = "..."; // TODO: Current board
 });
 
