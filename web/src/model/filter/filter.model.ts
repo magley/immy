@@ -57,7 +57,7 @@ export const IsPostFilteredBy = (board: BoardDTO, thread: ThreadDTO, post: PostD
     if (boardCodeSafe.startsWith("/")) boardCodeSafe = boardCodeSafe.substring(1);
     if (boardCodeSafe.endsWith("/")) boardCodeSafe = boardCodeSafe.substring(0, boardCodeSafe.length - 1);
     
-    if (filter.boards.length == 0 || filter.boards.includes("*") || filter.boards.includes(boardCodeSafe)) {
+    if (filter.boards.length == 0 || (filter.boards.length == 1 && filter.boards[0] == "") || filter.boards.includes("*") || filter.boards.includes(boardCodeSafe)) {
         boardOk = true;
     }
     if (!boardOk) {
