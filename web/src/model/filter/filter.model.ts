@@ -38,3 +38,44 @@ export const SaveFilters = (filters: Filter[]) => {
     localStorage.setItem(FILTERS_KEY, filtersSaved);
 }
 
+/// Returns which filter among the array (`filters`) matches the specified post.
+/// If multiple matches, the first one is returned.
+/// If there are no matches, the function returns `null`.
+export const GetFilterMatchingPost = (board: BoardDTO, thread: ThreadDTO, post: PostDTO, filters: Filter[]): Filter | null => {
+    for (let filter of filters) {
+        if (IsPostFilteredBy(board, thread, post, filter)) {
+            return filter;
+        }
+    }
+    return null;
+}
+
+/// Check if the given filter matches the specified post.
+export const IsPostFilteredBy = (board: BoardDTO, thread: ThreadDTO, post: PostDTO, filter: Filter): boolean => {
+    let boardOk = false;
+    let boardCodeSafe = board.code;
+    if (boardCodeSafe.startsWith("/")) boardCodeSafe = boardCodeSafe.substring(1);
+    if (boardCodeSafe.endsWith("/")) boardCodeSafe = boardCodeSafe.substring(0, boardCodeSafe.length - 1);
+    
+    if (filter.boards.length == 0 || filter.boards.includes("*") || filter.boards.includes(boardCodeSafe)) {
+        boardOk = true;
+    }
+    if (!boardOk) {
+        return false;
+    }
+
+    switch (filter.target) {
+        case FilterTarget.Comment: return isTextMatch(post.content, filter.text);
+        case FilterTarget.Filename: return isTextMatch(post.filename, filter.text);
+        case FilterTarget.MD5: console.warn("Not implemented: Filtering by MD5"); break;
+        case FilterTarget.ThreadSubject: return isTextMatch(thread.subject, filter.text);
+        case FilterTarget.Tripcode: return isTextMatch(post.tripcode, filter.text);
+        case FilterTarget.Username: return isTextMatch(post.name, filter.text);
+    }
+
+    return false;
+}
+
+const isTextMatch = (text: string, pattern: string): boolean => {
+    return text.match(pattern) != null;
+}
