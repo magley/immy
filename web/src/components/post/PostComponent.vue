@@ -11,6 +11,7 @@
 	import type { AxiosError } from 'axios';
 	import { ref, useTemplateRef, type ShallowRef, useId, nextTick } from 'vue';
 	import CreateBanComponent from '../ban/CreateBanComponent.vue';
+import { FilterAction, GetFilterMatchingPost, LoadFilters } from '@/model/filter/filter.model.ts';
 
 	const id = useId();
 	interface PostComponentProps {
@@ -234,6 +235,17 @@
 		if (!popupBan.value.visible) { return; }
 		setTimeout(() => { popupBan.value.visible = false; }, 10);
 	});
+
+	const isPostHidden = (): boolean => {
+		const isFiltered = isPostFiltered();
+		return isFiltered;
+	}
+
+	const isPostFiltered = (): boolean => {
+		const filters = LoadFilters();
+		const filter = GetFilterMatchingPost(props.board, props.thread, props.post, filters);
+		return (filter != null && filter.action == FilterAction.Hide);
+	}
 </script>
 
 <template>
@@ -255,10 +267,11 @@
 			highlightedPost: is_highlighted,
 			opPost: is_op_post,
 			lastSeenPost: is_last_seen,
-			notOP: !is_op_post
+			notOP: !is_op_post,
+			hidden: isPostHidden()
 		}">
 
-		<div class="post-header">
+		<div class="post-header" >
 			<!-- Thread management by staff user -->
 			<div v-if="!peek && userRole != undefined && post.num == post.thread_num && !thread.archived" class="admin-tools">
 				<button v-if="canStickyThread()"  @click="onToggleSticky(thread)">Toggle Sticky <img src="/icons/sticky.png" /></button>
@@ -326,7 +339,7 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 			</span>
 		</div>
 
-		<div class="post-body-container">
+		<div class="post-body-container" v-if="!isPostHidden()">
 			<span v-if="post.filename" class="post-file-container">
 				<div class="post-file-container-header">
 					File: <a :href="CdnAPI.GetPostImageURI(post)" target="_blank">{{ post.src_filename }}</a>
@@ -471,6 +484,10 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 			padding-bottom: 1em;
 			padding-left: 1em;
 			padding-right: 1em;
+
+			&.hidden {
+				padding-bottom: 0.2em;
+			}
 
 			&.opPost {
 				background-color: var(--background-color) !important;
