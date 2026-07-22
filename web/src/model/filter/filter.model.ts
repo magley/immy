@@ -77,5 +77,11 @@ export const IsPostFilteredBy = (board: BoardDTO, thread: ThreadDTO, post: PostD
 }
 
 const isTextMatch = (text: string, pattern: string): boolean => {
-    return text.match(pattern) != null;
+    let isMatch = false;
+    try {
+        isMatch = text.match(pattern) != null;
+    }
+    catch {
+    }
+    return isMatch;
 }
