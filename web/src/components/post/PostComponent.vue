@@ -9,11 +9,12 @@
 	import { GetPublicIdColorBackground, GetPublicIdColorForeground } from '@/util/various.util';
 	import { onClickOutside } from '@vueuse/core';
 	import type { AxiosError } from 'axios';
-	import { ref, useTemplateRef, type ShallowRef, useId, nextTick } from 'vue';
+	import { ref, useTemplateRef, type ShallowRef, useId, nextTick, onMounted } from 'vue';
 	import CreateBanComponent from '../ban/CreateBanComponent.vue';
-import { FilterAction, GetFilterMatchingPost, LoadFilters } from '@/model/filter/filter.model.ts';
+	import { type Filter, FilterAction, GetFilterMatchingPost, LoadFilters } from '@/model/filter/filter.model.ts';
 
 	const id = useId();
+	const filterApplied = ref<Filter | null>(null);
 	interface PostComponentProps {
 		userRole: UserRole | undefined;
 
@@ -155,6 +156,11 @@ import { FilterAction, GetFilterMatchingPost, LoadFilters } from '@/model/filter
 		}
 	}
 
+	onMounted(() => {
+		const filters = LoadFilters();
+		filterApplied.value = GetFilterMatchingPost(props.board, props.thread, props.post, filters);
+	});
+
 	const popupDeleteRef = useTemplateRef("delete-popup");
 	const popupDelete = ref<Popup>(new Popup(popupDeleteRef, `delete-post-btn-${id}`));
 	onClickOutside(popupDeleteRef, event => {
@@ -242,9 +248,7 @@ import { FilterAction, GetFilterMatchingPost, LoadFilters } from '@/model/filter
 	}
 
 	const isPostFiltered = (): boolean => {
-		const filters = LoadFilters();
-		const filter = GetFilterMatchingPost(props.board, props.thread, props.post, filters);
-		return (filter != null && filter.action == FilterAction.Hide);
+		return (filterApplied.value?.action == FilterAction.Hide);
 	}
 </script>
 
