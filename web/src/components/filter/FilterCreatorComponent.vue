@@ -7,6 +7,7 @@ const filters = ref<Filter[]>([]);
 const FILTERS_KEY = "filters";
 
 const newFilterText = ref<string>("");
+const newFilterIsRegex = ref<boolean>(false);
 const newFilterTarget = ref<FilterTarget>(FilterTarget.Comment);
 const newFilterBoards = ref<string>("");
 const newFilterAction = ref<FilterAction>(FilterAction.Hide);
@@ -25,7 +26,7 @@ const addFilter = () => {
 }
 
 onMounted(() => {
-    LoadFilters();
+    filters.value = LoadFilters();
     // newFilterBoards.value = "..."; // TODO: Current board
 });
 
@@ -46,7 +47,7 @@ onMounted(() => {
             <form>
                 <label for="new-filter-text">Text:</label>
                 <input id="new-filter-text" type="text" placeholder="Enter text" v-model="newFilterText" />
-
+                
                 <label for="new-filter-targets">Target:</label>
                 <select id="new-filter-targets" v-model="newFilterTarget">
                     <option :value="FilterTarget.Comment">Post Comment</option>
