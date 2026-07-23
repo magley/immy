@@ -22,7 +22,7 @@ const addFilter = () => {
         action: newFilterAction.value
     };
     filters.value.push(newFilter);
-    SaveFilters(filters.value);
+    saveFilters();
 }
 
 onMounted(() => {
@@ -30,13 +30,25 @@ onMounted(() => {
     // newFilterBoards.value = "..."; // TODO: Current board
 });
 
+const removeFilter = (index: number) => {
+    filters.value.splice(index, 1);
+    saveFilters();
+}
+
+const saveFilters = () => {
+    SaveFilters(filters.value);
+}
+
 </script>
 
 <template>
     <div>
         <!-- Filter list -->
-        <div v-for="filter in filters">
-            {{filter.text}} {{filter.target}} {{filter.boards}} {{filter.enabled}} {{filter.action}} 
+        <div v-for="filter, index of filters">
+            {{filter.text}} {{filter.target}} {{filter.boards}} {{filter.action}} 
+            <label :for="`filter-${index}-enabled`">Enabled:</label>
+            <input :id="`filter-${index}-enabled`" v-model="filter.enabled" type="checkbox" @change="saveFilters" />
+            <button @click="removeFilter(index)">Delete</button>
         </div>
         <div v-if="filters.length == 0">
             No filters defined
