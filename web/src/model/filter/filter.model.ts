@@ -21,6 +21,7 @@ export interface Filter {
     boards: string[];
     enabled: boolean;
     action: FilterAction; 
+    colorHex: string;
 }
 
 const FILTERS_KEY = "filters";

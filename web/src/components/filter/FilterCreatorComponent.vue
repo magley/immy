@@ -10,6 +10,7 @@ const FILTERS_KEY = "filters";
 const newFilterText = ref<string>("");
 const newFilterIsRegex = ref<boolean>(false);
 const newFilterTarget = ref<FilterTarget>(FilterTarget.Comment);
+const newFilterColorHex = ref<string>("#FF0000");
 const newFilterBoards = ref<string>("");
 const newFilterAction = ref<FilterAction>(FilterAction.Hide);
 
@@ -18,6 +19,7 @@ const addFilter = () => {
     const newFilter: Filter = {
         text: newFilterText.value,
         target: newFilterTarget.value,
+        colorHex: newFilterColorHex.value,
         boards: newFilterBoards.value.split(","),
         enabled: true,
         action: newFilterAction.value
@@ -47,7 +49,12 @@ const saveFilters = () => {
     <div>
         <!-- Filter list -->
         <div v-for="filter, index of filters">
-            {{filter.text}} {{filter.target}} {{filter.boards}} {{filter.action}} 
+            {{filter.text}} {{filter.target}} {{filter.boards}} {{filter.action}}
+
+            <label :for="`filter-${index}-color`">Color:</label>
+            <input :id="`filter-${index}-color`" v-model="filter.colorHex" type="color" />
+            <input :id="`filter-${index}-color-text`" v-model="filter.colorHex" type="text" />
+
             <label :for="`filter-${index}-enabled`">Enabled:</label>
             <input :id="`filter-${index}-enabled`" v-model="filter.enabled" type="checkbox" @change="saveFilters" />
             <button @click="removeFilter(index)">Delete</button>
@@ -80,6 +87,10 @@ const saveFilters = () => {
                     <option :value="FilterAction.Hide">Hide</option>
                     <option :value="FilterAction.Highlight">Highlight</option>
                 </select>
+
+                <label for="new-filter-color">Color:</label>
+                <input id="new-filter-color" v-model="newFilterColorHex" type="color" />
+                <input id="new-filter-color-text" v-model="newFilterColorHex" type="text" />
 
                 <button type="submit" @click.prevent="addFilter">Add</button>
             </form>
