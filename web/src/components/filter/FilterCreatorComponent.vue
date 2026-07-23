@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { FilterAction, type Filter, FilterTarget, SaveFilters, LoadFilters } from '@/model/filter/filter.model';
+import { AppEvents, EventBus } from '@/util/eventBus.util';
 import { onMounted, ref } from 'vue';
 
 
@@ -37,6 +38,7 @@ const removeFilter = (index: number) => {
 
 const saveFilters = () => {
     SaveFilters(filters.value);
+    EventBus.emit(AppEvents.FiltersRefreshed)
 }
 
 </script>

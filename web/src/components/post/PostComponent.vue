@@ -12,6 +12,7 @@
 	import { ref, useTemplateRef, type ShallowRef, useId, nextTick, onMounted } from 'vue';
 	import CreateBanComponent from '../ban/CreateBanComponent.vue';
 	import { type Filter, FilterAction, GetFilterMatchingPost, LoadFilters } from '@/model/filter/filter.model.ts';
+import { AppEvents, EventBus } from '@/util/eventBus.util.ts';
 
 	const id = useId();
 	const filterApplied = ref<Filter | null>(null);
@@ -157,8 +158,9 @@
 	}
 
 	onMounted(() => {
-		const filters = LoadFilters();
-		filterApplied.value = GetFilterMatchingPost(props.board, props.thread, props.post, filters);
+		refreshFilter();
+
+		EventBus.on(AppEvents.FiltersRefreshed, refreshFilter);
 	});
 
 	const popupDeleteRef = useTemplateRef("delete-popup");
@@ -249,6 +251,11 @@
 
 	const isPostFiltered = (): boolean => {
 		return (filterApplied.value?.action == FilterAction.Hide);
+	}
+	
+	const refreshFilter = () => {
+		const filters = LoadFilters();
+		filterApplied.value = GetFilterMatchingPost(props.board, props.thread, props.post, filters);
 	}
 </script>
 
