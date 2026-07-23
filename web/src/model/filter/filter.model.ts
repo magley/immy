@@ -43,6 +43,7 @@ export const SaveFilters = (filters: Filter[]) => {
 /// If there are no matches, the function returns `null`.
 export const GetFilterMatchingPost = (board: BoardDTO, thread: ThreadDTO, post: PostDTO, filters: Filter[]): Filter | null => {
     for (let filter of filters) {
+        if (!filter.enabled) continue;
         if (IsPostFilteredBy(board, thread, post, filter)) {
             return filter;
         }
@@ -52,6 +53,7 @@ export const GetFilterMatchingPost = (board: BoardDTO, thread: ThreadDTO, post: 
 
 /// Check if the given filter matches the specified post.
 export const IsPostFilteredBy = (board: BoardDTO, thread: ThreadDTO, post: PostDTO, filter: Filter): boolean => {
+    if (!filter.enabled) return false;
     let boardOk = false;
     let boardCodeSafe = board.code;
     if (boardCodeSafe.startsWith("/")) boardCodeSafe = boardCodeSafe.substring(1);
