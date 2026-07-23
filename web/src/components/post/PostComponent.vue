@@ -236,13 +236,14 @@ import { AppEvents, EventBus } from '@/util/eventBus.util.ts';
 		})
 	}
 
-
 	const popupBanRef = useTemplateRef("ban-popup");
 	const popupBan = ref<Popup>(new Popup(popupBanRef, `ban-post-btn-${id}`));
 	onClickOutside(popupBanRef, event => {
 		if (!popupBan.value.visible) { return; }
 		setTimeout(() => { popupBan.value.visible = false; }, 10);
 	});
+
+	// ----- Filters
 
 	const isPostHidden = (): boolean => {
 		const isFiltered = isPostFiltered();
@@ -256,6 +257,10 @@ import { AppEvents, EventBus } from '@/util/eventBus.util.ts';
 	const refreshFilter = () => {
 		const filters = LoadFilters();
 		filterApplied.value = GetFilterMatchingPost(props.board, props.thread, props.post, filters);
+	}
+
+	const isPostFilterHighlighted = (): boolean => {
+		return (filterApplied.value?.action == FilterAction.Highlight);
 	}
 </script>
 
@@ -279,8 +284,8 @@ import { AppEvents, EventBus } from '@/util/eventBus.util.ts';
 			opPost: is_op_post,
 			lastSeenPost: is_last_seen,
 			notOP: !is_op_post,
-			hidden: isPostHidden()
-		}">
+			hidden: isPostHidden(),
+		}" :style="isPostFilterHighlighted() ? `border: 3px solid ${filterApplied?.colorHex};` : ``">
 
 		<div class="post-header" >
 			<!-- Thread management by staff user -->
