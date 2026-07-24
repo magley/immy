@@ -284,7 +284,7 @@ import { AppEvents, EventBus } from '@/util/eventBus.util.ts';
 			opPost: is_op_post,
 			lastSeenPost: is_last_seen,
 			notOP: !is_op_post,
-			hidden: isPostHidden(),
+			hidden: isPostHidden() && !peek,
 		}" :style="isPostFilterHighlighted() ? `border: 3px solid ${filterApplied?.colorHex};` : ``">
 
 		<div class="post-header" >
@@ -355,7 +355,7 @@ A value of 0 (default) disables auto-cycle.">Auto-cycle</abbr>:</label>
 			</span>
 		</div>
 
-		<div class="post-body-container" v-if="!isPostHidden()">
+		<div class="post-body-container" v-if="!(isPostHidden() && !peek)">
 			<span v-if="post.filename" class="post-file-container">
 				<div class="post-file-container-header">
 					File: <a :href="CdnAPI.GetPostImageURI(post)" target="_blank">{{ post.src_filename }}</a>
