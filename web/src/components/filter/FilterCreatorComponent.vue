@@ -162,11 +162,7 @@ const toggleVisibility = () => {
 </template>
 
 <style scoped>
-    .filters-visibility-toggle {
-        text-align: center;
-    }
-
-    .filters-root-container {
+    .filters-container {
         width: 80%;
         margin: auto;
     }

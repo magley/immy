@@ -4,6 +4,7 @@
 	import BoardListNav from './components/board/BoardListNav.vue';
 	import { IsJwtExpired, RemoveLoginCredentials } from './util/various.util';
 	import { useRoute, useRouter } from 'vue-router';
+	import FilterCreatorComponent from './components/filter/FilterCreatorComponent.vue';
 
 	const userRole = ref<string | undefined>(undefined);
 	const userName = ref<string | undefined>(undefined);
@@ -103,6 +104,12 @@
 	</nav>
 	<nav>
 		<BoardListNav :isCatalog=false />
+
+		<!-- Filtering -->
+		<div>
+			<FilterCreatorComponent />
+		</div>
+
 		<hr />
 	</nav>
 

@@ -21,7 +21,6 @@
 	import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
 	import GalleryMode from '@/components/thread/GalleryMode.vue';
 	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
-import FilterCreatorComponent from '@/components/filter/FilterCreatorComponent.vue';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -479,11 +478,6 @@ import FilterCreatorComponent from '@/components/filter/FilterCreatorComponent.v
 				<br/>
 				You my not reply at this time.
 			</p>
-		</div>
-
-		<!-- Filtering -->
-		<div>
-			<FilterCreatorComponent />
 		</div>
 
 		<BlogpostQuickList />
