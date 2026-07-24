@@ -52,8 +52,8 @@ const saveFilters = () => {
             {{filter.text}} {{filter.target}} {{filter.boards}} {{filter.action}}
 
             <label :for="`filter-${index}-color`">Color:</label>
-            <input :id="`filter-${index}-color`" v-model="filter.colorHex" type="color" />
-            <input :id="`filter-${index}-color-text`" v-model="filter.colorHex" type="text" />
+            <input :id="`filter-${index}-color`" v-model="filter.colorHex" @change="saveFilters" type="color" />
+            <input :id="`filter-${index}-color-text`" v-model="filter.colorHex" @change="saveFilters" type="text" />
 
             <label :for="`filter-${index}-enabled`">Enabled:</label>
             <input :id="`filter-${index}-enabled`" v-model="filter.enabled" type="checkbox" @change="saveFilters" />
