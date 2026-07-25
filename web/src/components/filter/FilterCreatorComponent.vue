@@ -52,10 +52,12 @@ const toggleVisibility = () => {
 
     <div class="filters-root-container">
         <div class="filters-visibility-toggle">
-            [<RouterLink to="#" @click="toggleVisibility">
-                <span v-if="isVisible">Hide</span>
-                <span v-else>Show</span>
-                Filters</RouterLink>]
+            [
+            <RouterLink to="#" @click="toggleVisibility">Filters
+                <span v-if="isVisible"> 🞁</span>
+                <span v-else> 🞃</span>
+            </RouterLink>
+            ]
         </div>
         <div class="filters-container" v-if="isVisible">
             <div class="filter-list">
