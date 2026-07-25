@@ -20,7 +20,7 @@ const addFilter = () => {
         text: newFilterText.value,
         target: newFilterTarget.value,
         colorHex: newFilterColorHex.value,
-        boards: newFilterBoards.value.split(","),
+        boards: newFilterBoards.value,
         enabled: true,
         action: newFilterAction.value
     };

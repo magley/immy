@@ -18,7 +18,7 @@ export enum FilterTarget {
 export interface Filter {
     text: string;
     target: FilterTarget;
-    boards: string[];
+    boards: string;
     enabled: boolean;
     action: FilterAction; 
     colorHex: string;
@@ -32,7 +32,7 @@ export const LoadFilters = (): [Filter[], boolean] => {
     if (filtersSaved == null) {
         return [[], false];
     }
-    const filters = JSON.parse(filtersSaved);
+    const filters: Filter[] = JSON.parse(filtersSaved);
     const enabled = localStorage.getItem(FILTERS_ENABLED_KEY) === "true";
     return [filters, enabled];
 }
@@ -60,11 +60,8 @@ export const GetFilterMatchingPost = (board: BoardDTO, thread: ThreadDTO, post: 
 export const IsPostFilteredBy = (board: BoardDTO, thread: ThreadDTO, post: PostDTO, filter: Filter): boolean => {
     if (!filter.enabled) return false;
     let boardOk = false;
-    let boardCodeSafe = board.code;
-    if (boardCodeSafe.startsWith("/")) boardCodeSafe = boardCodeSafe.substring(1);
-    if (boardCodeSafe.endsWith("/")) boardCodeSafe = boardCodeSafe.substring(0, boardCodeSafe.length - 1);
-    
-    if (filter.boards.length == 0 || (filter.boards.length == 1 && filter.boards[0] == "") || filter.boards.includes("*") || filter.boards.includes(boardCodeSafe)) {
+
+    if (filter.boards.length == 0 || (filter.boards.length == 1 && filter.boards[0] == "") || filter.boards.includes("*") || isBoardMatch(board.code, filter.boards.split(","))) {
         boardOk = true;
     }
     if (!boardOk) {
@@ -82,6 +79,22 @@ export const IsPostFilteredBy = (board: BoardDTO, thread: ThreadDTO, post: PostD
 
     return false;
 }
+
+const isBoardMatch = (boardCode: string, filterBoards: string[]): boolean => {
+    const boardCodeSafe = getBoardCodeSafe(boardCode);
+    for (let b of filterBoards) {
+        if (boardCodeSafe == getBoardCodeSafe(b)) return true;
+    }
+    return false;
+}
+
+const getBoardCodeSafe = (code: string): string => {
+    let boardCodeSafe = code;
+    if (boardCodeSafe.startsWith("/")) boardCodeSafe = boardCodeSafe.substring(1);
+    if (boardCodeSafe.endsWith("/")) boardCodeSafe = boardCodeSafe.substring(0, boardCodeSafe.length - 1);
+    boardCodeSafe = boardCodeSafe.toLowerCase();
+    return boardCodeSafe;
+} 
 
 const isTextMatch = (text: string, pattern: string): boolean => {
     let isMatch = false;
