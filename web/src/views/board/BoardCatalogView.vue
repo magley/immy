@@ -2,19 +2,18 @@
 	import { ref, onMounted, useTemplateRef, nextTick } from 'vue';
 	import { useRoute, useRouter } from "vue-router";
 	import { BoardAPI, type BoardDTO } from "@/api/board.api.ts";
-	import { ThreadAPI, type ThreadFullDTO, type ThreadForCatalogDTO, type ThreadDTO } from '@/api/thread.api';
+	import { ThreadAPI, type ThreadForCatalogDTO } from '@/api/thread.api';
 	import type { AxiosError, AxiosResponse } from 'axios';
 	import type { ApiResponse } from '@/api/http';
-	import { CdnAPI } from '@/api/cdn.api';
 	import BoardViewNavList from '@/components/thread/BoardViewNavList.vue';
 	import { SortThreadsForCatalog, ThreadSortModeInCatalog, ThreadToCanonicalForm, ThreadFromCanonicalForm } from '@/model/thread/thread.model';
-	import BoardListNav from '@/components/board/BoardListNav.vue';
 	import { GetTabTitleForBoard } from '@/util/tab.util';
 	import CreatePostForm from '@/components/post/CreatePostForm.vue';
 	import { onClickOutside } from '@vueuse/core'
 	import BoardBanner from '@/components/board/BoardBanner.vue';
 	import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
 	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
+	import CatalogThreadComponent from '@/components/thread/CatalogThreadComponent.vue';
 
 	const board = ref<BoardDTO | undefined>(undefined);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
@@ -36,7 +35,7 @@
 			board.value = res.data.data!;
 			document.title = GetTabTitleForBoard(board.value, true);
 			loadThreads();
-		}).catch((err: AxiosError) => {
+		}).catch(() => {
 			router.push("/");
 		});
 	}
@@ -65,34 +64,19 @@
 		showComment.value = show;
 	}
 
-	const getDynamicImageStyle = (thread: ThreadForCatalogDTO): any => {
-		if (thread.post.img_height > thread.post.img_width) {
-			return { height: (140 * imageSize.value / 100) + 'px', };
-		} else {
-			return { width: (160 * imageSize.value / 100) + 'px', };
-		}
-	}
-
-	const onClickThreadImage = (e: MouseEvent, thread: ThreadForCatalogDTO) => {
-		if (e.shiftKey) {
-			toggleHiddenThread(thread);
-		}
-		else if (e.altKey) {
-			togglePin(thread);
-		}
-		else {
-			if (board.value) {
-				const destination = `/${board.value.code}/thread/${thread.thread.post_num}`;
-				router.push(destination);
-			}
-		}
-	}
-
 	// ----------------------------------------------------------------------------------------
 	// Pinned threads
 	// ----------------------------------------------------------------------------------------
 
 	const pinnedThreadIDs = ref<string[]>([]);
+
+	const setPinnedThread = (thread: ThreadForCatalogDTO, yes: boolean) => {
+		if (yes) {
+			pinThread(thread.post.num);
+		} else {
+			unpinThread(thread.post.num);
+		}
+	}
 
 	const pinThread = (thread_num: number) => {
 		if (board.value) {
@@ -159,6 +143,14 @@
 	// Canonical form for each thread
 	const hiddenThreads = ref<string[]>([]);
 	const isShowingHiddenOnly = ref<boolean>(false);
+
+	const setHiddenThread = (thread: ThreadForCatalogDTO, yes: boolean) => {
+		if (yes) {
+			hideThread(thread);
+		} else {
+			unhideThread(thread);
+		}
+	}
 
 	const hideThread = (thread: ThreadForCatalogDTO) => {
 		if (board.value) {
@@ -257,7 +249,7 @@
 		modalMenuThread.value = undefined;
 	}
 
-	onClickOutside(modalMenu, event => {
+	onClickOutside(modalMenu, () => {
 		// Delay because it conflicts with onClickMenuArrow.
 		setTimeout(() => closeModalMenu(), 0.1);
 	});
@@ -331,63 +323,20 @@
 		<hr />
 		<div class="catalog-grid" :style="{ gridTemplateColumns: `repeat(auto-fit, minmax(${160 * imageSize / 100}px, 1fr))`}">
 			<template v-for="thread in threads" >
-				<span v-if='isShowingHiddenOnly == isHidden(thread)' class="catalog-post">
-					<div class="image-container">
-						<a href="#" @click.prevent="(e) => onClickThreadImage(e, thread)">
-							<img v-if="!thread.post.filename && thread.post.md5"
-								:class="{pinned: isPinned(thread)}"
-								:src="CdnAPI.GetPublicURI('file_deleted.png')"
-							>
-							<!-- Spoiler -->
-							<img v-else-if="board.config.allow_spoilers && thread.post.spoiler"
-								:class="{pinned: isPinned(thread)}"
-								class="spoiler"
-								:style="getDynamicImageStyle(thread)"
-								:src="CdnAPI.GetSpoilerURI(board.config.spoiler_image)"
-							>
-							<!-- Regular thumbnail -->
-							<img v-else
-								:class="{pinned: isPinned(thread)}"
-								:style="getDynamicImageStyle(thread)"
-								:src="CdnAPI.GetPostImageThumbnailURI(thread.post)"
-							>
-						</a>
-						<div class="inside-image">
-							<img src="/icons/sticky.png" v-if="thread.thread.sticky" title="Sticky"/>
-							<img src="/icons/lock.png" v-if="thread.thread.locked" title="Locked"/>
-							<a v-if="isPinned(thread)" href="#" @click.prevent="unpinThread(thread.thread.post_num)">
-								<img src="/icons/pin.png" title="Pinned - click to unpin" />
-							</a>
-							<a v-if="isHidden(thread)" href="#" @click.prevent="unhideThread(thread)">
-								<img src="/icons/visible.png" title="Hidden - click to unhide" />
-							</a>
-						</div>
-					</div>
-
-					<br />
-
-					<span class="stats">
-						<abbr title="Number of replies">R</abbr>: <strong>{{ thread.stats.post_count }}</strong>
-						/
-						<abbr title="Number of images">I</abbr>: <strong>{{ thread.stats.image_count }}</strong>
-						/
-						<abbr title="Number of users">U</abbr>: <strong>{{ thread.stats.user_count }}</strong>
-						/
-						<a href="#" class="no-underline" :id="`thread-arrow-${thread.thread.post_num}`" @click.prevent="onClickMenuArrow(thread)">▶</a>
-					</span>
-					<br />
-
-					<span class="body" v-if="showComment">
-						<template v-if="thread.thread.subject"><span class="subject">{{thread.thread.subject}}</span>: </template>
-						<span v-if="thread.post" class="content">
-							{{ thread.post.content }}
-							<span v-if="thread.post.html">
-								<br/>
-								<span v-html="thread.post.html"></span>
-							</span>
-						</span>
-					</span>
-				</span>
+				<CatalogThreadComponent
+					:board="board"
+					:thread="thread"
+					:image-size="imageSize"
+					:show-comment="showComment"
+					:is-showing-hidden-only="isShowingHiddenOnly"
+					:hidden-threads="hiddenThreads"
+					:pinned-thread-i-ds="pinnedThreadIDs"
+					@on-click-menu-arrow="onClickMenuArrow"
+					@set-hidden="(t, y) => setHiddenThread(t, y)"
+					@toggle-hidden="(t) => toggleHiddenThread(t)"
+					@set-pinned="(t, y) => setPinnedThread(t, y)"
+					@toggle-pinned="(t) => togglePin(t)"
+				/>
 			</template>
 		</div>
 
@@ -447,67 +396,5 @@
 		margin-left: 5em;
 		margin-right: 5em;
 		/*background-color: lightblue;*/
-
-
-		.catalog-post {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			overflow: hidden;
-			/*background-color: white;
-			border: 1px solid black;*/
-			padding: 5px;
-
-
-			.image-container {
-				position: relative;
-
-				img {
-				/*	max-width: 160px;      <---  Programatically computed
-					max-height: 140px;     <---  Programatically computed */
-					object-fit: contain;
-					box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-
-					&.pinned {
-						border: 4px dashed var(--background-color-accent);
-					}
-
-					&.pinned:hover {
-						border: 4px dashed var(--banner-title-color);
-					}
-
-					&.spoiler {
-						width: 160px !important;
-						height: 160px !important;
-					}
-				}
-
-				.inside-image {
-					position: absolute;
-					top: 0px;
-					left: 0px;
-					z-index: 1000;
-				}
-			}
-
-			.stats {
-				cursor: help;
-				text-align: center;
-				align-self: center;
-				font-size: small;
-			}
-
-			.body {
-				text-align: center;
-
-				.subject {
-					font-weight: bold;
-				}
-
-				.content {
-				}
-			}
-		}
 	}
 </style>
