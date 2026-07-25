@@ -25,18 +25,22 @@ export interface Filter {
 }
 
 const FILTERS_KEY = "filters";
+const FILTERS_ENABLED_KEY = "filters_enabled";
 
-export const LoadFilters = (): Filter[] => {
+export const LoadFilters = (): [Filter[], boolean] => {
     const filtersSaved: string | null = localStorage.getItem(FILTERS_KEY);
     if (filtersSaved == null) {
-        return [];
+        return [[], false];
     }
-    return JSON.parse(filtersSaved);
+    const filters = JSON.parse(filtersSaved);
+    const enabled = localStorage.getItem(FILTERS_ENABLED_KEY) === "true";
+    return [filters, enabled];
 }
 
-export const SaveFilters = (filters: Filter[]) => {
+export const SaveFilters = (filters: Filter[], enabled: boolean) => {
     const filtersSaved: string = JSON.stringify(filters);
     localStorage.setItem(FILTERS_KEY, filtersSaved);
+    localStorage.setItem(FILTERS_ENABLED_KEY, String(enabled));
 }
 
 /// Returns which filter among the array (`filters`) matches the specified post.

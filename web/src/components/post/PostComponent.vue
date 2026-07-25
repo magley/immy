@@ -255,8 +255,9 @@ import { AppEvents, EventBus } from '@/util/eventBus.util.ts';
 	}
 	
 	const refreshFilter = () => {
-		const filters = LoadFilters();
-		filterApplied.value = GetFilterMatchingPost(props.board, props.thread, props.post, filters);
+		const [filters, enabled] = LoadFilters();
+		const filtersToCheck = enabled ? filters : [];
+		filterApplied.value = GetFilterMatchingPost(props.board, props.thread, props.post, filtersToCheck);
 	}
 
 	const isPostFilterHighlighted = (): boolean => {

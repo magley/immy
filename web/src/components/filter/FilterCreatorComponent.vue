@@ -7,6 +7,7 @@ import { RouterLink } from 'vue-router';
 const isVisible = ref<boolean>(false);
 
 const filters = ref<Filter[]>([]);
+const filtersEnabled = ref<boolean>(true);
 
 const newFilterText = ref<string>("");
 const newFilterTarget = ref<FilterTarget>(FilterTarget.Comment);
@@ -28,7 +29,7 @@ const addFilter = () => {
 }
 
 onMounted(() => {
-    filters.value = LoadFilters();
+    [filters.value, filtersEnabled.value] = LoadFilters();
     // newFilterBoards.value = "..."; // TODO: Current board
 });
 
@@ -38,7 +39,7 @@ const removeFilter = (index: number) => {
 }
 
 const saveFilters = () => {
-    SaveFilters(filters.value);
+    SaveFilters(filters.value, filtersEnabled.value);
     EventBus.emit(AppEvents.FiltersRefreshed)
 }
 
@@ -60,6 +61,12 @@ const toggleVisibility = () => {
             ]
         </div>
         <div class="filters-container" v-if="isVisible">
+            <div class="">
+                <span class="field">
+                    <label :for="`filters-enabled`">Filters Enabled:</label>
+                    <input :id="`filters-enabled`" v-model="filtersEnabled" type="checkbox" @change="saveFilters" />         
+                </span>
+            </div>
             <div class="filter-list">
                 <!-- Filter list -->
                 <div v-for="filter, index of filters" class="filter-definition">
