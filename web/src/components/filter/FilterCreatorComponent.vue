@@ -88,7 +88,11 @@ const toggleVisibility = () => {
                     </span>
 
                     <span class="field">
-                        <label :for="`filter-${index}-boards`">Boards:</label>
+                        <label :for="`filter-${index}-boards`">
+                            <abbr title='Comma separated board codes (e.g. "b, /g/, /w/ ") allowed. If no board is specified, or "*" is in the list, then the filter is global. '>
+                                Board(s):
+                            </abbr>
+                        </label>
                         <input :id="`filter-${index}-boards`" v-model="filter.boards" @change="saveFilters" type="text" />          
                     </span>
 
@@ -143,7 +147,11 @@ const toggleVisibility = () => {
                     </span>
 
                     <span class="field">
-                        <label for="new-filter-boards">Board(s):</label>
+                        <label for="new-filter-boards">
+                            <abbr title='Comma separated board codes (e.g. "b, /g/, /w/ ") allowed. If no board is specified, or "*" is in the list, then the filter is global. '>
+                                Board(s):
+                            </abbr>
+                        </label>
                         <input id="new-filter-boards" type="text" placeholder="Comma separated boards. Wildcard (*) supported" v-model="newFilterBoards" />
                     </span>
 
