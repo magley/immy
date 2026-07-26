@@ -14,6 +14,8 @@
 	import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
 	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
 	import CatalogThreadComponent from '@/components/thread/CatalogThreadComponent.vue';
+import { FilterAction, GetFilterMatchingCatalogThread, LoadFilters } from '@/model/filter/filter.model';
+import { EventBus, AppEvents } from '@/util/eventBus.util';
 
 	const board = ref<BoardDTO | undefined>(undefined);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
@@ -28,6 +30,12 @@
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
 		loadBoard(board_code);
+	});
+
+	onMounted(() => {
+		refreshFilter();
+
+		EventBus.on(AppEvents.FiltersRefreshed, refreshFilter);
 	});
 	
 	const loadBoard = (boardCode: string) => {
@@ -253,6 +261,29 @@
 		// Delay because it conflicts with onClickMenuArrow.
 		setTimeout(() => closeModalMenu(), 0.1);
 	});
+
+	// ----------------------------------------------------------------------------------------
+	// Filters
+	//
+	// the bulk of the work is in CatalogThreadComponent, but we need to also figure out how
+	// many threads have been filtered, and that's done here.
+	// ----------------------------------------------------------------------------------------
+
+	const filterHiddenThreadsCount = ref<number>(0);
+
+	const refreshFilter = () => {
+		const [filters, enabled] = LoadFilters();
+		const filtersToCheck = enabled ? filters : [];
+
+		let cnt = 0;
+		for (let t of threads.value) {
+			if (GetFilterMatchingCatalogThread(board.value!, t, filtersToCheck)?.action == FilterAction.Hide) {
+				cnt++;
+			}
+		}
+
+		filterHiddenThreadsCount.value = cnt;
+	}
 </script>
 
 <template>
@@ -314,6 +345,7 @@
 		:show-comment="showComment"
 		:hidden-threads="hiddenThreads"
 		:showing-hidden="isShowingHiddenOnly"
+		:filtered-threads="filterHiddenThreadsCount"
 		@sort-changed="onSortChanged"
 		@image-size-changed="onImageSizeChanged"
 		@show-comment-changed="onShowCommentChanged"
@@ -350,6 +382,7 @@
 		:show-comment="showComment"
 		:hidden-threads="hiddenThreads"
 		:showing-hidden="isShowingHiddenOnly"
+		:filtered-threads="filterHiddenThreadsCount"
 		@sort-changed="onSortChanged"
 		@image-size-changed="onImageSizeChanged"
 		@show-comment-changed="onShowCommentChanged"

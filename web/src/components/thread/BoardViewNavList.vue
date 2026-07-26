@@ -12,6 +12,7 @@
 
 		hiddenThreads: string[];
 		showingHidden: boolean;
+		filteredThreads: number; // Only hidden ones.
 	}
 
 	const props = defineProps<BoardNavProps>();
@@ -41,6 +42,9 @@
 		</template>
 		[<RouterLink class="link" :to="`/${props.board_code}/catalog`">Refresh</RouterLink>]
 
+		<template v-if="filteredThreads > 0">
+			- Filtered threads: <b>{{filteredThreads}}</b>
+		</template>
 		<template v-if="hiddenThreads && hiddenThreads.length > 0">
 			- Hidden threads: <b>{{hiddenThreads.length}}</b>
 			[<a href="#" @click.prevent="onToggleHiddenThreads"><template v-if="showingHidden">Back</template><template v-else>Show</template></a>]

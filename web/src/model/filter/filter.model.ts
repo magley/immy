@@ -1,6 +1,6 @@
 import type { BoardDTO } from "@/api/board.api";
 import type { PostDTO } from "@/api/post.api";
-import type { ThreadDTO } from "@/api/thread.api";
+import type { ThreadDTO, ThreadForCatalogDTO } from "@/api/thread.api";
 
 export enum FilterAction {
     Hide, Highlight
@@ -104,4 +104,9 @@ const isTextMatch = (text: string, pattern: string): boolean => {
     catch {
     }
     return isMatch;
+}
+
+/// Utility function for ThreadForCatalogDTO
+export const GetFilterMatchingCatalogThread = (board: BoardDTO, thread: ThreadForCatalogDTO, filters: Filter[]): Filter | null => {
+    return GetFilterMatchingPost(board, thread.thread, thread.post, filters);
 }

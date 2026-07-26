@@ -2,7 +2,7 @@
 import type { BoardDTO } from '@/api/board.api';
 import { CdnAPI } from '@/api/cdn.api';
 import type { ThreadForCatalogDTO } from '@/api/thread.api';
-import { type Filter, FilterAction, LoadFilters, GetFilterMatchingPost } from '@/model/filter/filter.model';
+import { type Filter, FilterAction, LoadFilters, GetFilterMatchingPost, GetFilterMatchingCatalogThread } from '@/model/filter/filter.model';
 import { ThreadToCanonicalForm } from '@/model/thread/thread.model';
 import { EventBus, AppEvents } from '@/util/eventBus.util';
 import { onMounted, ref } from 'vue';
@@ -103,7 +103,7 @@ const isThreadFiltered = (): boolean => {
 const refreshFilter = () => {
     const [filters, enabled] = LoadFilters();
     const filtersToCheck = enabled ? filters : [];
-    filterApplied.value = GetFilterMatchingPost(props.board, props.thread.thread, props.thread.post, filtersToCheck);
+    filterApplied.value = GetFilterMatchingCatalogThread(props.board, props.thread, filtersToCheck);
 }
 
 const isThreadFilterHighlighted = (): boolean => {
