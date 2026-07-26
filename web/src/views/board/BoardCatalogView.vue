@@ -30,14 +30,9 @@ import { EventBus, AppEvents } from '@/util/eventBus.util';
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
 		loadBoard(board_code);
-	});
-
-	onMounted(() => {
-		refreshFilter();
-
 		EventBus.on(AppEvents.FiltersRefreshed, refreshFilter);
 	});
-	
+
 	const loadBoard = (boardCode: string) => {
 		BoardAPI.GetBoard(boardCode).then((res: AxiosResponse<ApiResponse<BoardDTO>>) => {
 			board.value = res.data.data!;
@@ -54,6 +49,7 @@ import { EventBus, AppEvents } from '@/util/eventBus.util';
 			loadPinnedThreads();
 			loadHiddenThreads();
 			onSortChanged(sortBy.value);
+			refreshFilter();
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});
