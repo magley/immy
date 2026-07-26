@@ -86,7 +86,6 @@ const onClickMenuArrow = () => {
 </script>
 
 <template>
-<span class="catalog-thread-container">
     <span v-if='isShowingHiddenOnly == isHidden()' class="catalog-post">
         <div class="image-container">
             <a href="#" @click.prevent="onClickThreadImage">
@@ -144,7 +143,6 @@ const onClickMenuArrow = () => {
             </span>
         </span>
     </span>
-</span>
 </template>
 
 <style scoped lang="css">
