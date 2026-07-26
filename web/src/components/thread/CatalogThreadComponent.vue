@@ -2,7 +2,10 @@
 import type { BoardDTO } from '@/api/board.api';
 import { CdnAPI } from '@/api/cdn.api';
 import type { ThreadForCatalogDTO } from '@/api/thread.api';
+import { type Filter, FilterAction, LoadFilters, GetFilterMatchingPost } from '@/model/filter/filter.model';
 import { ThreadToCanonicalForm } from '@/model/thread/thread.model';
+import { EventBus, AppEvents } from '@/util/eventBus.util';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 
@@ -83,11 +86,35 @@ const onClickMenuArrow = () => {
     emits("onClickMenuArrow", props.thread);
 }
 
+// ----- Filters
+
+onMounted(() => {
+    refreshFilter();
+
+    EventBus.on(AppEvents.FiltersRefreshed, refreshFilter);
+});
+
+const filterApplied = ref<Filter | null>(null);
+
+const isThreadFiltered = (): boolean => {
+    return (filterApplied.value?.action == FilterAction.Hide);
+}
+
+const refreshFilter = () => {
+    const [filters, enabled] = LoadFilters();
+    const filtersToCheck = enabled ? filters : [];
+    filterApplied.value = GetFilterMatchingPost(props.board, props.thread.thread, props.thread.post, filtersToCheck);
+}
+
+const isThreadFilterHighlighted = (): boolean => {
+    return (filterApplied.value?.action == FilterAction.Highlight);
+}
+
 </script>
 
 <template>
-    <span v-if='isShowingHiddenOnly == isHidden()' class="catalog-post">
-        <div class="image-container">
+    <span v-if='isShowingHiddenOnly == (isHidden() || isThreadFiltered())' class="catalog-post">
+        <div class="image-container" :style="isThreadFilterHighlighted() ? `border: 3px solid ${filterApplied?.colorHex};` : ``">
             <a href="#" @click.prevent="onClickThreadImage">
                 <img v-if="!thread.post.filename && thread.post.md5"
                     :class="{pinned: isPinned()}"
