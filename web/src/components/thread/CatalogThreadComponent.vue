@@ -113,7 +113,7 @@ const isThreadFilterHighlighted = (): boolean => {
 </script>
 
 <template>
-    <span v-if='isShowingHiddenOnly == (isHidden() || isThreadFiltered())' class="catalog-post">
+    <span v-if='(isShowingHiddenOnly == isHidden()) && !isThreadFiltered()' class="catalog-post">
         <div class="image-container" :style="isThreadFilterHighlighted() ? `border: 3px solid ${filterApplied?.colorHex};` : ``">
             <a href="#" @click.prevent="onClickThreadImage">
                 <img v-if="!thread.post.filename && thread.post.md5"
