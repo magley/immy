@@ -148,7 +148,7 @@ func (s *PostService) createPostCommon(dto model.CreatePostCommonDTO, board *mod
 		return nil, err
 	}
 
-	err = s.validatePost(dto.Filebytes, thread, threadStats, board, true)
+	err = s.validatePost(dto.Filebytes, thread, threadStats, board, opPost)
 	if err != nil {
 		return nil, err
 	}
