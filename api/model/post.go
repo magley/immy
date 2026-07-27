@@ -44,7 +44,7 @@ type CreatePostForThreadDTO struct {
 
 type CreatePostDTO struct {
 	Name 		string 		`json:"name"`
-	Content 	string		`json:"content" binding:"required"`
+	Content 	string		`json:"content"`
 	Filename 	*string 	`json:"filename"`
 	Filebytes 	*string    	`json:"filebytes"`
 	Options 	string		`json:"options"`
