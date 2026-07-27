@@ -66,7 +66,7 @@ type UpdatePostDTO struct {
 // Internal use only
 type CreatePostCommonDTO struct {
 	Name 		string 		`json:"name"`
-	Content 	string		`json:"content" binding:"required"`
+	Content 	string		`json:"content"`
 	Filename 	*string 	`json:"filename"`
 	Filebytes 	*string    	`json:"filebytes"`
 	Options 	string		`json:"options"`
