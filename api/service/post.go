@@ -153,6 +153,10 @@ func (s *PostService) createPostCommon(dto model.CreatePostCommonDTO, board *mod
 		return nil, err
 	}
 
+	if dto.Filebytes == nil && dto.Content == "" {
+		return nil, errors.New("Post must have file or comment")
+	}
+
 	// Increment board meta
 
 	board, err = s.BoardService.IncrementBoardPostCount(board)
