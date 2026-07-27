@@ -44,9 +44,9 @@
 	}
 
 	const loadThreads = () => {
-		ThreadAPI.GetThreadsForCatalog(board.value!.code).then((res: AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>) => {
-			threads.value = [];
+		ThreadAPI.GetThreadsForCatalog(board.value!.code).then(async (res: AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>) => {
 			threads.value = res.data.data!;
+			await nextTick();
 			loadPinnedThreads();
 			loadHiddenThreads();
 			onSortChanged(sortBy.value);
