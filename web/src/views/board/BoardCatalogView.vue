@@ -14,8 +14,8 @@
 	import RandomBoardImageBanner from '@/components/board/RandomBoardImageBanner.vue';
 	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
 	import CatalogThreadComponent from '@/components/thread/CatalogThreadComponent.vue';
-import { FilterAction, GetFilterMatchingCatalogThread, LoadFilters } from '@/model/filter/filter.model';
-import { EventBus, AppEvents } from '@/util/eventBus.util';
+	import { FilterAction, GetFilterMatchingCatalogThread, LoadFilters } from '@/model/filter/filter.model';
+	import { EventBus, AppEvents } from '@/util/eventBus.util';
 
 	const board = ref<BoardDTO | undefined>(undefined);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
@@ -45,11 +45,12 @@ import { EventBus, AppEvents } from '@/util/eventBus.util';
 
 	const loadThreads = () => {
 		ThreadAPI.GetThreadsForCatalog(board.value!.code).then((res: AxiosResponse<ApiResponse<ThreadForCatalogDTO[]>>) => {
+			threads.value = [];
 			threads.value = res.data.data!;
 			loadPinnedThreads();
 			loadHiddenThreads();
 			onSortChanged(sortBy.value);
-			refreshFilter();
+			EventBus.emit(AppEvents.FiltersRefreshed);
 		}).catch((err: AxiosError) => {
 			console.error(err);
 		});
