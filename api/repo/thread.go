@@ -40,6 +40,20 @@ func (r *ThreadRepo) ListThreadsOfBoardOrderByBump(boardId uint, offset int, lim
 	return threads, result.Error
 }
 
+func (r *ThreadRepo) GetThreadsOfBoardOrderByBump(boardId uint) ([]model.Thread, error) {
+	var threads []model.Thread
+	result := r.DB.
+		Model(&model.Thread{}).
+		Where("threads.archived = ?", false).
+		Where("threads.board_id = ?", boardId).
+		Joins("LEFT JOIN posts ON posts.thread_id = threads.id AND posts.sage = false").
+		Group("threads.id").
+		Order("threads.sticky DESC").
+		Order("MAX(posts.created_at) DESC").
+		Find(&threads)
+	return threads, result.Error
+}
+
 func (r *ThreadRepo) ListArchivedThreadsOfBoard(boardId uint, offset int, limit int) ([]model.Thread, error) {
 	var threads []model.Thread
 	result := r.DB.

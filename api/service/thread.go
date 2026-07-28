@@ -35,6 +35,15 @@ func (s *ThreadService) ListThreadsOfBoardOrderByBump(boardCode string, offset, 
 	return s.ThreadRepo.ListThreadsOfBoardOrderByBump(board.ID, offset, limit)
 }
 
+func (s *ThreadService) GetThreadsOfBoardOrderByBump(boardCode string) ([]model.Thread, error) {
+	board, err := s.BoardService.GetBoardByCode(boardCode)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.ThreadRepo.GetThreadsOfBoardOrderByBump(board.ID)
+}
+
 func (s *ThreadService) ListArchivedThreadsOfBoard(boardCode string, offset, limit int) ([]model.Thread, error) {
 	board, err := s.BoardService.GetBoardByCode(boardCode)
 	if err != nil {
@@ -126,8 +135,7 @@ func (s *ThreadService) GetFullThreadFrom(thread *model.Thread) (*model.ThreadFu
 }
 
 func (s *ThreadService) GetThreadsForCatalog(boardCode string) ([]model.ThreadForCatalogDTO, error) {
-	// TODO: Hardcoding it like this is bad.
-	threads, err := s.ListThreadsOfBoardOrderByBump(boardCode, 0, 1000)
+	threads, err := s.GetThreadsOfBoardOrderByBump(boardCode)
 	if err != nil {
 		return nil, err
 	}
