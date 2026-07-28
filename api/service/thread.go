@@ -291,7 +291,7 @@ func (s *ThreadService) archiveThread(thread *model.Thread) (*model.Thread, erro
 }
 
 func (s *ThreadService) ArchiveBumpedOffThreads(board *model.Board) error {
-	threads, err := s.ListThreadsOfBoardOrderByBump(board.Code, 0, 1000)
+	threads, err := s.GetThreadsOfBoardOrderByBump(board.Code)
 	if err != nil {
 		return err
 	}
