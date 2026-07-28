@@ -148,13 +148,9 @@ func (s *PostService) createPostCommon(dto model.CreatePostCommonDTO, board *mod
 		return nil, err
 	}
 
-	err = s.validatePost(dto.Filebytes, thread, threadStats, board, opPost)
+	err = s.validatePost(dto.Content, dto.Filebytes, thread, threadStats, board, opPost)
 	if err != nil {
 		return nil, err
-	}
-
-	if dto.Filebytes == nil && dto.Content == "" {
-		return nil, errors.New("Post must have file or comment")
 	}
 
 	// Increment board meta
@@ -289,7 +285,11 @@ func (s *PostService) createPostCommon(dto model.CreatePostCommonDTO, board *mod
 	return post, err
 }
 
-func (s *PostService) validatePost(fileBytes *string, thread *model.Thread, threadStats model.ThreadStats, board *model.Board, opPost bool) error {
+func (s *PostService) validatePost(postComment string, fileBytes *string, thread *model.Thread, threadStats model.ThreadStats, board *model.Board, opPost bool) error {
+	if fileBytes == nil && postComment == "" {
+		return errors.New("Post must have file or comment")
+	}
+
 	if fileBytes != nil {
 		if threadStats.ImageCount >= board.Config.ImageLimit {
 			return errors.New("Image limit reached")
