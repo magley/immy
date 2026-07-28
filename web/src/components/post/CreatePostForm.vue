@@ -192,7 +192,7 @@
 
 <template>
 	<form @submit.prevent="onSubmitReply">
-		<input type=text placeholder="Name" v-model="replyDTO.name"/><br/>
+		<input type=text placeholder="Username" v-model="replyDTO.name"/><br/>
 		<template v-if="isFormForNewThread()">
 			<input type=text placeholder="Thread Subject" v-model="subject"/><br/>
 		</template>
