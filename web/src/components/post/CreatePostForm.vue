@@ -193,6 +193,9 @@
 <template>
 	<form @submit.prevent="onSubmitReply">
 		<input type=text placeholder="Name" v-model="replyDTO.name"/><br/>
+		<template v-if="isFormForNewThread()">
+			<input type=text placeholder="Thread Subject" v-model="subject"/><br/>
+		</template>
 		<input type=text placeholder="Options" v-model="replyDTO.options"/><br/>
 		<textarea cols=30 rows=10 :id="`reply-area-${id}`" placeholder="Text..." ref='text-area' v-model="replyDTO.content"/><br/>
 		<input type="file" :accept="mime_types_allowed.join(', ')" @change="onFileSelected" :id="`reply-file-upload-${id}`"><br/>
