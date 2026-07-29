@@ -160,7 +160,7 @@
 
 		<!-- Common -->
 		<div>
-			<textarea v-model="banDTO.reason" placeholder="Ban message" rows="4" cols="20"></textarea>
+			<textarea v-model="banDTO.reason" :placeholder="`${banDTO.warning ? 'Warning' : 'Ban'} message`" rows="4" cols="20"></textarea>
 
 			<hr/>
 
