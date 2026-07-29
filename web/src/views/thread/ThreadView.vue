@@ -425,6 +425,8 @@
 	const openGalleryMode = (index: number) => {
 		galleryMode.value!.OpenGalleryMode(index);
 	}
+
+	const staticReplyBoxIsOpened = ref<boolean>(false);
 </script>
 
 <template>
@@ -459,15 +461,20 @@
 		<!-- Static reply box -->
 		<div v-if="canReply()">
 			<hr />
-			<CreatePostForm
-			v-if="!board.config.locked"
-			id="static-reply-box"
-			:board="board"
-			:thread="thread"
-			:max_size_bytes="board.config.max_file_size"
-			:mime_types_allowed="board.config.mime_types_allowed"
-			@postCreated="onPostCreated()"
-			/>
+			<div class="center">[<a href="#" @click="() => {staticReplyBoxIsOpened = !staticReplyBoxIsOpened}">Create reply
+				<span v-if="staticReplyBoxIsOpened"> 🞁</span>
+                <span v-else> 🞃</span>
+			</a>]</div>
+			<template v-if="staticReplyBoxIsOpened">
+				<CreatePostForm
+				v-if="!board.config.locked"
+				id="static-reply-box"
+				:board="board"
+				:thread="thread"
+				:max_size_bytes="board.config.max_file_size"
+				:mime_types_allowed="board.config.mime_types_allowed"
+				@postCreated="onPostCreated()"/>
+			</template>
 		</div>
 		<div v-else>
 			<p class="red">
@@ -582,6 +589,10 @@
 		text-align: center;
 		font-weight: bold;
 		color: var(--user-error-color);
+	}
+
+	.center {
+		text-align: center;
 	}
 
 	#floating-reply-box {
