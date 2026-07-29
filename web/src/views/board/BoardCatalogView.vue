@@ -16,6 +16,7 @@
 	import CatalogThreadComponent from '@/components/thread/CatalogThreadComponent.vue';
 	import { FilterAction, GetFilterMatchingCatalogThread, LoadFilters } from '@/model/filter/filter.model';
 	import { EventBus, AppEvents } from '@/util/eventBus.util';
+	import HideShowComponent from '@/components/HideShowComponent.vue';
 
 	const board = ref<BoardDTO | undefined>(undefined);
 	const threads = ref<ThreadForCatalogDTO[]>([]);
@@ -26,7 +27,6 @@
 	const sortBy = ref<ThreadSortModeInCatalog>(ThreadSortModeInCatalog.BumpOrder);
 	const imageSize = ref<number>(100);
 	const showComment = ref<boolean>(true);
-	const staticReplyBoxIsOpened = ref<boolean>(false);
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
@@ -318,22 +318,17 @@
 		<hr />
 
 		<div v-if="!board.config.locked">
-			<div class="center">[<a href="#" @click="() => {staticReplyBoxIsOpened = !staticReplyBoxIsOpened}">Create thread
-				<span v-if="staticReplyBoxIsOpened"> 🞁</span>
-                <span v-else> 🞃</span>
-			</a>]</div>
-			<template v-if="staticReplyBoxIsOpened">
-				<CreatePostForm
-			id="create-thread"
-			:thread="undefined"
-			:board="board"
-			:max_size_bytes="board.config.max_file_size"
-			:mime_types_allowed="board.config.mime_types_allowed"
-			@postCreated="loadThreads()"
-			/>
-			</template>
-			
 
+			<HideShowComponent label="Create Thread" :center-label="true">
+				<CreatePostForm
+				id="create-thread"
+				:thread="undefined"
+				:board="board"
+				:max_size_bytes="board.config.max_file_size"
+				:mime_types_allowed="board.config.mime_types_allowed"
+				@postCreated="loadThreads()"
+				/>
+			</HideShowComponent>
 		</div>
 
 		<BlogpostQuickList />
@@ -416,10 +411,6 @@
 			text-decoration: none;
 			display: block;
 		}
-	}
-
-	.center {
-		text-align: center;
 	}
 
 	#create-thread {
