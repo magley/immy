@@ -15,8 +15,8 @@
 	import BoardBanner from "@/components/board/BoardBanner.vue";
 	import RandomBoardImageBanner from "@/components/board/RandomBoardImageBanner.vue";
 	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
-import { Paginator } from "@/util/pagination.util";
-import PaginatorComponent from "@/components/PaginatorComponent.vue";
+	import { Paginator } from "@/util/pagination.util";
+	import PaginatorComponent from "@/components/PaginatorComponent.vue";
 	
 	const board = ref<BoardDTO | undefined>(undefined);
 
@@ -25,7 +25,7 @@ import PaginatorComponent from "@/components/PaginatorComponent.vue";
 	
 	const threads = ref<ThreadForHomeDTO[]>([]);
 	const threadsError = ref<string | undefined>(undefined);
-
+	const staticReplyBoxIsOpened = ref<boolean>(false);
 
 	const getThreads = (offset: number, limit: number) => ThreadAPI.GetThreadsForHome(board.value!.code, offset, limit);
 	const pagination = reactive<Paginator<ThreadForHomeDTO[]>>(new Paginator(getThreads));
@@ -298,14 +298,20 @@ import PaginatorComponent from "@/components/PaginatorComponent.vue";
 		<hr />
 
 		<div v-if="!board.config.locked">
-			<CreatePostForm
-			id="create-thread"
-			:thread="undefined"
-			:board="board"
-			:max_size_bytes="board.config.max_file_size"
-			:mime_types_allowed="board.config.mime_types_allowed"
-			@postCreated="loadThreads()"
-			/>
+			<div class="center">[<a href="#" @click="() => {staticReplyBoxIsOpened = !staticReplyBoxIsOpened}">Create thread
+				<span v-if="staticReplyBoxIsOpened"> 🞁</span>
+                <span v-else> 🞃</span>
+			</a>]</div>
+			<template v-if="staticReplyBoxIsOpened">
+				<CreatePostForm
+				id="create-thread"
+				:thread="undefined"
+				:board="board"
+				:max_size_bytes="board.config.max_file_size"
+				:mime_types_allowed="board.config.mime_types_allowed"
+				@postCreated="loadThreads()"
+				/>
+			</template>
 		</div>
 
 		<BlogpostQuickList />
@@ -413,5 +419,9 @@ import PaginatorComponent from "@/components/PaginatorComponent.vue";
 				margin-left: 0.2em;
 			}
 		}
+	}
+
+	.center {
+		text-align: center;
 	}
 </style>
