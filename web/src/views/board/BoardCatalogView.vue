@@ -26,6 +26,7 @@
 	const sortBy = ref<ThreadSortModeInCatalog>(ThreadSortModeInCatalog.BumpOrder);
 	const imageSize = ref<number>(100);
 	const showComment = ref<boolean>(true);
+	const staticReplyBoxIsOpened = ref<boolean>(false);
 
 	onMounted(() => {
 		const board_code: string = route.params.board_code as string;
@@ -317,7 +318,12 @@
 		<hr />
 
 		<div v-if="!board.config.locked">
-			<CreatePostForm
+			<div class="center">[<a href="#" @click="() => {staticReplyBoxIsOpened = !staticReplyBoxIsOpened}">Create thread
+				<span v-if="staticReplyBoxIsOpened"> 🞁</span>
+                <span v-else> 🞃</span>
+			</a>]</div>
+			<template v-if="staticReplyBoxIsOpened">
+				<CreatePostForm
 			id="create-thread"
 			:thread="undefined"
 			:board="board"
@@ -325,6 +331,8 @@
 			:mime_types_allowed="board.config.mime_types_allowed"
 			@postCreated="loadThreads()"
 			/>
+			</template>
+			
 
 		</div>
 
@@ -408,6 +416,10 @@
 			text-decoration: none;
 			display: block;
 		}
+	}
+
+	.center {
+		text-align: center;
 	}
 
 	#create-thread {
