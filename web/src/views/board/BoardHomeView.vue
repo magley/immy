@@ -17,6 +17,7 @@
 	import BlogpostQuickList from '@/components/blogpost/BlogpostQuickList.vue';
 	import { Paginator } from "@/util/pagination.util";
 	import PaginatorComponent from "@/components/PaginatorComponent.vue";
+	import HideShowComponent from "@/components/HideShowComponent.vue";
 	
 	const board = ref<BoardDTO | undefined>(undefined);
 
@@ -25,7 +26,6 @@
 	
 	const threads = ref<ThreadForHomeDTO[]>([]);
 	const threadsError = ref<string | undefined>(undefined);
-	const staticReplyBoxIsOpened = ref<boolean>(false);
 
 	const getThreads = (offset: number, limit: number) => ThreadAPI.GetThreadsForHome(board.value!.code, offset, limit);
 	const pagination = reactive<Paginator<ThreadForHomeDTO[]>>(new Paginator(getThreads));
@@ -298,11 +298,7 @@
 		<hr />
 
 		<div v-if="!board.config.locked">
-			<div class="center">[<a href="#" @click="() => {staticReplyBoxIsOpened = !staticReplyBoxIsOpened}">Create thread
-				<span v-if="staticReplyBoxIsOpened"> 🞁</span>
-                <span v-else> 🞃</span>
-			</a>]</div>
-			<template v-if="staticReplyBoxIsOpened">
+			<HideShowComponent label="Create Thread" :center-label="true">
 				<CreatePostForm
 				id="create-thread"
 				:thread="undefined"
@@ -311,7 +307,7 @@
 				:mime_types_allowed="board.config.mime_types_allowed"
 				@postCreated="loadThreads()"
 				/>
-			</template>
+			</HideShowComponent>
 		</div>
 
 		<BlogpostQuickList />
@@ -419,9 +415,5 @@
 				margin-left: 0.2em;
 			}
 		}
-	}
-
-	.center {
-		text-align: center;
 	}
 </style>

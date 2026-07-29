@@ -318,7 +318,6 @@
 		<hr />
 
 		<div v-if="!board.config.locked">
-
 			<HideShowComponent label="Create Thread" :center-label="true">
 				<CreatePostForm
 				id="create-thread"
