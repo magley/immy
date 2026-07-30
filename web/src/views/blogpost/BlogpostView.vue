@@ -1,20 +1,30 @@
 <script setup lang="ts">
 	import { BlogpostAPI, type BlogpostDTO } from '@/api/blogpost.api';
+	import { UserAPI, UserRole } from '@/api/user.api';
 	import BlogpostComponent from '@/components/blogpost/BlogpostComponent.vue';
 	import CreateBlogpostComponent from '@/components/blogpost/CreateBlogpostComponent.vue';
 	import PaginatorComponent from '@/components/PaginatorComponent.vue';
+	import router from '@/router';
 	import { Paginator } from '@/util/pagination.util';
+	import type { AxiosError } from 'axios';
 	import { onMounted, reactive, ref } from 'vue';
+	import { useRoute } from 'vue-router';
 
 	const paginator = reactive<Paginator<BlogpostDTO[]>>(new Paginator(BlogpostAPI.ListBlogposts));
 	const blogposts = ref<BlogpostDTO[]>([]);
 	const error = ref<string | undefined>(undefined);
 	const collapsedNewBlogpostForm = ref<boolean>(true);
 	const userRole = ref<string | undefined>(undefined);
+	const route = useRoute();
 
 	onMounted(() => {
 		getBlogposts();
-		userRole.value = localStorage.getItem("role") ?? undefined;
+		
+		UserAPI.AuthorizeUser({required_roles: [UserRole.Admin]}).then(() => {
+			userRole.value = localStorage.getItem("role") ?? undefined;
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});
 	})
 
 	const getBlogposts = () => {
