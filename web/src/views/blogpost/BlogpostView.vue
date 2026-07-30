@@ -4,18 +4,15 @@
 	import BlogpostComponent from '@/components/blogpost/BlogpostComponent.vue';
 	import CreateBlogpostComponent from '@/components/blogpost/CreateBlogpostComponent.vue';
 	import PaginatorComponent from '@/components/PaginatorComponent.vue';
-	import router from '@/router';
 	import { Paginator } from '@/util/pagination.util';
 	import type { AxiosError } from 'axios';
 	import { onMounted, reactive, ref } from 'vue';
-	import { useRoute } from 'vue-router';
 
 	const paginator = reactive<Paginator<BlogpostDTO[]>>(new Paginator(BlogpostAPI.ListBlogposts));
 	const blogposts = ref<BlogpostDTO[]>([]);
 	const error = ref<string | undefined>(undefined);
 	const collapsedNewBlogpostForm = ref<boolean>(true);
 	const userRole = ref<string | undefined>(undefined);
-	const route = useRoute();
 
 	onMounted(() => {
 		getBlogposts();

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 	import { BlogpostAPI, type BlogpostDTO } from '@/api/blogpost.api';
+	import { UserAPI, UserRole } from '@/api/user.api';
 	import BlogpostComponent from '@/components/blogpost/BlogpostComponent.vue';
 	import CreateBlogpostComponent from '@/components/blogpost/CreateBlogpostComponent.vue';
 	import type { AxiosError } from 'axios';
@@ -8,21 +9,20 @@
 
 	const route = useRoute();
 	const router = useRouter();
-
 	const blogpost = ref<BlogpostDTO | undefined>(undefined);
-
 	const loading = ref<boolean>(false);
 	const error = ref<string | undefined>(undefined);
-
 	const userRole = ref<string | undefined>(undefined);
-
 	const editMode = ref<boolean>(false);
 
 	onMounted(() => {
-
 		getBlogpost();
-		userRole.value = localStorage.getItem("role") ?? undefined;
-	})
+
+		UserAPI.AuthorizeUser({required_roles: [UserRole.Admin]}).then(() => {
+			userRole.value = localStorage.getItem("role") ?? undefined;
+		}).catch((err: AxiosError) => {
+			console.error(err);
+		});	})
 
 	const getBlogpost = () => {
 		loading.value = true;
