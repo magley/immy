@@ -58,7 +58,7 @@ const saveFilters = () => {
                 <div v-for="filter, index of filters" class="filter-definition">
                     <span class="field">
                         <label :for="`filter-${index}-text`">Pattern:</label>
-                        <input :id="`filter-${index}-text`" v-model="filter.text" @change="saveFilters" type="text" />
+                        <input :id="`filter-${index}-text`" v-model="filter.text" @change="saveFilters" type="text" class="width-10em" />
                     </span>
 
                     <span class="field">
@@ -76,10 +76,9 @@ const saveFilters = () => {
                     <span class="field">
                         <label :for="`filter-${index}-boards`">
                             <abbr title='Comma separated board codes (e.g. "b, /g/, /w/ ") allowed. If no board is specified, or "*" is in the list, then the filter is global. '>
-                                Board(s):
-                            </abbr>
+                                Board(s):</abbr>
                         </label>
-                        <input :id="`filter-${index}-boards`" v-model="filter.boards" @change="saveFilters" type="text" />          
+                        <input :id="`filter-${index}-boards`" v-model="filter.boards" @change="saveFilters" type="text" class="width-6em" />          
                     </span>
 
                     <span class="field">
@@ -93,7 +92,7 @@ const saveFilters = () => {
                     <span class="field">
                         <label :for="`filter-${index}-color`">Color:</label>
                         <input :id="`filter-${index}-color`" v-model="filter.colorHex" @change="saveFilters" type="color" />
-                        <input :id="`filter-${index}-color-text`" v-model="filter.colorHex" @change="saveFilters" type="text" />
+                        <input :id="`filter-${index}-color-text`" v-model="filter.colorHex" @change="saveFilters" type="text" class="width-6em" />
                     </span>
 
                     <span class="field">
@@ -102,7 +101,7 @@ const saveFilters = () => {
                     </span>            
                         
                     <span class="field">
-                        <button @click="removeFilter(index)" class="space-left">Delete Filter</button>
+                        <button @click="removeFilter(index)" class="space-left"><img src="/icons/delete.png"/></button>
                     </span>
                 </div>
                 <div v-if="filters.length == 0">
@@ -117,7 +116,7 @@ const saveFilters = () => {
                 <form>
                     <span class="field">
                         <label for="new-filter-text">Pattern:</label>
-                        <input id="new-filter-text" type="text" placeholder="Enter text" v-model="newFilterText" />
+                        <input id="new-filter-text" type="text" placeholder="Enter text" v-model="newFilterText" class="width-10em" />
                     </span>
 
                     <span class="field">
@@ -138,7 +137,7 @@ const saveFilters = () => {
                                 Board(s):
                             </abbr>
                         </label>
-                        <input id="new-filter-boards" type="text" placeholder="Comma separated boards. Wildcard (*) supported" v-model="newFilterBoards" />
+                        <input id="new-filter-boards" type="text" placeholder="Comma separated boards. Wildcard (*) supported" v-model="newFilterBoards" class="width-6em" />
                     </span>
 
                     <span class="field">
@@ -152,7 +151,7 @@ const saveFilters = () => {
                     <span class="field">
                         <label for="new-filter-color">Color:</label>
                         <input id="new-filter-color" v-model="newFilterColorHex" type="color" />
-                        <input id="new-filter-color-text" v-model="newFilterColorHex" type="text" />
+                        <input id="new-filter-color-text" v-model="newFilterColorHex" type="text" class="width-6em" />
                     </span>
 
                     <span class="field">
@@ -171,7 +170,9 @@ const saveFilters = () => {
     }
 
     .filter-definition {
-        margin-bottom: 0.2em;  
+        width: 90%;
+        margin: auto;
+        display: block;
     }
 
     .field {
@@ -182,5 +183,17 @@ const saveFilters = () => {
         background-color: var(--highlighted-post-background-color);
         padding: 0.5em;
         text-align: center;
+    }
+
+    .width-3em {
+        width: 3em;
+    }
+
+    .width-6em {
+        width: 6em;
+    }
+
+    .width-10em {
+        width: 10em;
     }
 </style>
