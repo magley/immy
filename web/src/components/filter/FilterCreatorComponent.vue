@@ -4,8 +4,6 @@ import { AppEvents, EventBus } from '@/util/eventBus.util';
 import { onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
-const isVisible = ref<boolean>(false);
-
 const filters = ref<Filter[]>([]);
 const filtersEnabled = ref<boolean>(true);
 
@@ -43,24 +41,12 @@ const saveFilters = () => {
     EventBus.emit(AppEvents.FiltersRefreshed)
 }
 
-const toggleVisibility = () => {
-    isVisible.value = !isVisible.value;
-}
-
 </script>
 
 <template>
 
     <div class="filters-root-container">
-        <div class="filters-visibility-toggle">
-            [
-            <RouterLink to="#" @click="toggleVisibility">Filters
-                <span v-if="isVisible"> 🞁</span>
-                <span v-else> 🞃</span>
-            </RouterLink>
-            ]
-        </div>
-        <div class="filters-container" v-if="isVisible">
+        <div class="filters-container">
             <div class="">
                 <span class="field">
                     <label :for="`filters-enabled`">Filters Enabled:</label>

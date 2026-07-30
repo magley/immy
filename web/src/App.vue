@@ -5,6 +5,7 @@
 	import { IsJwtExpired, RemoveLoginCredentials } from './util/various.util';
 	import { useRoute, useRouter } from 'vue-router';
 	import FilterCreatorComponent from './components/filter/FilterCreatorComponent.vue';
+import HideShowComponent from './components/HideShowComponent.vue';
 
 	const userRole = ref<string | undefined>(undefined);
 	const userName = ref<string | undefined>(undefined);
@@ -107,7 +108,9 @@
 
 		<!-- Filtering -->
 		<div>
-			<FilterCreatorComponent />
+			<HideShowComponent label="Filters">
+				<FilterCreatorComponent />
+			</HideShowComponent>
 		</div>
 
 		<hr />
