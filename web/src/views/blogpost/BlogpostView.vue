@@ -3,6 +3,7 @@
 	import { UserAPI, UserRole } from '@/api/user.api';
 	import BlogpostComponent from '@/components/blogpost/BlogpostComponent.vue';
 	import CreateBlogpostComponent from '@/components/blogpost/CreateBlogpostComponent.vue';
+	import HideShowComponent from '@/components/HideShowComponent.vue';
 	import PaginatorComponent from '@/components/PaginatorComponent.vue';
 	import { Paginator } from '@/util/pagination.util';
 	import type { AxiosError } from 'axios';
@@ -11,7 +12,6 @@
 	const paginator = reactive<Paginator<BlogpostDTO[]>>(new Paginator(BlogpostAPI.ListBlogposts));
 	const blogposts = ref<BlogpostDTO[]>([]);
 	const error = ref<string | undefined>(undefined);
-	const collapsedNewBlogpostForm = ref<boolean>(true);
 	const userRole = ref<string | undefined>(undefined);
 
 	onMounted(() => {
@@ -46,19 +46,10 @@
 
 	<div v-if="userRole == 'admin'">
 		<hr />
-		<div v-if="collapsedNewBlogpostForm" class="center">
-			<br/>
-			[ <a href="#" @click.prevent="() => {collapsedNewBlogpostForm = false;}">Create new blogpost</a> ]
-			<br/><br/>
-		</div>
-		<div v-else>
-			<div class="center">
-				<br/>
-				[ <a href="#" @click.prevent="() => {collapsedNewBlogpostForm = true;}">Hide</a> ]
-			</div>
+		<HideShowComponent label="New Blogpost" :center-label="true">
 			<h2>New blogpost</h2>
 			<CreateBlogpostComponent :blogpost-to-edit="undefined" @created-blogpost="onBlogpostCreated" />
-		</div>
+		</HideShowComponent>
 		<hr />
 	</div>
 
