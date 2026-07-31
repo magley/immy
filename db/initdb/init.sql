@@ -141,3 +141,11 @@ create table rules_boards (
 	created_at	timestamp default now(),
 	deleted_at	timestamp default null
 );
+
+-- There will be only one row here.
+create table configs (
+	id serial primary key,
+	posting_enabled boolean default true
+);
+
+insert into configs default values;
