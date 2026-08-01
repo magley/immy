@@ -26,7 +26,7 @@ func (h *ConfigHandler) GetConfig(c *gin.Context) {
 }
 
 func (h *ConfigHandler) SetPostingEnabled(c *gin.Context) {
-	enabled, ok := util.ParamIntSafe(c, "enabled", "Enabled flag")
+	enabled, ok := util.QueryIntSafe(c, "enabled", "Enabled flag")
 	if !ok {
 		return
 	}
