@@ -87,14 +87,6 @@ func (s *PostService) DeleteFirstNPostsOfThread(thread *model.Thread, N uint) er
 }
 
 func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user *model.User) (*model.Post, error) {
-	config, err := s.ConfigService.GetConfig()
-	if err != nil {
-		return nil, err
-	}
-	if !config.PostingEnabled {
-		return nil, errors.New("Post creation has been temporarily disabled by the admin")
-	}
-
 	thread, err := s.ThreadService.GetThread(dto.ThreadID)
 	if err != nil {
 		return nil, err
@@ -137,6 +129,15 @@ func (s *PostService) CreatePostForThread(dto model.CreatePostForThreadDTO, requ
 // fields if this post is an OP post (i.e. created along with the thread).
 func (s *PostService) createPostCommon(dto model.CreatePostCommonDTO, board *model.Board, thread *model.Thread, opPost bool, requestIP string, user *model.User) (*model.Post, error) {
 	// Check if posting is possible
+
+	config, err := s.ConfigService.GetConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	if !config.PostingEnabled {
+		return nil, errors.New("Post creation has been temporarily disabled by the admin")
+	}
 
 	if board.Config.Locked {
 		return nil, errors.New("Board locked. You may not create threads at this time.")
