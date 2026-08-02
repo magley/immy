@@ -94,6 +94,8 @@ import HideShowComponent from './components/HideShowComponent.vue';
 			|
 			<RouterLink to="/admin-bans">Bans</RouterLink>
 			|
+			<RouterLink to="/admin-config">Config</RouterLink>
+			|
 		</span>
 		<span v-if="userRole == UserRole.Moderator">
 			<RouterLink to="/admin-bans">Bans</RouterLink>
