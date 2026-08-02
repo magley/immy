@@ -19,6 +19,7 @@ type PostService struct {
 	ThreadRepo    *repo.ThreadRepo
 	BoardService  *BoardService
 	ThreadService *ThreadService
+	ConfigService *ConfigService
 }
 
 func (s *PostService) ListPosts(offset, limit int) ([]model.Post, error) {
@@ -86,6 +87,14 @@ func (s *PostService) DeleteFirstNPostsOfThread(thread *model.Thread, N uint) er
 }
 
 func (s *PostService) CreatePost(dto model.CreatePostDTO, requestIP string, user *model.User) (*model.Post, error) {
+	config, err := s.ConfigService.GetConfig()
+	if err != nil {
+		return nil, err
+	}
+	if !config.PostingEnabled {
+		return nil, errors.New("Post creation has been temporarily disabled by the admin")
+	}
+
 	thread, err := s.ThreadService.GetThread(dto.ThreadID)
 	if err != nil {
 		return nil, err
