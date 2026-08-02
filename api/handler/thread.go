@@ -56,7 +56,7 @@ func (h *ThreadHandler) CreateThread(c *gin.Context) {
 
 	jwt, err := util.GetJwt(c)
 	if err != nil {
-		util.Fail(c, http.StatusBadRequest, "FAILED_OPTIONAL_AUtHORIZATION", err.Error())
+		util.Fail(c, http.StatusBadRequest, "FAILED_OPTIONAL_AUTHORIZATION", err.Error())
 		return
 	}
 	var user *model.User
@@ -65,7 +65,7 @@ func (h *ThreadHandler) CreateThread(c *gin.Context) {
 
 		// Silently fail, assume user doesn't exist.
 		if err != nil {
-			log.Print("Cloud not get user: ", jwt.Id, ": ", err.Error())
+			log.Print("Could not get user: ", jwt.Id, ": ", err.Error())
 			user = nil
 		}
 	}
