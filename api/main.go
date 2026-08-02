@@ -76,6 +76,7 @@ func main() {
 	configService = &service.ConfigService{ConfigRepo: configRepo}
 
 	postService.ThreadService = threadService
+	postService.ConfigService = configService
 
 	boardHandler := &handler.BoardHandler{BoardService: boardService}
 	postHandler := &handler.PostHandler{PostService: postService, UserService: userService, BanService: banService}
