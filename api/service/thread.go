@@ -75,7 +75,12 @@ func (s *ThreadService) CreateThread(dto model.CreateThreadDTO, requestIP string
 
 	post, err := s.PostService.CreatePostForThread(dto.Post, requestIP, thread, board, user)
 	if err != nil {
-		err = s.DeleteThread(thread.ID)
+		err2 := s.DeleteThread(thread.ID)
+
+		// TODO: Ugh... double error.
+		if err2 != nil {
+			return nil, err2
+		}
 		return nil, err
 	}
 
