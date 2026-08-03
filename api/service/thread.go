@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"immy-api/model"
 	"immy-api/repo"
 	"log"
@@ -8,9 +9,10 @@ import (
 )
 
 type ThreadService struct {
-	ThreadRepo   *repo.ThreadRepo
-	BoardService *BoardService
-	PostService  *PostService
+	ThreadRepo    *repo.ThreadRepo
+	BoardService  *BoardService
+	PostService   *PostService
+	ConfigService *ConfigService
 }
 
 func (s *ThreadService) ListThreads(offset, limit int) ([]model.Thread, error) {
@@ -63,6 +65,17 @@ func (s *ThreadService) GetThreadCountPerBoard(boardCode string) (int64, error) 
 }
 
 func (s *ThreadService) CreateThread(dto model.CreateThreadDTO, requestIP string, user *model.User) (*model.Thread, error) {
+	// Check if posting is possible
+
+	config, err := s.ConfigService.GetConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	if !config.PostingEnabled {
+		return nil, errors.New("Post creation has been temporarily disabled by the admin")
+	}
+
 	board, err := s.BoardService.GetBoardByCode(dto.BoardCode)
 	if err != nil {
 		return nil, err
